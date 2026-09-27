@@ -701,6 +701,21 @@
 
   .edit-bar .fs-num { width: 58px; font-family: var(--serif); font-weight: 700; font-size: .8em; text-align: center; padding: 4px 4px; border: 1.5px solid var(--edge); border-radius: 6px; background: #FFFFFF; color: var(--ink); }
   .edit-bar .fs-num:focus-visible { outline: 3px solid var(--b-activity); outline-offset: 2px; }
+
+  .bd { font-weight: 700; }
+  .edit-bar .t-bd { font-weight: 900; }
+
+  body.editing .lab[contenteditable="false"], body.editing .badge[contenteditable="false"], body.editing .kind[contenteditable="false"] { cursor: default; user-select: none; }
+
+  .lab-q { background: #5A4F45 !important; color: #FFFDF8 !important; }
+  .lab-m { background: #F0CF6A !important; color: #231F1C !important; }
+  .lab-p { background: #6F7D62 !important; color: #FFFDF8 !important; }
+  .lab-s { background: #5F7383 !important; color: #FFFDF8 !important; }
+  .lab-e { background: #9A6F42 !important; color: #FFFDF8 !important; }
+  .lab-w { background: #B3372B !important; color: #FFFDF8 !important; }
+  .lab-c { background: #3F3833 !important; color: #FFFDF8 !important; }
+  .edit-bar .badge-text { width: 170px; font: inherit; font-size: .78em; padding: 4px 8px; border: 1.5px solid var(--edge); border-radius: 6px; background: #FFFFFF; }
+  .edit-bar .badge-text[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -1099,7 +1114,7 @@
     <div class="grp"><span class="glab">페이지</span><select data-sel="page" aria-label="페이지 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select><button type="button" data-cmd="left" title="앞으로 옮기기">◀</button><button type="button" data-cmd="right" title="뒤로 옮기기">▶</button><button type="button" data-cmd="delpage">삭제</button></div>
     <div class="grp"><span class="glab">표</span><button type="button" data-cmd="tadd">＋ 표 넣기</button><button type="button" data-cmd="undo" title="마지막 표 작업 취소">↶ 표 되돌리기</button></div>
     <span class="grp-sep"></span>
-    <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button></div>
+    <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="bd" class="t-bd" title="굵게 (Ctrl+B). 굵은 글자를 선택하고 다시 누르면 해제">굵게</button><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button><select data-sel="badge" aria-label="배지 넣기" title="커서 자리에 배지를 넣어요"><option value="">＋ 배지</option><option value="짝 질문">짝 질문</option><option value="질문">질문</option><option value="미션">미션</option><option value="핵심 명제">핵심 명제</option><option value="정리">정리</option><option value="예시">예시</option><option value="주의">주의</option><option value="__custom">직접 입력…</option></select><input id="badge-text" class="badge-text" type="text" placeholder="배지 글자 입력 후 Enter" hidden></div>
     <div class="grp"><span class="glab">글씨 크기</span><button type="button" data-cmd="fsdown" title="2씩 작게">가－</button><input id="fs-num" class="fs-num" type="number" min="12" max="120" step="1" value="40" aria-label="글씨 크기"><button type="button" data-cmd="fsup" title="2씩 크게">가＋</button><button type="button" data-cmd="fsauto" title="이 페이지 글씨를 화면에 맞게 자동 조절">자동</button></div>
     <div class="grp grp-save"><button type="button" data-cmd="publish" class="t-save">GitHub 반영</button><button type="button" data-cmd="ghset" title="GitHub 연결 설정">⚙</button><button type="button" data-cmd="save" title="내용 파일(content.html)을 내려받기">내용 저장</button><button type="button" data-cmd="reset">초기화</button><span class="save-state" id="save-state" aria-live="polite"></span></div>
   </div>
@@ -1281,7 +1296,7 @@ function __boot() {
     function applyEdit(on) {
       all.forEach(function (s) {
         roots(s).forEach(function (r) { if (on) r.setAttribute('contenteditable', 'true'); else r.removeAttribute('contenteditable'); });
-        s.querySelectorAll('.tag').forEach(function (t) { if (on) t.setAttribute('contenteditable', 'false'); else t.removeAttribute('contenteditable'); });
+        s.querySelectorAll('.tag, .lab, .badge, .kind').forEach(function (t) { if (on) t.setAttribute('contenteditable', 'false'); else t.removeAttribute('contenteditable'); });
         s.querySelectorAll('details.reveal').forEach(function (d) {
           if (on) { if (!d.open || d.classList.contains('concealed')) { d.setAttribute('data-closed', ''); d.open = true; d.classList.remove('concealed'); } }
           else if (d.hasAttribute('data-closed')) { d.classList.add('concealed'); d.removeAttribute('data-closed'); }
@@ -1452,6 +1467,11 @@ function __boot() {
       var r = currentRange(); if (!r || r.collapsed) { state.textContent = '글자를 먼저 선택'; return; }
       var mc = cellsIn(r);
       if (mc) { mc.forEach(function (c) { wrapCell(c, cls); }); storeLesson(+mc[0].closest('section.stage').dataset.l); return; }
+      if (cls === 'bd') {
+        var an1 = r.commonAncestorContainer; if (an1.nodeType === 3) an1 = an1.parentNode;
+        var b0 = an1.closest('.bd, b, strong');
+        if (b0 && b0.textContent.trim() === String(r).trim()) { unwrap(b0); state.textContent = '굵게 해제'; storeLesson(+pages[P].dataset.l); return; }
+      }
       if (cls.indexOf('hl') === 0) {
         var an0 = r.commonAncestorContainer; if (an0.nodeType === 3) an0 = an0.parentNode;
         var h0 = an0.closest('.hl');
@@ -1459,7 +1479,7 @@ function __boot() {
       }
       var span = document.createElement('span'); span.className = cls;
       span.appendChild(r.extractContents());
-      span.querySelectorAll(cls.indexOf('hl') === 0 ? '.hl' : '.imp, .kw').forEach(unwrap);
+      span.querySelectorAll(cls.indexOf('hl') === 0 ? '.hl' : cls === 'bd' ? '.bd, b, strong' : '.imp, .kw').forEach(unwrap);
       r.insertNode(span);
       var sel = window.getSelection(), nr = document.createRange(); nr.selectNodeContents(span); sel.removeAllRanges(); sel.addRange(nr);
       storeLesson(+span.closest('section.stage').dataset.l);
@@ -1468,8 +1488,8 @@ function __boot() {
       var r = currentRange(); if (!r) return;
       var n = r.commonAncestorContainer; if (n.nodeType === 3) n = n.parentNode;
       var s = n.closest('section.stage');
-      var anc = n.closest('.imp, .kw, .hl'); if (anc) unwrap(anc);
-      s.querySelectorAll('.imp, .kw, .hl').forEach(function (el) { if (r.intersectsNode(el)) unwrap(el); });
+      var anc = n.closest('.imp, .kw, .hl, .bd'); if (anc) unwrap(anc);
+      s.querySelectorAll('.imp, .kw, .hl, .bd').forEach(function (el) { if (r.intersectsNode(el)) unwrap(el); });
       storeLesson(+s.dataset.l);
     }
     function addPage(t) {
@@ -1937,16 +1957,46 @@ function __boot() {
       var r = document.createRange(); r.selectNodeContents(box); sel.removeAllRanges(); sel.addRange(r);
       state.textContent = box.matches('td, th') ? '이 칸만 선택' : '이 줄만 선택';
     }, true);
+    document.addEventListener('keydown', function (e) {
+      if (!editing || !(e.ctrlKey || e.metaKey) || (e.key !== 'b' && e.key !== 'B')) return;
+      if (!currentRange()) return;
+      e.preventDefault(); mark('bd');
+    }, true);
+    // ===== 배지(딱지) 넣기 =====
+    var BADGE = { '짝 질문': 'q', '질문': 'q', '미션': 'm', '핵심 명제': 'p', '정리': 's', '예시': 'e', '주의': 'w' };
+    var badgeInput = document.getElementById('badge-text');
+    function insertBadge(text) {
+      text = (text || '').trim(); if (!text) return;
+      var r = (currentRange() && currentRange().startContainer.isConnected) ? currentRange() : savedRange;
+      if (!r || !r.startContainer.isConnected) { state.textContent = '배지를 넣을 자리를 먼저 클릭'; return; }
+      var n0 = r.startContainer; if (n0.nodeType === 3) n0 = n0.parentNode;
+      if (!n0.closest('section.stage [contenteditable="true"]')) { state.textContent = '카드 안 글자 자리를 먼저 클릭'; return; }
+      var rr = r.cloneRange(); rr.collapse(true);
+      var b = document.createElement('span'); b.className = 'lab lab-' + (BADGE[text] || 'c'); b.textContent = text; b.setAttribute('contenteditable', 'false');
+      var sp = document.createTextNode(' ');
+      rr.insertNode(sp); rr.insertNode(b);
+      var sel = window.getSelection(), nr = document.createRange(); nr.setStart(sp, 1); nr.collapse(true); sel.removeAllRanges(); sel.addRange(nr);
+      var sec = b.closest('section.stage'); storeLesson(+sec.dataset.l); state.textContent = '배지 "' + text + '" 넣음';
+    }
+    if (badgeInput) badgeInput.addEventListener('keydown', function (e) {
+      e.stopPropagation();
+      if (e.key === 'Enter') { e.preventDefault(); insertBadge(badgeInput.value); badgeInput.value = ''; badgeInput.hidden = true; }
+      else if (e.key === 'Escape') { badgeInput.value = ''; badgeInput.hidden = true; }
+    });
     bar.addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });
     bar.addEventListener('change', function (e) {
       var sel = e.target.closest('select'); if (!sel || !sel.value) return;
-      if (sel.dataset.sel === 'page') addPage(sel.value); else addBlock(sel.value);
+      if (sel.dataset.sel === 'badge') {
+        if (sel.value === '__custom') { badgeInput.hidden = false; badgeInput.focus(); }
+        else insertBadge(sel.value);
+      }
+      else if (sel.dataset.sel === 'page') addPage(sel.value); else addBlock(sel.value);
       sel.value = '';
     });
     bar.addEventListener('click', function (e) {
       var btn = e.target.closest('button'); if (!btn) return;
       var c = btn.dataset.cmd;
-      if (c === 'imp' || c === 'kw') mark(c);
+      if (c === 'imp' || c === 'kw' || c === 'bd') mark(c);
       else if (c && c.indexOf('hl:') === 0) mark('hl hl-' + c.slice(3));
       else if (c === 'plain') plain();
       else if (c === 'note') addNote();
@@ -2012,7 +2062,7 @@ function __boot() {
       if (n.classList.contains('imp')) { s.color = 'B3372B'; s.bold = true; }
       if (n.classList.contains('kw')) { s.color = '1F5A96'; s.bold = true; }
       if (n.classList.contains('hl')) { var HL = { y: 'FFE58A', g: 'CFE8B4', b: 'CFE3F5', p: 'F7D0D8' }; for (var hk in HL) if (n.classList.contains('hl-' + hk)) s.highlight = HL[hk]; }
-      if (n.tagName === 'B' || n.tagName === 'STRONG') s.bold = true;
+      if (n.tagName === 'B' || n.tagName === 'STRONG' || n.classList.contains('bd')) s.bold = true;
       if (n.classList.contains('lab') || n.classList.contains('kind')) { s.bold = true; s.color = '5A4F45'; }
       if (n.tagName === 'BR') { out.push({ text: '', options: Object.assign({ softBreakBefore: true }, st) }); return; }
       [].forEach.call(n.childNodes, function (c) { walk(c, s); });
