@@ -675,6 +675,29 @@
 
   /* 설명용 큰 빨간 화살표 커서 (수업 화면 안) */
   body:not(.editing) .slide section.stage .block, body:not(.editing) .slide section.stage .stage-head, body:not(.editing) .slide section.stage header.lesson { cursor: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2256%22%20height%3D%2256%22%20viewBox%3D%220%200%2056%2056%22%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23D0342C%22%20stroke%3D%22%235A1510%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E) 5 4, default; }
+
+  /* 카드 안 내용: 한 덩어리로 묶어 세로 가운데 (제목과 내용이 떨어지지 않게) */
+  @media (min-width: 700px) {
+    .slide .block { justify-content: center !important; gap: .7em; }
+    .slide .block > h3 { margin-bottom: 0 !important; }
+    .slide .block > .tablewrap, .slide .block > .item, .slide .block > details { margin-top: 0 !important; }
+  }
+
+  /* 형광펜 */
+  .hl { padding: 0 .12em; border-radius: .18em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .hl-y { background: linear-gradient(transparent 10%, #FFE58A 10%, #FFE58A 94%, transparent 94%); }
+  .hl-g { background: linear-gradient(transparent 10%, #CFE8B4 10%, #CFE8B4 94%, transparent 94%); }
+  .hl-b { background: linear-gradient(transparent 10%, #CFE3F5 10%, #CFE3F5 94%, transparent 94%); }
+  .hl-p { background: linear-gradient(transparent 10%, #F7D0D8 10%, #F7D0D8 94%, transparent 94%); }
+  .edit-bar .hl-pick { display: inline-flex; align-items: center; gap: 4px; margin: 0 4px; }
+  .edit-bar .hl-lab { font-family: var(--serif); font-size: .72em; color: var(--ink-soft); }
+  .edit-bar .hsw { width: 24px; height: 24px; padding: 0 !important; border-radius: 50% !important; border: 2px solid #FFFFFF !important; box-shadow: 0 0 0 1.5px var(--edge) !important; }
+  /* 메모 창 제목 크게 */
+  .fn-note .fn-grip { font-size: 36px !important; padding: 10px 12px 10px 20px !important; }
+  .fn-note .fn-num { font-size: .9em !important; color: var(--ink) !important; font-weight: 700; }
+  .fn-note .fn-close { font-size: 1em !important; }
+  .pw-bar { font-size: 36px; padding: 10px 12px 10px 20px; }
+  .pw-title { font-size: .8em; color: var(--ink); }
 </style>
 </head>
 <body>
@@ -1073,7 +1096,7 @@
     <div class="grp"><span class="glab">페이지</span><select data-sel="page" aria-label="페이지 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select><button type="button" data-cmd="left" title="앞으로 옮기기">◀</button><button type="button" data-cmd="right" title="뒤로 옮기기">▶</button><button type="button" data-cmd="delpage">삭제</button></div>
     <div class="grp"><span class="glab">표</span><button type="button" data-cmd="tadd">＋ 표 넣기</button><button type="button" data-cmd="undo" title="마지막 표 작업 취소">↶ 표 되돌리기</button></div>
     <span class="grp-sep"></span>
-    <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button></div>
+    <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button></div>
     <div class="grp"><span class="glab">글씨 크기</span><button type="button" data-cmd="fsdown" title="글자를 선택하면 그 글자만, 아니면 이 페이지 전체를 작게">가－</button><button type="button" data-cmd="fsup" title="글자를 선택하면 그 글자만, 아니면 이 페이지 전체를 크게">가＋</button><button type="button" data-cmd="fsauto" title="이 페이지 글씨를 화면에 맞게 자동 조절">자동</button></div>
     <div class="grp grp-save"><button type="button" data-cmd="publish" class="t-save">GitHub 반영</button><button type="button" data-cmd="ghset" title="GitHub 연결 설정">⚙</button><button type="button" data-cmd="save" title="내용 파일(content.html)을 내려받기">내용 저장</button><button type="button" data-cmd="reset">초기화</button><span class="save-state" id="save-state" aria-live="polite"></span></div>
   </div>
@@ -1373,9 +1396,14 @@ function __boot() {
     }
     function mark(cls) {
       var r = currentRange(); if (!r || r.collapsed) { state.textContent = '글자를 먼저 선택'; return; }
+      if (cls.indexOf('hl') === 0) {
+        var an0 = r.commonAncestorContainer; if (an0.nodeType === 3) an0 = an0.parentNode;
+        var h0 = an0.closest('.hl');
+        if (h0 && h0.textContent.trim() === String(r).trim()) { h0.className = cls; storeLesson(+h0.closest('section.stage').dataset.l); return; }
+      }
       var span = document.createElement('span'); span.className = cls;
       span.appendChild(r.extractContents());
-      span.querySelectorAll('.imp, .kw').forEach(unwrap);
+      span.querySelectorAll(cls.indexOf('hl') === 0 ? '.hl' : '.imp, .kw').forEach(unwrap);
       r.insertNode(span);
       var sel = window.getSelection(), nr = document.createRange(); nr.selectNodeContents(span); sel.removeAllRanges(); sel.addRange(nr);
       storeLesson(+span.closest('section.stage').dataset.l);
@@ -1384,8 +1412,8 @@ function __boot() {
       var r = currentRange(); if (!r) return;
       var n = r.commonAncestorContainer; if (n.nodeType === 3) n = n.parentNode;
       var s = n.closest('section.stage');
-      var anc = n.closest('.imp, .kw'); if (anc) unwrap(anc);
-      s.querySelectorAll('.imp, .kw').forEach(function (el) { if (r.intersectsNode(el)) unwrap(el); });
+      var anc = n.closest('.imp, .kw, .hl'); if (anc) unwrap(anc);
+      s.querySelectorAll('.imp, .kw, .hl').forEach(function (el) { if (r.intersectsNode(el)) unwrap(el); });
       storeLesson(+s.dataset.l);
     }
     function addPage(t) {
@@ -1811,6 +1839,7 @@ function __boot() {
       var btn = e.target.closest('button'); if (!btn) return;
       var c = btn.dataset.cmd;
       if (c === 'imp' || c === 'kw') mark(c);
+      else if (c && c.indexOf('hl:') === 0) mark('hl hl-' + c.slice(3));
       else if (c === 'plain') plain();
       else if (c === 'note') addNote();
       else if (c === 'fsdown') fontStep(-1);
@@ -1874,6 +1903,7 @@ function __boot() {
       var s = Object.assign({}, st);
       if (n.classList.contains('imp')) { s.color = 'B3372B'; s.bold = true; }
       if (n.classList.contains('kw')) { s.color = '1F5A96'; s.bold = true; }
+      if (n.classList.contains('hl')) { var HL = { y: 'FFE58A', g: 'CFE8B4', b: 'CFE3F5', p: 'F7D0D8' }; for (var hk in HL) if (n.classList.contains('hl-' + hk)) s.highlight = HL[hk]; }
       if (n.tagName === 'B' || n.tagName === 'STRONG') s.bold = true;
       if (n.classList.contains('lab') || n.classList.contains('kind')) { s.bold = true; s.color = '5A4F45'; }
       if (n.tagName === 'BR') { out.push({ text: '', options: Object.assign({ softBreakBefore: true }, st) }); return; }
@@ -2115,9 +2145,10 @@ function __boot() {
   // ===== 메모(수사보드 쪽지) =====
   function slideScale() { return wide.matches ? slide.getBoundingClientRect().width / 1600 : 1; }
   function noteOf(mark) { var sec = mark.closest('section.stage'); return sec && sec.querySelector('.fn-note[data-id="' + mark.dataset.id + '"]'); }
+  function noteTitle(sec, id, n) { var a = sec.querySelector('.fn-anchor[data-id="' + id + '"]:not(.fn-auto)'); var w = a ? a.textContent.trim() : ''; return w ? n + '. ' + w : '메모 ' + n; }
   function numberNotes(sec) {
     var n = 0;
-    sec.querySelectorAll('.fn-mark').forEach(function (m) { n += 1; m.textContent = n; var nt = sec.querySelector('.fn-note[data-id="' + m.dataset.id + '"]'); if (nt) { var h = nt.querySelector('.fn-num'); if (h) h.textContent = '메모 ' + n; } });
+    sec.querySelectorAll('.fn-mark').forEach(function (m) { n += 1; m.textContent = n; var nt = sec.querySelector('.fn-note[data-id="' + m.dataset.id + '"]'); if (nt) { var h = nt.querySelector('.fn-num'); if (h) h.textContent = noteTitle(sec, m.dataset.id, n); } });
   }
   function drawThreads(sec) { var svg = sec && sec.querySelector(':scope > .fn-thread'); if (svg) svg.remove(); }
   function openPopups(sec) { return [].slice.call((sec || document).querySelectorAll('.fn-note.open, .photo-win')); }
@@ -2313,7 +2344,7 @@ function __boot() {
     var cp = orig.cloneNode(true); cp.classList.add('fn-copy'); cp.__orig = orig;
     cp.querySelectorAll('.fn-tools').forEach(function (x) { x.remove(); });
     var n = orig.closest('section.stage').querySelector('.fn-mark[data-id="' + id + '"]');
-    var h = cp.querySelector('.fn-num'); if (h) h.textContent = '메모' + (n ? ' ' + n.textContent : '');
+    var h = cp.querySelector('.fn-num'); if (h) h.textContent = noteTitle(orig.closest('section.stage'), id, n ? n.textContent : '');
     if (!cp.querySelector('.fn-resize')) { var rz = document.createElement('span'); rz.className = 'fn-resize'; cp.appendChild(rz); }
     sec.appendChild(cp); cp.classList.add('open');
     cp.style.width = (+orig.dataset.w || 600) + 'px';
