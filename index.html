@@ -716,6 +716,22 @@
   .lab-c { background: #3F3833 !important; color: #FFFDF8 !important; }
   .edit-bar .badge-text { width: 170px; font: inherit; font-size: .78em; padding: 4px 8px; border: 1.5px solid var(--edge); border-radius: 6px; background: #FFFFFF; }
   .edit-bar .badge-text[hidden] { display: none; }
+
+  /* 표 편집: 왼쪽 세로 도구판 (표가 움직이지 않음) */
+  .table-panel { position: fixed; left: 8px; top: 70px; z-index: 55; width: 132px; max-height: calc(100vh - 150px); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 8px 12px; margin: 0; background: #F7F1E4; border: 1.5px solid var(--edge); border-radius: 10px; box-shadow: 0 8px 20px rgba(60,40,20,.18); font-size: 14px; }
+  .table-panel[hidden] { display: none; }
+  .table-panel .tp-title { font-family: var(--serif); font-weight: 700; font-size: 1em; color: var(--ink); text-align: center; padding-bottom: 6px; border-bottom: 1px dashed var(--edge); }
+  .table-panel .tp-g { display: flex; flex-direction: column; gap: 5px; }
+  .table-panel .tb-l { font-size: .85em; margin: 0; }
+  .table-panel .tp-row { display: flex; gap: 4px; }
+  .table-panel .tp-row button { flex: 1; padding: 5px 2px; }
+  .table-panel button { width: 100%; font-size: .9em; padding: 5px 6px; text-align: center; }
+  .table-panel .tp-sw { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+  .table-panel .tp-sw .sw { width: 20px; height: 20px; justify-self: center; }
+  @media (min-width: 700px) { body.fs .table-panel { top: 12px; } }
+
+  .edit-bar .grp-size { background: #FFFFFF; border: 1.5px solid #CFC2A6; border-radius: 8px; padding: 3px 8px; }
+  .edit-bar .fs-num { width: 72px !important; font-size: 1em !important; font-weight: 900 !important; color: #1F5A96 !important; border: 2px solid #1F5A96 !important; }
 </style>
 </head>
 <body>
@@ -1115,7 +1131,7 @@
     <div class="grp"><span class="glab">표</span><button type="button" data-cmd="tadd">＋ 표 넣기</button><button type="button" data-cmd="undo" title="마지막 표 작업 취소">↶ 표 되돌리기</button></div>
     <span class="grp-sep"></span>
     <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="bd" class="t-bd" title="굵게 (Ctrl+B). 굵은 글자를 선택하고 다시 누르면 해제">굵게</button><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button><select data-sel="badge" aria-label="배지 넣기" title="커서 자리에 배지를 넣어요"><option value="">＋ 배지</option><option value="짝 질문">짝 질문</option><option value="질문">질문</option><option value="미션">미션</option><option value="핵심 명제">핵심 명제</option><option value="정리">정리</option><option value="예시">예시</option><option value="주의">주의</option><option value="__custom">직접 입력…</option></select><input id="badge-text" class="badge-text" type="text" placeholder="배지 글자 입력 후 Enter" hidden></div>
-    <div class="grp"><span class="glab">글씨 크기</span><button type="button" data-cmd="fsdown" title="2씩 작게">가－</button><input id="fs-num" class="fs-num" type="number" min="12" max="120" step="1" value="40" aria-label="글씨 크기"><button type="button" data-cmd="fsup" title="2씩 크게">가＋</button><button type="button" data-cmd="fsauto" title="이 페이지 글씨를 화면에 맞게 자동 조절">자동</button></div>
+    <div class="grp grp-size"><span class="glab">글씨 크기</span><button type="button" data-cmd="fsdown" title="2씩 작게">가－</button><input id="fs-num" class="fs-num" type="number" min="12" max="120" step="1" value="40" aria-label="글씨 크기"><button type="button" data-cmd="fsup" title="2씩 크게">가＋</button><button type="button" data-cmd="fsauto" title="이 페이지 글씨를 화면에 맞게 자동 조절">자동</button></div>
     <div class="grp grp-save"><button type="button" data-cmd="publish" class="t-save">GitHub 반영</button><button type="button" data-cmd="ghset" title="GitHub 연결 설정">⚙</button><button type="button" data-cmd="save" title="내용 파일(content.html)을 내려받기">내용 저장</button><button type="button" data-cmd="reset">초기화</button><span class="save-state" id="save-state" aria-live="polite"></span></div>
   </div>
 </main>
@@ -1192,6 +1208,7 @@ function __boot() {
     p = Math.max(0, Math.min(pages.length - 1, p)); P = p;
     all.forEach(function (s) { s.classList.remove('active'); });
     if (window.__notes) window.__notes.close();
+    var tpn = document.getElementById('table-panel'); if (tpn) tpn.hidden = true;
     pages[p].classList.add('active'); pages[p].scrollTop = 0; if (!document.body.classList.contains('editing') || !pages[p].querySelector('.block[style*=font-size]')) { var ed = document.body.classList.contains('editing'); if (ed) document.body.classList.remove('editing'); autofit(pages[p]); if (ed) document.body.classList.add('editing'); }
     links.forEach(function (a, k) { a.classList.toggle('current', k === p); if (k === p) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current'); });
     prev.disabled = p === 0; next.disabled = p === pages.length - 1;
@@ -1712,31 +1729,28 @@ function __boot() {
     // ===== 표 전용 도구 막대 (칸을 클릭하면 표 위에 나타남) =====
     var TB_COLORS = [['default', '#FFFDF8', '무지(기본)'], ['#6E4B2E', '#6E4B2E', '나무'], ['#7D8559', '#7D8559', '올리브'], ['#5F7383', '#5F7383', '청회색'], ['#6F7D62', '#6F7D62', '이끼'], ['#9A6F42', '#9A6F42', '호박'], ['#3F3833', '#3F3833', '먹색'], ['#1F5A96', '#1F5A96', '파랑'], ['#B3372B', '#B3372B', '빨강']];
     function tableBarHTML() {
-      return '<span class="tb-g"><span class="tb-l">가로줄(행)</span><button type="button" data-t="rowadd">＋ 아래에 추가</button><button type="button" data-t="rowdel" class="tb-danger">－ 이 가로줄 삭제</button></span>' +
-        '<span class="tb-g"><span class="tb-l">세로줄(열)</span><button type="button" data-t="coladd">＋ 오른쪽에 추가</button><button type="button" data-t="coldel" class="tb-danger">－ 이 세로줄 삭제</button></span>' +
-        '<span class="tb-g"><span class="tb-l">너비</span><button type="button" data-t="eqall">모두 같게</button><button type="button" data-t="eqothers">이 칸 빼고 같게</button></span>' +
-        '<span class="tb-g"><span class="tb-l">이 칸 머리색</span>' + TB_COLORS.map(function (c) { return '<button type="button" class="sw" data-t="color:' + c[0] + '" title="' + c[2] + '" style="background:' + c[1] + '"></button>'; }).join('') +
-        '<button type="button" data-t="colorall">모든 칸에 적용</button></span>' +
-        '<span class="tb-g"><button type="button" data-t="undo" class="tb-undo">↶ 되돌리기</button><button type="button" data-t="tdel" class="tb-danger">표 삭제</button></span>';
+      return '<div class="tp-title">표 편집</div>' +
+        '<div class="tp-g"><span class="tb-l">가로줄(행)</span><div class="tp-row"><button type="button" data-t="rowadd" title="아래에 가로줄 추가">＋ 추가</button><button type="button" data-t="rowdel" class="tb-danger" title="이 가로줄 삭제">－ 삭제</button></div></div>' +
+        '<div class="tp-g"><span class="tb-l">세로줄(열)</span><div class="tp-row"><button type="button" data-t="coladd" title="오른쪽에 세로줄 추가">＋ 추가</button><button type="button" data-t="coldel" class="tb-danger" title="이 세로줄 삭제">－ 삭제</button></div></div>' +
+        '<div class="tp-g"><span class="tb-l">너비</span><button type="button" data-t="eqall">모두 같게</button><button type="button" data-t="eqothers">이 칸 빼고 같게</button></div>' +
+        '<div class="tp-g"><span class="tb-l">이 칸 머리색</span><div class="tp-sw">' + TB_COLORS.map(function (c) { return '<button type="button" class="sw" data-t="color:' + c[0] + '" title="' + c[2] + '" style="background:' + c[1] + '"></button>'; }).join('') + '</div><button type="button" data-t="colorall">모든 칸에 적용</button></div>' +
+        '<div class="tp-g"><button type="button" data-t="undo" class="tb-undo">↶ 되돌리기</button><button type="button" data-t="tdel" class="tb-danger">표 삭제</button></div>';
     }
     function clearTableBar() {
-      document.querySelectorAll('.table-bar').forEach(function (x) { x.remove(); });
+      var p = document.getElementById('table-panel'); if (p) p.hidden = true;
       document.querySelectorAll('.cur-col').forEach(function (x) { x.classList.remove('cur-col'); });
     }
     function showTableBar(cell) {
-      var table = cell.closest('table'), wrap = table.closest('.tablewrap') || table;
+      var table = cell.closest('table');
       var colIdx = [].indexOf.call(cell.parentNode.cells, cell);
       document.querySelectorAll('.cur-col').forEach(function (x) { x.classList.remove('cur-col'); });
       [].forEach.call(table.rows, function (r) { if (r.cells[colIdx]) r.cells[colIdx].classList.add('cur-col'); });
-      var bar = wrap.previousElementSibling;
-      if (!bar || !bar.classList.contains('table-bar')) {
-        document.querySelectorAll('.table-bar').forEach(function (x) { x.remove(); });
-        bar = document.createElement('div'); bar.className = 'table-bar'; bar.setAttribute('contenteditable', 'false'); bar.innerHTML = tableBarHTML();
-        wrap.parentNode.insertBefore(bar, wrap);
-      }
+      var bar = document.getElementById('table-panel');
+      if (!bar) { bar = document.createElement('div'); bar.id = 'table-panel'; bar.className = 'table-bar table-panel'; bar.innerHTML = tableBarHTML(); document.body.appendChild(bar); }
+      bar.hidden = false;
     }
     function clearPrev() { document.querySelectorAll('.del-prev').forEach(function (x) { x.classList.remove('del-prev'); }); }
-    document.getElementById('slide').addEventListener('mouseover', function (e) {
+    document.addEventListener('mouseover', function (e) {
       var b = e.target.closest('.table-bar button'); clearPrev(); if (!b || !editing) return;
       var t = b.dataset.t; if (t !== 'rowdel' && t !== 'coldel' && t !== 'tdel') return;
       var cell = cellRange(); if (!cell) return;
@@ -1745,20 +1759,20 @@ function __boot() {
       else if (t === 'coldel') [].forEach.call(table.rows, function (r) { if (r.cells[col]) r.cells[col].classList.add('del-prev'); });
       else table.querySelectorAll('th, td').forEach(function (x) { x.classList.add('del-prev'); });
     });
-    document.getElementById('slide').addEventListener('mouseout', function (e) { if (e.target.closest('.table-bar button')) clearPrev(); });
+    document.addEventListener('mouseout', function (e) { if (e.target.closest('.table-bar button')) clearPrev(); });
     document.addEventListener('selectionchange', function () {
       if (!editing) return;
-      var c = rawCell(); if (c) showTableBar(c);
+      var c = rawCell(); if (c) showTableBar(c); else { var sl = window.getSelection(); if (sl.rangeCount) { var nn = sl.getRangeAt(0).startContainer; if (nn.nodeType === 3) nn = nn.parentNode; if (nn.closest && nn.closest('section.stage [contenteditable="true"]')) clearTableBar(); } }
     });
-    document.getElementById('slide').addEventListener('mousedown', function (e) { if (e.target.closest('.table-bar button')) e.preventDefault(); });
-    document.getElementById('slide').addEventListener('click', function (e) {
+    document.addEventListener('mousedown', function (e) { if (e.target.closest('.table-bar button')) e.preventDefault(); });
+    document.addEventListener('click', function (e) {
       var b = e.target.closest('.table-bar button'); if (!b || !editing) return;
       e.preventDefault();
       if (b.dataset.t === 'tdel' && !confirmTwice(b, '한 번 더 누르면 표 삭제')) return;
       if (b.dataset.t === 'rowdel' && !confirmTwice(b, '한 번 더 누르면 가로줄 삭제')) return;
       if (b.dataset.t === 'coldel' && !confirmTwice(b, '한 번 더 누르면 세로줄 삭제')) return;
       tableCmd(b.dataset.t);
-      var c = cellRange(); if (c && document.contains(c)) showTableBar(c); else clearTableBar();
+      var c = cellRange(); if (c && document.contains(c)) showTableBar(c);
     });
     document.getElementById('slide').addEventListener('paste', function (e) {
       if (!editing) return;
@@ -1786,7 +1800,7 @@ function __boot() {
       var u = tableUndo.pop(); if (!u) { state.textContent = '되돌릴 표 작업이 없어요'; return; }
       if (u.live && u.live.isConnected) u.live.replaceWith(u.clone);
       else u.parent.insertBefore(u.clone, u.next && u.next.parentNode === u.parent ? u.next : null);
-      clearTableBar(); gripTools(true); storeLesson(+u.sec.dataset.l); state.textContent = '표를 되돌렸어요';
+      document.querySelectorAll('.cur-col').forEach(function (x) { x.classList.remove('cur-col'); }); gripTools(true); storeLesson(+u.sec.dataset.l); state.textContent = '표를 되돌렸어요. 표 칸을 다시 클릭하세요';
     }
     function tableCmd(c) {
       if (c === 'undo') { undoTable(); return; }
