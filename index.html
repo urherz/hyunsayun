@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="ko" class=""><head>
+<html lang="ko">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="lesson-rev" content="1790536491815">
+<meta name="lesson-rev" content="202609272112">
 <script>document.documentElement.classList.add('js')</script>
 <title>현대사회와 윤리 Ⅲ·Ⅵ단원</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&amp;family=Gowun+Dodum&amp;display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
 <style>
   :root {
     /* 바탕 */
@@ -640,9 +641,16 @@
   .fn-note .fn-body { padding: 0 22px; }
   .fn-note .fn-tools { padding: 0 22px; }
   .fn-mark.on { transform: none; }
+
+  .fsz[data-lv="-3"] { font-size: .7em; } .fsz[data-lv="-2"] { font-size: .8em; } .fsz[data-lv="-1"] { font-size: .9em; }
+  .fsz[data-lv="1"] { font-size: 1.15em; } .fsz[data-lv="2"] { font-size: 1.3em; } .fsz[data-lv="3"] { font-size: 1.5em; } .fsz[data-lv="4"] { font-size: 1.75em; }
+
+  .table-bar .tb-danger { color: #B3372B; border-color: #E2B4AE; }
+  .table-bar .tb-undo { color: var(--kwc); }
+  body.editing .del-prev { background: #F6D5D0 !important; box-shadow: inset 0 0 0 3px #B3372B !important; }
 </style>
 </head>
-<body class="">
+<body>
 <div class="layout">
 <aside class="book" id="book" aria-label="교과서 목차">
 <p class="book-title">현대사회와 윤리</p>
@@ -671,10 +679,10 @@
 <li class="sub"><span class="num">02</span><span class="t">환경 문제에 대한 윤리적 쟁점</span><span class="pg">64</span></li>
 </ol>
 </details>
-<details open=""><summary><span class="roman">Ⅲ</span>과학과 디지털 학습 환경 윤리</summary>
+<details open><summary><span class="roman">Ⅲ</span>과학과 디지털 학습 환경 윤리</summary>
 <p class="ch">1. 과학기술과 윤리</p><ol>
 <li class="sub has"><span class="num">01</span><span class="t">과학기술에 대한 다양한 관점</span><span class="pg">76</span></li>
-<li class="les"><button type="button" data-lesson="1" class=""><span class="ln">1차시</span>과학기술의 가치 중립성 논쟁</button></li>
+<li class="les"><button type="button" data-lesson="1"><span class="ln">1차시</span>과학기술의 가치 중립성 논쟁</button></li>
 <li class="sub has"><span class="num">02</span><span class="t">과학기술의 사회적 책임</span><span class="pg">80</span></li>
 <li class="les"><button type="button" data-lesson="2"><span class="ln">2차시</span>과학기술자의 책임과 한스 요나스</button></li>
 </ol>
@@ -721,7 +729,7 @@
 <li class="sub"><span class="num">02</span><span class="t">다문화 사회의 윤리 문제</span><span class="pg">166</span></li>
 </ol>
 </details>
-<details open=""><summary><span class="roman">Ⅵ</span>평화와 공존의 윤리</summary>
+<details open><summary><span class="roman">Ⅵ</span>평화와 공존의 윤리</summary>
 <p class="ch">1. 갈등 해결과 소통의 윤리</p><ol>
 <li class="sub has"><span class="num">01</span><span class="t">다양한 사회적 갈등의 양상</span><span class="pg">176</span></li>
 <li class="les"><button type="button" data-lesson="9"><span class="ln">9차시</span>다양한 사회적 갈등의 양상</button></li>
@@ -746,15 +754,15 @@
 </aside>
 <main class="main">
   <div class="topbar">
-    <button type="button" class="toc-toggle" id="toc-toggle" aria-controls="book" aria-expanded="false" aria-label="목차 펴기" title="목차 펴기"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"></path></svg></button>
+    <button type="button" class="toc-toggle" id="toc-toggle" aria-controls="book" aria-expanded="true" aria-label="목차 접기" title="목차 접기">«</button>
     <div class="lesson-pick"><select id="pick" aria-label="차시 선택"><option value="1">1차시 · 과학기술의 가치 중립성 논쟁</option><option value="2">2차시 · 과학기술자의 책임과 한스 요나스</option><option value="3">3차시 · 정보 사회의 특징과 윤리적 쟁점</option><option value="4">4차시 · 뉴미디어와 필터 버블</option><option value="5">5차시 · 가짜뉴스·딥페이크와 디지털 시민 윤리</option><option value="6">6차시 · 인공지능과 인간의 관계</option><option value="7">7차시 · 자율주행 트롤리 딜레마와 알고리즘 편향</option><option value="8">8차시 · 인공지능 윤리 가이드라인과 책임 귀속</option><option value="9">9차시 · 다양한 사회적 갈등의 양상</option><option value="10">10차시 · 사회 통합을 위한 윤리: 하버마스와 원효</option><option value="11">11차시 · 분단 비용과 통일 편익</option><option value="12">12차시 · 한반도의 평화를 실현하기 위한 노력</option><option value="13">13차시 · 국제 분쟁과 평화: 갈퉁과 칸트</option><option value="14">14차시 · 난민 문제와 기후 정의</option><option value="15">15차시 · 해외 원조의 윤리: 싱어 vs 노직</option><option value="16">16차시 · 롤스의 원조관과 해외 원조 3인 비교</option></select></div>
     <nav class="steps" aria-label="수업 페이지"><ol id="pagenav"></ol></nav>
     <div class="right-tools">
       <button type="button" class="ppt-btn" id="ppt-btn" title="이 차시를 PPT 파일로 내려받기">PPT 받기</button>
-      <button type="button" class="edit-toggle" id="edit-toggle" aria-pressed="false" title="수정 모드" hidden="">✎</button>
+      <button type="button" class="edit-toggle" id="edit-toggle" hidden aria-pressed="false" title="수정 모드">✎</button>
     </div>
   </div>
-  <div class="viewport" id="vp" style=""><div class="slide" id="slide" data-avail="1707">
+  <div class="viewport" id="vp"><div class="slide" id="slide">
 <section class="stage" data-l="1" data-p="0" data-label="표지"><header class="lesson">
   <p class="unit"><b>Ⅲ. 과학과 디지털 학습 환경 윤리</b> 1. 과학기술과 윤리 · 01 과학기술에 대한 다양한 관점 (p.76)</p>
   <p class="lesson-no">1차시</p>
@@ -1028,16 +1036,17 @@
 <section class="stage" data-l="16" data-p="9" data-label="기출"><div class="stage-head"><span class="no">4</span><h2>정리</h2><span class="time">6분</span></div><article class="block b-exam"><span class="tag">기출</span><div class="item"><p class="stem">갑(싱어), 을(노직), 병(롤스)의 입장으로 옳은 것만을 고르시오.</p><ul class="bogi"><li>ㄱ. 병: 원조의 목표는 고통받는 사회가 질서 정연한 사회가 되도록 돕는 것이다.</li><li>ㄴ. 갑, 병: 해외 원조는 도덕적 의무이다.</li><li>ㄷ. 병: 국제 사회에 차등의 원칙을 적용해 국가 간 부를 재분배해야 한다.</li><li>ㄹ. 을, 병: 원조는 전적으로 개인의 자유로운 선택에 맡겨야 한다.</li></ul><details class="reveal"><summary>정답 확인</summary><p><span class="imp">정답 ㄱ, ㄴ</span> ㄷ: 국제적 차등 원칙에 반대해요. ㄹ: 노직만의 입장이에요.</p></details></div></article></section>
 <section class="stage" data-l="16" data-p="10" data-label="예고"><div class="stage-head"><span class="no">5</span><h2>다음 시간</h2><span class="time">1분</span></div><article class="block b-next"><span class="tag">예고</span><p class="next-q">다음 시간은 <span class="kw">총정리</span>. Ⅲ·Ⅵ단원 사상가를 한 장에 모읍니다.</p></article></section>
   </div></div>
-  <div class="edit-bar" id="edit-bar" hidden="">
+  <div class="edit-bar" id="edit-bar" hidden>
     <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button></div>
+    <div class="grp"><span class="glab">글씨 크기</span><button type="button" data-cmd="fsdown" title="글자를 선택하면 그 글자만, 아니면 이 페이지 전체를 작게">가－</button><button type="button" data-cmd="fsup" title="글자를 선택하면 그 글자만, 아니면 이 페이지 전체를 크게">가＋</button><button type="button" data-cmd="fsauto" title="이 페이지 글씨를 화면에 맞게 자동 조절">자동</button></div>
     <div class="grp"><span class="glab">페이지</span><select data-sel="page" aria-label="페이지 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select><button type="button" data-cmd="left" title="앞으로 옮기기">◀</button><button type="button" data-cmd="right" title="뒤로 옮기기">▶</button><button type="button" data-cmd="delpage">삭제</button></div>
-    <div class="grp"><span class="glab">표</span><button type="button" data-cmd="tadd">＋ 표 넣기</button></div>
+    <div class="grp"><span class="glab">표</span><button type="button" data-cmd="tadd">＋ 표 넣기</button><button type="button" data-cmd="undo" title="마지막 표 작업 취소">↶ 표 되돌리기</button></div>
     <div class="grp"><span class="glab">블록</span><select data-sel="block" aria-label="블록 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select></div>
     <div class="grp"><button type="button" data-cmd="publish" class="t-save">GitHub 반영</button><button type="button" data-cmd="ghset" title="GitHub 연결 설정">⚙</button><button type="button" data-cmd="save">파일 저장</button><button type="button" data-cmd="reset">초기화</button><span class="save-state" id="save-state" aria-live="polite"></span></div>
   </div>
   <div class="controls" aria-label="페이지 넘기기">
     <button type="button" id="btn-prev" aria-label="이전 페이지">◀ 이전</button>
-    <span class="counter" id="counter" aria-live="polite">3 / 11</span>
+    <span class="counter" id="counter" aria-live="polite"></span>
     <button type="button" id="btn-next" aria-label="다음 페이지">다음 ▶</button>
   </div>
 </main>
@@ -1114,7 +1123,7 @@
     p = Math.max(0, Math.min(pages.length - 1, p)); P = p;
     all.forEach(function (s) { s.classList.remove('active'); });
     if (window.__notes) window.__notes.close();
-    pages[p].classList.add('active'); pages[p].scrollTop = 0; autofit(pages[p]);
+    pages[p].classList.add('active'); pages[p].scrollTop = 0; if (!document.body.classList.contains('editing') || !pages[p].querySelector('.block[style*=font-size]')) { var ed = document.body.classList.contains('editing'); if (ed) document.body.classList.remove('editing'); autofit(pages[p]); if (ed) document.body.classList.add('editing'); }
     links.forEach(function (a, k) { a.classList.toggle('current', k === p); if (k === p) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current'); });
     prev.disabled = p === 0; next.disabled = p === pages.length - 1;
     counter.textContent = (p + 1) + ' / ' + pages.length;
@@ -1126,13 +1135,15 @@
     sec.style.fontSize = '';
     var ts = sec.querySelectorAll('.block, header.lesson');
     ts.forEach(function (t) { t.style.fontSize = ''; });
+    if (sec.dataset.fs) { ts.forEach(function (t) { t.style.fontSize = sec.dataset.fs + 'px'; }); return; }
     if (!wide.matches) return;
     sec.classList.add('measuring');
     var fs = 40;
     while (sec.scrollHeight > sec.clientHeight + 1 && fs > 24) { fs -= 1; ts.forEach(function (t) { t.style.fontSize = fs + 'px'; }); }
     sec.classList.remove('measuring');
   }
-  window.__autofit = function () { if (pages[P]) autofit(pages[P]); };
+  window.__autofitForce = function () { var ed = document.body.classList.contains('editing'); if (ed) document.body.classList.remove('editing'); if (pages[P]) autofit(pages[P]); if (ed) document.body.classList.add('editing'); };
+  window.__autofit = function () { if (document.body.classList.contains('editing')) return; if (pages[P]) autofit(pages[P]); };
   function open(l, p) { setLesson(l); go(p || 0); }
 
   function initEdit() {
@@ -1184,7 +1195,7 @@
       c.querySelectorAll('.fn-auto').forEach(function (e) { var p = e.parentNode; while (e.firstChild) p.insertBefore(e.firstChild, e); p.removeChild(e); });
       c.querySelectorAll('.fn-note').forEach(function (e) { e.classList.remove('open'); e.removeAttribute('style'); });
       c.querySelectorAll('.fn-mark, .fn-anchor, .win-open').forEach(function (e) { e.classList.remove('on', 'win-open'); if (!e.getAttribute('class')) e.removeAttribute('class'); });
-      c.querySelectorAll('.cur-col').forEach(function (e) { e.classList.remove('cur-col'); if (!e.className) e.removeAttribute('class'); });
+      c.querySelectorAll('.cur-col, .del-prev').forEach(function (e) { e.classList.remove('cur-col', 'del-prev'); if (!e.className) e.removeAttribute('class'); });
       c.querySelectorAll('[contenteditable]').forEach(function (e) { e.removeAttribute('contenteditable'); });
       c.querySelectorAll('details.reveal').forEach(function (d) { d.removeAttribute('open'); d.removeAttribute('data-closed'); d.classList.remove('concealed'); });
       return c.outerHTML;
@@ -1311,9 +1322,19 @@
       });
     });
 
+    // 브라우저가 편집 중 몰래 넣는 글자 크기·글꼴 스타일 걷어내기
+    function scrubStyles(sec) {
+      sec.querySelectorAll('.block font').forEach(function (f) { var p = f.parentNode; while (f.firstChild) p.insertBefore(f.firstChild, f); p.removeChild(f); });
+      sec.querySelectorAll('.block [style]').forEach(function (el) {
+        if (el.matches('th, td, col, table, .fn-note, .photo-win, .fn-note *, img, svg, svg *, figure, .tablewrap, .block-tools, .table-bar, .table-bar *')) return;
+        ['font-size', 'font-family', 'line-height', 'letter-spacing', 'font-weight', 'color', 'background-color', 'background'].forEach(function (p) { el.style.removeProperty(p); });
+        if (!el.getAttribute('style')) el.removeAttribute('style');
+        if (el.tagName === 'SPAN' && !el.attributes.length) { var p = el.parentNode; while (el.firstChild) p.insertBefore(el.firstChild, el); p.removeChild(el); }
+      });
+    }
     document.getElementById('slide').addEventListener('input', function (e) {
       var s = e.target.closest && e.target.closest('section.stage'); if (!s) return;
-      state.textContent = '…'; clearTimeout(timer); timer = setTimeout(function () { storeLesson(+s.dataset.l); window.__autofit(); }, 500);
+      state.textContent = '…'; clearTimeout(timer); timer = setTimeout(function () { scrubStyles(s); storeLesson(+s.dataset.l); }, 500);
     });
 
     function unwrap(el) { var p = el.parentNode; while (el.firstChild) p.insertBefore(el.firstChild, el); p.removeChild(el); }
@@ -1378,7 +1399,7 @@
       c.querySelectorAll('.fn-auto').forEach(function (e) { var p = e.parentNode; while (e.firstChild) p.insertBefore(e.firstChild, e); p.removeChild(e); });
       c.querySelectorAll('.fn-note').forEach(function (e) { e.classList.remove('open'); e.removeAttribute('style'); });
       c.querySelectorAll('.fn-mark, .fn-anchor, .win-open').forEach(function (e) { e.classList.remove('on', 'win-open'); if (!e.getAttribute('class')) e.removeAttribute('class'); });
-      c.querySelectorAll('.cur-col').forEach(function (e) { e.classList.remove('cur-col'); if (!e.className) e.removeAttribute('class'); });
+      c.querySelectorAll('.cur-col, .del-prev').forEach(function (e) { e.classList.remove('cur-col', 'del-prev'); if (!e.className) e.removeAttribute('class'); });
       c.querySelectorAll('details.reveal').forEach(function (d) { d.removeAttribute('open'); d.removeAttribute('data-closed'); d.classList.remove('concealed'); });
       c.querySelectorAll('[contenteditable]').forEach(function (e) { e.removeAttribute('contenteditable'); });
       c.querySelectorAll('script[src*=pptxgen], script[src*=html2canvas], .ppt-busy').forEach(function (e) { e.remove(); });
@@ -1547,12 +1568,12 @@
     // ===== 표 전용 도구 막대 (칸을 클릭하면 표 위에 나타남) =====
     var TB_COLORS = [['default', '#FFFDF8', '무지(기본)'], ['#6E4B2E', '#6E4B2E', '나무'], ['#7D8559', '#7D8559', '올리브'], ['#5F7383', '#5F7383', '청회색'], ['#6F7D62', '#6F7D62', '이끼'], ['#9A6F42', '#9A6F42', '호박'], ['#3F3833', '#3F3833', '먹색'], ['#1F5A96', '#1F5A96', '파랑'], ['#B3372B', '#B3372B', '빨강']];
     function tableBarHTML() {
-      return '<span class="tb-g"><span class="tb-l">줄</span><button type="button" data-t="rowadd" title="아래에 줄 추가">＋</button><button type="button" data-t="rowdel" title="이 줄 삭제">－</button></span>' +
-        '<span class="tb-g"><span class="tb-l">칸</span><button type="button" data-t="coladd" title="오른쪽에 칸 추가">＋</button><button type="button" data-t="coldel" title="이 칸 삭제">－</button></span>' +
+      return '<span class="tb-g"><span class="tb-l">가로줄(행)</span><button type="button" data-t="rowadd">＋ 아래에 추가</button><button type="button" data-t="rowdel" class="tb-danger">－ 이 가로줄 삭제</button></span>' +
+        '<span class="tb-g"><span class="tb-l">세로줄(열)</span><button type="button" data-t="coladd">＋ 오른쪽에 추가</button><button type="button" data-t="coldel" class="tb-danger">－ 이 세로줄 삭제</button></span>' +
         '<span class="tb-g"><span class="tb-l">너비</span><button type="button" data-t="eqall">모두 같게</button><button type="button" data-t="eqothers">이 칸 빼고 같게</button></span>' +
         '<span class="tb-g"><span class="tb-l">이 칸 머리색</span>' + TB_COLORS.map(function (c) { return '<button type="button" class="sw" data-t="color:' + c[0] + '" title="' + c[2] + '" style="background:' + c[1] + '"></button>'; }).join('') +
         '<button type="button" data-t="colorall">모든 칸에 적용</button></span>' +
-        '<span class="tb-g"><button type="button" data-t="tdel">표 삭제</button></span>';
+        '<span class="tb-g"><button type="button" data-t="undo" class="tb-undo">↶ 되돌리기</button><button type="button" data-t="tdel" class="tb-danger">표 삭제</button></span>';
     }
     function clearTableBar() {
       document.querySelectorAll('.table-bar').forEach(function (x) { x.remove(); });
@@ -1570,6 +1591,17 @@
         wrap.parentNode.insertBefore(bar, wrap);
       }
     }
+    function clearPrev() { document.querySelectorAll('.del-prev').forEach(function (x) { x.classList.remove('del-prev'); }); }
+    document.getElementById('slide').addEventListener('mouseover', function (e) {
+      var b = e.target.closest('.table-bar button'); clearPrev(); if (!b || !editing) return;
+      var t = b.dataset.t; if (t !== 'rowdel' && t !== 'coldel' && t !== 'tdel') return;
+      var cell = cellRange(); if (!cell) return;
+      var table = cell.closest('table'), col = [].indexOf.call(cell.parentNode.cells, cell);
+      if (t === 'rowdel') [].forEach.call(cell.parentNode.cells, function (x) { x.classList.add('del-prev'); });
+      else if (t === 'coldel') [].forEach.call(table.rows, function (r) { if (r.cells[col]) r.cells[col].classList.add('del-prev'); });
+      else table.querySelectorAll('th, td').forEach(function (x) { x.classList.add('del-prev'); });
+    });
+    document.getElementById('slide').addEventListener('mouseout', function (e) { if (e.target.closest('.table-bar button')) clearPrev(); });
     document.addEventListener('selectionchange', function () {
       if (!editing) return;
       var c = rawCell(); if (c) showTableBar(c);
@@ -1578,7 +1610,9 @@
     document.getElementById('slide').addEventListener('click', function (e) {
       var b = e.target.closest('.table-bar button'); if (!b || !editing) return;
       e.preventDefault();
-      if (b.dataset.t === 'tdel' && !confirmTwice(b)) return;
+      if (b.dataset.t === 'tdel' && !confirmTwice(b, '한 번 더 누르면 표 삭제')) return;
+      if (b.dataset.t === 'rowdel' && !confirmTwice(b, '한 번 더 누르면 가로줄 삭제')) return;
+      if (b.dataset.t === 'coldel' && !confirmTwice(b, '한 번 더 누르면 세로줄 삭제')) return;
       tableCmd(b.dataset.t);
       var c = cellRange(); if (c && document.contains(c)) showTableBar(c); else clearTableBar();
     });
@@ -1595,12 +1629,28 @@
         if (rows.length) { placeTable(makeTable(rows)); state.textContent = '표를 붙여넣었어요'; return; }
       }
       if (text) document.execCommand('insertText', false, text);
+      var ps = e.target.closest && e.target.closest('section.stage'); if (ps) setTimeout(function () { scrubStyles(ps); storeLesson(+ps.dataset.l); }, 0);
     });
+    var tableUndo = [];
+    function snapTable(table) {
+      var w = table.closest('.tablewrap') || table;
+      var clone = w.cloneNode(true); clone.querySelectorAll('.col-grip').forEach(function (g) { g.remove(); }); clone.querySelectorAll('.cur-col, .del-prev').forEach(function (x) { x.classList.remove('cur-col', 'del-prev'); });
+      tableUndo.push({ clone: clone, live: w, parent: w.parentNode, next: w.nextSibling, sec: w.closest('section.stage') });
+      if (tableUndo.length > 20) tableUndo.shift();
+    }
+    function undoTable() {
+      var u = tableUndo.pop(); if (!u) { state.textContent = '되돌릴 표 작업이 없어요'; return; }
+      if (u.live && u.live.isConnected) u.live.replaceWith(u.clone);
+      else u.parent.insertBefore(u.clone, u.next && u.next.parentNode === u.parent ? u.next : null);
+      clearTableBar(); gripTools(true); storeLesson(+u.sec.dataset.l); state.textContent = '표를 되돌렸어요';
+    }
     function tableCmd(c) {
+      if (c === 'undo') { undoTable(); return; }
       if (c === 'tadd') { placeTable(makeTable([['제목', '제목', '제목'], ['', '', ''], ['', '', '']])); return; }
       var cell = cellRange(); if (!cell) { state.textContent = '표 칸을 먼저 클릭'; return; }
       var tr = cell.parentNode, table = cell.closest('table'), col = [].indexOf.call(tr.cells, cell), sec = table.closest('section.stage');
       var tb = table.tBodies[0];
+      if (['rowadd', 'rowdel', 'coladd', 'coldel', 'eqall', 'eqothers', 'colorall', 'tdel'].indexOf(c) > -1 || c.indexOf('color:') === 0) snapTable(table);
       if (c === 'rowadd') {
         var nr = document.createElement('tr');
         for (var i = 0; i < tr.cells.length; i++) { var td = document.createElement('td'); td.innerHTML = '&nbsp;'; nr.appendChild(td); }
@@ -1683,6 +1733,37 @@
       var nt = d.closest('.fn-note'), sec = nt.closest('section.stage'), mk = sec.querySelector('.fn-mark[data-id="' + nt.dataset.id + '"]');
       if (mk) mk.remove(); var anD = sec.querySelector('.fn-anchor[data-id="' + nt.dataset.id + '"]'); if (anD) unwrap(anD); nt.remove(); window.__notes.redraw(sec); window.__notes.number(sec); storeLesson(+sec.dataset.l);
     });
+    // ===== 글씨 크기 직접 조절 =====
+    function fontStep(d) {
+      var r = currentRange();
+      if (r && !r.collapsed) {
+        var n = r.commonAncestorContainer; if (n.nodeType === 3) n = n.parentNode;
+        var cur = n.closest('.fsz'), lv = cur ? +cur.dataset.lv : 0, nl = Math.max(-3, Math.min(4, lv + d));
+        if (cur && cur.textContent.trim() === String(r).trim()) {
+          if (nl === 0) unwrap(cur); else cur.dataset.lv = nl;
+          state.textContent = nl === 0 ? '선택한 글씨: 보통' : '선택한 글씨: ' + (nl > 0 ? '+' : '') + nl + '단계';
+          storeLesson(+pages[P].dataset.l); return;
+        }
+        var frag = r.extractContents(), sp = document.createElement('span');
+        sp.appendChild(frag); sp.querySelectorAll('.fsz').forEach(unwrap);
+        if (nl !== 0) { sp.className = 'fsz'; sp.dataset.lv = nl; r.insertNode(sp); var sel = window.getSelection(), nr = document.createRange(); nr.selectNodeContents(sp); sel.removeAllRanges(); sel.addRange(nr); }
+        else { var last = sp.lastChild; r.insertNode(sp); unwrap(sp); }
+        state.textContent = nl === 0 ? '선택한 글씨: 보통' : '선택한 글씨: ' + (nl > 0 ? '+' : '') + nl + '단계';
+        storeLesson(+pages[P].dataset.l); return;
+      }
+      var s = pages[P], b = s.querySelector('.block, header.lesson'); if (!b) return;
+      var base = s.dataset.fs ? +s.dataset.fs : parseFloat(getComputedStyle(b).fontSize) || 40;
+      var nf = Math.max(20, Math.min(64, base + d * 2));
+      s.dataset.fs = nf;
+      s.querySelectorAll('.block, header.lesson').forEach(function (t) { t.style.fontSize = nf + 'px'; });
+      state.textContent = '이 페이지 글씨 ' + nf + ' (직접 지정)';
+      storeLesson(+s.dataset.l);
+    }
+    function fontAuto() {
+      var s = pages[P]; delete s.dataset.fs;
+      if (window.__autofitForce) window.__autofitForce();
+      state.textContent = '이 페이지 글씨: 자동 맞춤'; storeLesson(+s.dataset.l);
+    }
     bar.addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });
     bar.addEventListener('change', function (e) {
       var sel = e.target.closest('select'); if (!sel || !sel.value) return;
@@ -1695,11 +1776,14 @@
       if (c === 'imp' || c === 'kw') mark(c);
       else if (c === 'plain') plain();
       else if (c === 'note') addNote();
+      else if (c === 'fsdown') fontStep(-1);
+      else if (c === 'fsup') fontStep(1);
+      else if (c === 'fsauto') fontAuto();
       else if (c === 'left') movePage(-1);
       else if (c === 'right') movePage(1);
       else if (c === 'delpage') delPage(btn);
       else if (c === 'save') download();
-      else if (c === 'tadd') tableCmd(c);
+      else if (c === 'tadd' || c === 'undo') tableCmd(c);
       else if (c === 'publish') publish();
       else if (c === 'ghset') openSettings();
       else if (c === 'reset') {
@@ -2234,5 +2318,5 @@
   fit();
 })();
 </script>
-
-</body></html>
+</body>
+</html>
