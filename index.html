@@ -698,6 +698,9 @@
   .fn-note .fn-close { font-size: 1em !important; }
   .pw-bar { font-size: 36px; padding: 10px 12px 10px 20px; }
   .pw-title { font-size: .8em; color: var(--ink); }
+
+  .edit-bar .fs-num { width: 58px; font-family: var(--serif); font-weight: 700; font-size: .8em; text-align: center; padding: 4px 4px; border: 1.5px solid var(--edge); border-radius: 6px; background: #FFFFFF; color: var(--ink); }
+  .edit-bar .fs-num:focus-visible { outline: 3px solid var(--b-activity); outline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -1097,7 +1100,7 @@
     <div class="grp"><span class="glab">표</span><button type="button" data-cmd="tadd">＋ 표 넣기</button><button type="button" data-cmd="undo" title="마지막 표 작업 취소">↶ 표 되돌리기</button></div>
     <span class="grp-sep"></span>
     <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button></div>
-    <div class="grp"><span class="glab">글씨 크기</span><button type="button" data-cmd="fsdown" title="글자를 선택하면 그 글자만, 아니면 이 페이지 전체를 작게">가－</button><button type="button" data-cmd="fsup" title="글자를 선택하면 그 글자만, 아니면 이 페이지 전체를 크게">가＋</button><button type="button" data-cmd="fsauto" title="이 페이지 글씨를 화면에 맞게 자동 조절">자동</button></div>
+    <div class="grp"><span class="glab">글씨 크기</span><button type="button" data-cmd="fsdown" title="2씩 작게">가－</button><input id="fs-num" class="fs-num" type="number" min="12" max="120" step="1" value="40" aria-label="글씨 크기"><button type="button" data-cmd="fsup" title="2씩 크게">가＋</button><button type="button" data-cmd="fsauto" title="이 페이지 글씨를 화면에 맞게 자동 조절">자동</button></div>
     <div class="grp grp-save"><button type="button" data-cmd="publish" class="t-save">GitHub 반영</button><button type="button" data-cmd="ghset" title="GitHub 연결 설정">⚙</button><button type="button" data-cmd="save" title="내용 파일(content.html)을 내려받기">내용 저장</button><button type="button" data-cmd="reset">초기화</button><span class="save-state" id="save-state" aria-live="polite"></span></div>
   </div>
 </main>
@@ -1264,7 +1267,7 @@ function __boot() {
       });
       refresh();
     } catch (e) {}
-    try { repairTables(document.getElementById('slide')); } catch (e) {}
+    try { repairTables(document.getElementById('slide')); dropEmpty(document.getElementById('slide')); } catch (e) {}
 
     var allowed = location.protocol === 'file:' || location.hostname.slice(-9) !== 'github.io' || new URLSearchParams(location.search).has('edit');
     if (allowed) toggle.hidden = false;
@@ -1292,6 +1295,7 @@ function __boot() {
       toggle.setAttribute('aria-pressed', String(on)); bar.hidden = !on;
       applyEdit(on);
       state.textContent = on ? '수정 중' : '';
+      if (!on) { var cur0 = pages[P]; if (cur0 && dropEmpty(cur0)) storeLesson(+cur0.dataset.l); }
       if (!on && window.__notes) window.__notes.link();
       fit(); if (window.__autofit) window.__autofit();
     }
@@ -1378,7 +1382,7 @@ function __boot() {
     function scrubStyles(sec) {
       sec.querySelectorAll('.block font').forEach(function (f) { var p = f.parentNode; while (f.firstChild) p.insertBefore(f.firstChild, f); p.removeChild(f); });
       sec.querySelectorAll('.block [style]').forEach(function (el) {
-        if (el.matches('th, td, col, table, .fn-note, .photo-win, .fn-note *, img, svg, svg *, figure, .tablewrap, .block-tools, .table-bar, .table-bar *')) return;
+        if (el.matches('th, td, col, table, .fn-note, .photo-win, .fn-note *, img, svg, svg *, figure, .tablewrap, .block-tools, .table-bar, .table-bar *, .fsz')) return;
         ['font-size', 'font-family', 'line-height', 'letter-spacing', 'font-weight', 'color', 'background-color', 'background'].forEach(function (p) { el.style.removeProperty(p); });
         if (!el.getAttribute('style')) el.removeAttribute('style');
         if (el.tagName === 'SPAN' && !el.attributes.length) { var p = el.parentNode; while (el.firstChild) p.insertBefore(el.firstChild, el); p.removeChild(el); }
@@ -1414,6 +1418,17 @@ function __boot() {
       var sp = document.createElement('span'); sp.className = cls; if (cls === 'fsz') sp.dataset.lv = lv;
       while (cell.firstChild) { if (cell.firstChild.classList && cell.firstChild.classList.contains('col-grip')) { cell.removeChild(cell.firstChild); continue; } sp.appendChild(cell.firstChild); }
       cell.appendChild(sp);
+    }
+    // 빈 줄(글자 없는 문단·목록) 자동 정리
+    function dropEmpty(root) {
+      var n = 0;
+      (root || document).querySelectorAll('section.stage .block li, section.stage .block p, section.stage .block h3').forEach(function (el) {
+        if (el.closest('.fn-note, .table-bar, .block-tools, td, th, summary, .clip, .sides, .mission-bar')) return;
+        if (el.querySelector('img, svg, table, .fn-mark, input')) return;
+        if (el.textContent.split(String.fromCharCode(160)).join('').trim() === '') { el.remove(); n++; }
+      });
+      (root || document).querySelectorAll('section.stage .block ul, section.stage .block ol').forEach(function (l) { if (!l.children.length) { l.remove(); n++; } });
+      return n;
     }
     function repairTables(root) {
       (root || document).querySelectorAll('table span').forEach(function (sp) {
@@ -1665,7 +1680,7 @@ function __boot() {
       if (!a) { state.textContent = '표를 넣을 블록이 없어요'; return; }
       if (a.classList && a.classList.contains('block-tools')) a.parentNode.insertBefore(w, a);
       else a.parentNode.insertBefore(w, a.nextSibling);
-      var sec = w.closest('section.stage'); storeLesson(+sec.dataset.l); window.__autofit(); gripTools(true);
+      var sec = w.closest('section.stage'); dropEmpty(sec); storeLesson(+sec.dataset.l); window.__autofit(); gripTools(true);
     }
     function cleanCell(c) {
       var d = document.createElement('div'); d.innerHTML = c.innerHTML;
@@ -1842,40 +1857,74 @@ function __boot() {
       var nt = d.closest('.fn-note'), sec = nt.closest('section.stage'), mk = sec.querySelector('.fn-mark[data-id="' + nt.dataset.id + '"]');
       if (mk) mk.remove(); var anD = sec.querySelector('.fn-anchor[data-id="' + nt.dataset.id + '"]'); if (anD) unwrap(anD); nt.remove(); window.__notes.redraw(sec); window.__notes.number(sec); storeLesson(+sec.dataset.l);
     });
-    // ===== 글씨 크기 직접 조절 =====
-    function fontStep(d) {
-      var r = currentRange();
-      if (r && !r.collapsed) {
-        var n = r.commonAncestorContainer; if (n.nodeType === 3) n = n.parentNode;
-        var tbl = n.closest('table') || (cellsIn(r) || [])[0] && cellsIn(r)[0].closest('table');
-        if (tbl) ensureCols(tbl);
-        var fc = cellsIn(r);
-        if (fc) { fc.forEach(function (c) { wrapCell(c, 'fsz', d); }); state.textContent = '선택한 칸 글씨 ' + (d > 0 ? '크게' : '작게'); storeLesson(+pages[P].dataset.l); return; }
-        var cur = n.closest('.fsz'), lv = cur ? +cur.dataset.lv : 0, nl = Math.max(-3, Math.min(4, lv + d));
-        if (cur && cur.textContent.trim() === String(r).trim()) {
-          if (nl === 0) unwrap(cur); else cur.dataset.lv = nl;
-          state.textContent = nl === 0 ? '선택한 글씨: 보통' : '선택한 글씨: ' + (nl > 0 ? '+' : '') + nl + '단계';
-          storeLesson(+pages[P].dataset.l); return;
-        }
-        var frag = r.extractContents(), sp = document.createElement('span');
-        sp.appendChild(frag); sp.querySelectorAll('.fsz').forEach(unwrap);
-        if (nl !== 0) { sp.className = 'fsz'; sp.dataset.lv = nl; r.insertNode(sp); var sel = window.getSelection(), nr = document.createRange(); nr.selectNodeContents(sp); sel.removeAllRanges(); sel.addRange(nr); }
-        else { var last = sp.lastChild; r.insertNode(sp); unwrap(sp); }
-        state.textContent = nl === 0 ? '선택한 글씨: 보통' : '선택한 글씨: ' + (nl > 0 ? '+' : '') + nl + '단계';
-        storeLesson(+pages[P].dataset.l); return;
+    // ===== 글씨 크기 직접 조절 (숫자로 정확하게) =====
+    var sizeBox = document.getElementById('fs-num'), savedRange = null;
+    function selEl(r) { var n = r.startContainer; if (n.nodeType === 1 && n.childNodes[r.startOffset]) n = n.childNodes[r.startOffset]; if (n.nodeType === 3) n = n.parentNode; return n; }
+    function pxOf(el) { return parseFloat(getComputedStyle(el.nodeType === 3 ? el.parentNode : el).fontSize) || 40; }
+    function showSize() {
+      if (!editing || !sizeBox || document.activeElement === sizeBox) return;
+      var sel = window.getSelection(); if (!sel.rangeCount) return;
+      var r = sel.getRangeAt(0), n = r.startContainer; if (n.nodeType === 3) n = n.parentNode;
+      if (!n.closest || !n.closest('section.stage.active [contenteditable="true"]')) return;
+      savedRange = r.cloneRange();
+      var t = r.collapsed ? n : selEl(r);
+      sizeBox.value = Math.round(pxOf(t));
+      sizeBox.title = r.collapsed ? '커서 위치 글씨 크기 (본문 기본 40). 숫자를 바꾸면 이 페이지 전체 글씨가 바뀌어요' : '선택한 글씨 크기 (본문 기본 40). 숫자를 바꾸면 선택한 글씨만 바뀌어요';
+    }
+    document.addEventListener('selectionchange', showSize);
+    function setSpanSize(sp, px) { var base = pxOf(sp.parentNode); sp.style.fontSize = (px / base).toFixed(3) + 'em'; sp.removeAttribute('data-lv'); }
+    function setSelSize(px, r) {
+      var mc = cellsIn(r);
+      if (mc) {
+        mc.forEach(function (cell) {
+          var only = cell.querySelector(':scope > .fsz'); if (!(only && only.textContent === cell.textContent)) { only = document.createElement('span'); only.className = 'fsz'; while (cell.firstChild) { if (cell.firstChild.classList && cell.firstChild.classList.contains('col-grip')) { cell.removeChild(cell.firstChild); continue; } only.appendChild(cell.firstChild); } cell.appendChild(only); }
+          setSpanSize(only, px);
+        });
+        return;
       }
+      var n = r.commonAncestorContainer; if (n.nodeType === 3) n = n.parentNode;
+      var cur = n.closest('.fsz');
+      if (cur && cur.textContent.trim() === String(r).trim()) { setSpanSize(cur, px); return; }
+      var sp = document.createElement('span'); sp.className = 'fsz';
+      sp.appendChild(r.extractContents()); sp.querySelectorAll('.fsz').forEach(unwrap);
+      r.insertNode(sp); setSpanSize(sp, px);
+      var sel = window.getSelection(), nr = document.createRange(); nr.selectNodeContents(sp); sel.removeAllRanges(); sel.addRange(nr);
+    }
+    function setPageSize(px) {
+      var s = pages[P]; px = Math.max(20, Math.min(72, px)); s.dataset.fs = px;
+      s.querySelectorAll('.block, header.lesson').forEach(function (t) { t.style.fontSize = px + 'px'; });
+      state.textContent = '이 페이지 본문 ' + px + ' (직접 지정)';
+    }
+    function applySize(px, useSaved) {
+      var r = useSaved ? savedRange : currentRange();
+      if (!px || isNaN(px)) return;
+      px = Math.max(12, Math.min(120, Math.round(px)));
+      if (r && !r.collapsed && r.startContainer.isConnected) {
+        var tbl = (function () { var n = r.commonAncestorContainer; if (n.nodeType === 3) n = n.parentNode; return n.closest && n.closest('table'); })() || ((cellsIn(r) || [])[0] || {}).closest && cellsIn(r)[0].closest('table');
+        if (tbl) ensureCols(tbl);
+        setSelSize(px, r); state.textContent = '선택한 글씨 ' + px;
+      } else setPageSize(px);
+      storeLesson(+pages[P].dataset.l); showSize(); if (sizeBox) sizeBox.value = px;
+    }
+    function fontStep(d) {
+      var r = currentRange() || savedRange, cur;
+      if (r && !r.collapsed) { cur = pxOf(selEl(r)); applySize(cur + 2 * d, false); return; }
       var s = pages[P], b = s.querySelector('.block, header.lesson'); if (!b) return;
-      var base = s.dataset.fs ? +s.dataset.fs : parseFloat(getComputedStyle(b).fontSize) || 40;
-      var nf = Math.max(20, Math.min(64, base + d * 2));
-      s.dataset.fs = nf;
-      s.querySelectorAll('.block, header.lesson').forEach(function (t) { t.style.fontSize = nf + 'px'; });
-      state.textContent = '이 페이지 글씨 ' + nf + ' (직접 지정)';
-      storeLesson(+s.dataset.l);
+      cur = s.dataset.fs ? +s.dataset.fs : pxOf(b);
+      setPageSize(cur + 2 * d); storeLesson(+s.dataset.l); if (sizeBox) sizeBox.value = s.dataset.fs;
+    }
+    if (sizeBox) {
+      sizeBox.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); applySize(+sizeBox.value, true); }
+        else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); sizeBox.value = (+sizeBox.value || 40) + (e.key === 'ArrowUp' ? 1 : -1); applySize(+sizeBox.value, true); }
+        e.stopPropagation();
+      });
+      sizeBox.addEventListener('change', function () { applySize(+sizeBox.value, true); });
     }
     function fontAuto() {
       var s = pages[P]; delete s.dataset.fs;
       if (window.__autofitForce) window.__autofitForce();
-      state.textContent = '이 페이지 글씨: 자동 맞춤'; storeLesson(+s.dataset.l);
+      state.textContent = '이 페이지 글씨: 자동 맞춤'; storeLesson(+s.dataset.l); var b0 = s.querySelector('.block, header.lesson'); if (sizeBox && b0) sizeBox.value = Math.round(pxOf(b0));
     }
     document.addEventListener('keydown', function (e) {
       if (!editing || !(e.ctrlKey || e.metaKey) || (e.key !== 'a' && e.key !== 'A')) return;
