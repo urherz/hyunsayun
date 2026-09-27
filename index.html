@@ -241,6 +241,7 @@
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } nav.steps button:hover { transform: none; } .js section.stage.active { animation: none; } }
   @media print { nav.steps, .controls { display: none; } body { background: #fff; } .js section.stage { display: block; } .block { break-inside: avoid; box-shadow: none; } }
 
+
   /* 교과서 목차 */
   .book { display: none; }
   @media (min-width: 900px) {
@@ -671,6 +672,9 @@
   .fn-note, .photo-win { contain: layout paint; backface-visibility: hidden; }
 
   .loading { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--serif); font-weight: 700; color: var(--ink-soft); font-size: 20px; z-index: 5; }
+
+  /* 설명용 큰 빨간 화살표 커서 (수업 화면 안) */
+  body:not(.editing) .slide section.stage .block, body:not(.editing) .slide section.stage .stage-head, body:not(.editing) .slide section.stage header.lesson { cursor: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2256%22%20height%3D%2256%22%20viewBox%3D%220%200%2056%2056%22%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23D0342C%22%20stroke%3D%22%235A1510%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E) 5 4, default; }
 </style>
 </head>
 <body>
@@ -2341,6 +2345,7 @@ function __boot() {
   linkWords();
 
   // ===== 빈 곳 클릭으로 넘기기 =====
+  var CUR_L = 'url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2240%22%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%2220%22%20r%3D%2217%22%20fill%3D%22white%22%20fill-opacity%3D%22.92%22%20stroke%3D%22%236E4B2E%22%20stroke-width%3D%222%22%2F%3E%3Cpath%20d%3D%22M23%2012l-8%208%208%208%22%20fill%3D%22none%22%20stroke%3D%22%233F2A1A%22%20stroke-width%3D%223.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E) 20 20, w-resize', CUR_R = 'url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2240%22%20height%3D%2240%22%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%2220%22%20r%3D%2217%22%20fill%3D%22white%22%20fill-opacity%3D%22.92%22%20stroke%3D%22%236E4B2E%22%20stroke-width%3D%222%22%2F%3E%3Cpath%20d%3D%22M17%2012l8%208-8%208%22%20fill%3D%22none%22%20stroke%3D%22%233F2A1A%22%20stroke-width%3D%223.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E) 20 20, e-resize';
   function isEmptyTarget(t) { return t === vp || t === slide || (t.matches && t.matches('section.stage')); }
   vp.addEventListener('click', function (e) {
     if (document.body.classList.contains('editing')) return;
@@ -2352,7 +2357,7 @@ function __boot() {
   vp.addEventListener('mousemove', function (e) {
     if (document.body.classList.contains('editing') || !isEmptyTarget(e.target)) { vp.style.cursor = ''; return; }
     var r = vp.getBoundingClientRect();
-    vp.style.cursor = e.clientX < r.left + r.width / 2 ? (P > 0 ? 'w-resize' : '') : (P < pages.length - 1 ? 'e-resize' : '');
+    vp.style.cursor = e.clientX < r.left + r.width / 2 ? (P > 0 ? CUR_L : '') : (P < pages.length - 1 ? CUR_R : '');
   });
   document.querySelectorAll('details.reveal').forEach(function (d) { if (!d.open) d.classList.add('concealed'); d.open = true; });
   document.addEventListener('click', function (e) {
