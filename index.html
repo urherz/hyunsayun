@@ -1264,6 +1264,7 @@ function __boot() {
       });
       refresh();
     } catch (e) {}
+    try { repairTables(document.getElementById('slide')); } catch (e) {}
 
     var allowed = location.protocol === 'file:' || location.hostname.slice(-9) !== 'github.io' || new URLSearchParams(location.search).has('edit');
     if (allowed) toggle.hidden = false;
@@ -1394,8 +1395,48 @@ function __boot() {
       var r = sel.getRangeAt(0), n = r.commonAncestorContainer; if (n.nodeType === 3) n = n.parentNode;
       return n.closest('[contenteditable="true"]') ? r : null;
     }
+    // ===== 표 안에서 여러 칸에 걸친 서식 처리 + 깨진 표 복구 =====
+    function cellsIn(r) {
+      var a = r.startContainer, z = r.endContainer; if (a.nodeType === 3) a = a.parentNode; if (z.nodeType === 3) z = z.parentNode;
+      var ca = a.closest && a.closest('td, th'), cz = z.closest && z.closest('td, th');
+      if (!ca && !cz) return null;
+      if (ca && ca === cz) return null;
+      var t = (ca || cz).closest('table');
+      return [].filter.call(t.querySelectorAll('th, td'), function (c) { return r.intersectsNode(c); });
+    }
+    function wrapCell(cell, cls, lv) {
+      var only = cell.children.length === 1 && cell.firstElementChild.matches('span') && cell.firstElementChild.textContent === cell.textContent ? cell.firstElementChild : null;
+      if (cls === 'fsz') {
+        var cur = cell.querySelector(':scope > .fsz');
+        if (cur && cur.textContent === cell.textContent) { var nl = Math.max(-3, Math.min(4, (+cur.dataset.lv || 0) + lv)); if (nl === 0) unwrap(cur); else cur.dataset.lv = nl; return; }
+        if (lv === 0) return;
+      }
+      var sp = document.createElement('span'); sp.className = cls; if (cls === 'fsz') sp.dataset.lv = lv;
+      while (cell.firstChild) { if (cell.firstChild.classList && cell.firstChild.classList.contains('col-grip')) { cell.removeChild(cell.firstChild); continue; } sp.appendChild(cell.firstChild); }
+      cell.appendChild(sp);
+    }
+    function repairTables(root) {
+      (root || document).querySelectorAll('table span').forEach(function (sp) {
+        if (!sp.isConnected) return;
+        var pt = sp.parentNode && sp.parentNode.tagName;
+        if (!(pt === 'TR' || pt === 'TBODY' || pt === 'THEAD' || pt === 'TABLE' || sp.querySelector('td, th, tr'))) return;
+        var cls = sp.className, lv = sp.dataset.lv, kids = [].slice.call(sp.childNodes);
+        unwrap(sp);
+        kids.forEach(function (k) {
+          if (k.nodeType === 1 && (k.tagName === 'TD' || k.tagName === 'TH') && cls) {
+            var w = document.createElement('span'); w.className = cls; if (lv) w.dataset.lv = lv;
+            while (k.firstChild) w.appendChild(k.firstChild); k.appendChild(w);
+          }
+        });
+      });
+      (root || document).querySelectorAll('tr').forEach(function (tr) {
+        [].slice.call(tr.childNodes).forEach(function (n) { if (n.nodeType === 3 && n.nodeValue.trim()) { var td = document.createElement('td'); tr.insertBefore(td, n); td.appendChild(n); } else if (n.nodeType === 3) n.remove(); });
+      });
+    }
     function mark(cls) {
       var r = currentRange(); if (!r || r.collapsed) { state.textContent = '글자를 먼저 선택'; return; }
+      var mc = cellsIn(r);
+      if (mc) { mc.forEach(function (c) { wrapCell(c, cls); }); storeLesson(+mc[0].closest('section.stage').dataset.l); return; }
       if (cls.indexOf('hl') === 0) {
         var an0 = r.commonAncestorContainer; if (an0.nodeType === 3) an0 = an0.parentNode;
         var h0 = an0.closest('.hl');
@@ -1614,6 +1655,9 @@ function __boot() {
         r.forEach(function (c) { var cell = document.createElement(i === 0 ? 'th' : 'td'); cell.innerHTML = c || '&nbsp;'; tr.appendChild(cell); });
         (i === 0 ? th : tb).appendChild(tr);
       });
+      var n0 = rows[0] ? rows[0].length : 1, cg = document.createElement('colgroup');
+      for (var ci = 0; ci < n0; ci++) { var col = document.createElement('col'); col.style.width = (100 / n0).toFixed(2) + '%'; cg.appendChild(col); }
+      t.appendChild(cg); t.style.tableLayout = 'fixed';
       t.appendChild(th); t.appendChild(tb); w.appendChild(t); return w;
     }
     function placeTable(w) {
@@ -1803,6 +1847,10 @@ function __boot() {
       var r = currentRange();
       if (r && !r.collapsed) {
         var n = r.commonAncestorContainer; if (n.nodeType === 3) n = n.parentNode;
+        var tbl = n.closest('table') || (cellsIn(r) || [])[0] && cellsIn(r)[0].closest('table');
+        if (tbl) ensureCols(tbl);
+        var fc = cellsIn(r);
+        if (fc) { fc.forEach(function (c) { wrapCell(c, 'fsz', d); }); state.textContent = '선택한 칸 글씨 ' + (d > 0 ? '크게' : '작게'); storeLesson(+pages[P].dataset.l); return; }
         var cur = n.closest('.fsz'), lv = cur ? +cur.dataset.lv : 0, nl = Math.max(-3, Math.min(4, lv + d));
         if (cur && cur.textContent.trim() === String(r).trim()) {
           if (nl === 0) unwrap(cur); else cur.dataset.lv = nl;
@@ -1829,6 +1877,17 @@ function __boot() {
       if (window.__autofitForce) window.__autofitForce();
       state.textContent = '이 페이지 글씨: 자동 맞춤'; storeLesson(+s.dataset.l);
     }
+    document.addEventListener('keydown', function (e) {
+      if (!editing || !(e.ctrlKey || e.metaKey) || (e.key !== 'a' && e.key !== 'A')) return;
+      var sel = window.getSelection(); if (!sel.rangeCount) return;
+      var n = sel.getRangeAt(0).startContainer; if (n.nodeType === 3) n = n.parentNode;
+      if (!n.closest || !n.closest('[contenteditable="true"]')) return;
+      var box = n.closest('td, th, .fn-body, li, p, h3, h1, .headline, figcaption');
+      if (!box) return;
+      e.preventDefault();
+      var r = document.createRange(); r.selectNodeContents(box); sel.removeAllRanges(); sel.addRange(r);
+      state.textContent = box.matches('td, th') ? '이 칸만 선택' : '이 줄만 선택';
+    }, true);
     bar.addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });
     bar.addEventListener('change', function (e) {
       var sel = e.target.closest('select'); if (!sel || !sel.value) return;
