@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="lesson-rev" content="1790536491815">
 <script>document.documentElement.classList.add('js')</script>
-<title>현대사회와 윤리 Ⅲ·Ⅵ단원</title>
+<title>현대사회와 윤리</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
@@ -853,6 +853,22 @@
   body.editing details.reveal > summary { cursor: text; }
 
   details.reveal > .rv-body { box-sizing: border-box; }
+
+  /* 과목 고르기 첫 화면 */
+  body.landing-on .layout { display: none !important; }
+  .landing { position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; background: var(--ivory); padding: 24px; }
+  .ld-in { width: min(760px, 92vw); text-align: center; }
+  .landing h1 { font-family: var(--serif); font-size: 44px; margin: 0 0 6px; }
+  .ld-sub, .ld-msg { color: var(--ink-soft); margin: 0 0 26px; font-size: 18px; }
+  .ld-msg { color: #B3372B; font-weight: 700; }
+  .ld-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .ld-card { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; text-decoration: none; color: var(--ink); background: #FFFDF8; border: 1.5px solid var(--edge); border-radius: 12px; padding: 20px 22px; box-shadow: 0 5px 0 var(--depth); }
+  .ld-card:hover { border-color: var(--b-concept); }
+  .ld-card:focus-visible { outline: 3px solid var(--kwc); outline-offset: 3px; }
+  .ld-t { font-family: var(--serif); font-weight: 700; font-size: 22px; }
+  .ld-go { font-size: 14px; color: var(--b-concept); font-weight: 700; }
+  .course-switch { display: flex; align-items: center; gap: 6px; margin: 0 0 14px; font-size: .9em; }
+  .course-switch select { font: inherit; font-weight: 700; padding: 4px 8px; border: 1.5px solid var(--edge); border-radius: 6px; background: #FFFFFF; }
 </style>
 </head>
 <body>
@@ -1250,11 +1266,12 @@
   <div class="edit-bar" id="edit-bar" hidden>
     <div class="grp"><button type="button" data-cmd="undoall" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-cmd="redoall" title="다시 실행 (Ctrl+Y)">↷ 다시</button></div>
     <div class="grp"><span class="glab">페이지</span><select data-sel="page" aria-label="페이지 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select><button type="button" data-cmd="left" title="앞으로 옮기기">◀</button><button type="button" data-cmd="right" title="뒤로 옮기기">▶</button><button type="button" data-cmd="delpage">삭제</button><button type="button" data-cmd="nohead" title="이 페이지 위쪽 제목 줄(예: 2 전개 1 · 10분) 숨기기/보이기">제목 줄 숨기기</button></div>
+    <div class="grp"><span class="glab">차시</span><button type="button" data-cmd="addlesson" title="지금 차시 바로 뒤(같은 소단원)에 새 차시(표지 + 개념 1쪽)를 만들어요">＋ 차시</button><button type="button" data-cmd="dellesson" title="지금 차시를 통째로 지워요">차시 삭제</button></div>
     <div class="grp"><select data-sel="tool" aria-label="수업 도구 넣기" title="커서가 있는 자리에 넣어요. 선 잇기·벤다이어그램은 커서가 있는 목록을 바꿔요"><option value="">＋ 수업 도구</option><option value="table">표</option><option value="match">선 잇기</option><option value="venn">벤다이어그램</option></select></div>
     <span class="grp-sep"></span>
     <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="bd" class="t-bd" title="굵게 (Ctrl+B). 굵은 글자를 선택하고 다시 누르면 해제">굵게</button><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button><select data-sel="badge" aria-label="배지 넣기" title="커서 자리에 배지를 넣어요"><option value="">＋ 배지</option><option value="짝 질문">짝 질문</option><option value="질문">질문</option><option value="미션">미션</option><option value="핵심 명제">핵심 명제</option><option value="정리">정리</option><option value="예시">예시</option><option value="주의">주의</option><option value="__custom">직접 입력…</option></select><input id="badge-text" class="badge-text" type="text" placeholder="배지 글자 입력 후 Enter" hidden></div>
     <div class="grp grp-size"><span class="glab">글씨 크기</span><button type="button" data-cmd="fsdown" title="1씩 작게">가－</button><input id="fs-num" class="fs-num" type="number" min="12" max="120" step="1" value="40" aria-label="글씨 크기"><button type="button" data-cmd="fsup" title="1씩 크게">가＋</button><button type="button" data-cmd="fsauto" title="이 페이지 글씨를 화면에 맞게 자동 조절">자동</button></div>
-    <div class="grp grp-save"><div class="ver-info" id="ver-info"></div><a class="ver-hist" id="ver-hist" target="_blank" rel="noopener" hidden title="GitHub에서 반영 기록(버전) 보기">기록</a><button type="button" data-cmd="publish" class="t-save">GitHub 반영</button><button type="button" data-cmd="ghset" title="GitHub 연결 설정">⚙</button><button type="button" data-cmd="save" title="내용 파일(content.html)을 내려받기">내용 저장</button><button type="button" data-cmd="reset">초기화</button><span class="save-state" id="save-state" aria-live="polite"></span></div>
+    <div class="grp grp-save"><div class="ver-info" id="ver-info"></div><a class="ver-hist" id="ver-hist" target="_blank" rel="noopener" hidden title="GitHub에서 반영 기록(버전) 보기">기록</a><button type="button" data-cmd="publish" class="t-save">GitHub 반영</button><button type="button" data-cmd="ghset" title="GitHub 연결 설정">⚙</button><button type="button" data-cmd="save" title="내용 파일(content.html)을 내려받기">내용 저장</button><select data-sel="backup" aria-label="내용 백업" title="지금 과목의 모든 내용을 텍스트나 엑셀로 내려받아요"><option value="">백업</option><option value="txt">텍스트(.txt)</option><option value="xlsx">엑셀(.xlsx)</option></select><button type="button" data-cmd="reset">초기화</button><span class="save-state" id="save-state" aria-live="polite"></span></div>
   </div>
 </main>
 </div>
@@ -1279,6 +1296,8 @@ function __boot() {
   var vp = document.getElementById('vp'), slide = document.getElementById('slide');
   var tocBtn = document.getElementById('toc-toggle');
   var lessonBtns = [].slice.call(document.querySelectorAll('.book li.les button'));
+  function refreshLessonBtns() { lessonBtns = [].slice.call(document.querySelectorAll('.book li.les button')); }
+  window.__refreshLessonBtns = refreshLessonBtns;
   var wide = window.matchMedia('(min-width: 700px)');
   var L = 1, P = 0, pages = [], links = [];
 
@@ -1355,10 +1374,15 @@ function __boot() {
   window.__autofitForce = function () { var ed = document.body.classList.contains('editing'); if (ed) document.body.classList.remove('editing'); if (pages[P]) autofit(pages[P]); if (ed) document.body.classList.add('editing'); };
   window.__autofit = function () { if (document.body.classList.contains('editing')) return; if (pages[P]) autofit(pages[P]); };
   function open(l, p) { setLesson(l); go(p || 0); }
+  window.__open = open;
 
   function initEdit() {
     var revMeta = document.querySelector('meta[name=lesson-rev]');
-    function KEY() { return 'lesson-edit-' + revMeta.content + ':'; }
+    var CID = window.__course || 'hyunsayun';
+    var PFX = CID === 'hyunsayun' ? 'lesson-edit-' : 'lesson-edit-' + CID + '~';
+    var DIRTY = CID === 'hyunsayun' ? 'lesson-dirty' : 'lesson-dirty-' + CID;
+    function mine(k) { return k.indexOf(PFX) === 0 && (CID !== 'hyunsayun' || k.slice(PFX.length).indexOf('~') < 0); }
+    function KEY() { return PFX + revMeta.content + ':'; }
     var toggle = document.getElementById('edit-toggle'), bar = document.getElementById('edit-bar'), state = document.getElementById('save-state');
     var editing = false, timer = null;
     var TYPES = { '연계': 'b-link', '시사': 'b-news', '개념': 'b-concept', '요약': 'b-summary', '활동': 'b-activity', '기출': 'b-exam', '예고': 'b-next' };
@@ -1421,14 +1445,25 @@ function __boot() {
       all.forEach(function (s) { seen[s.dataset.l] = 1; });
       Object.keys(seen).forEach(function (k) {
         var v = localStorage.getItem(KEY() + 'L' + k); if (!v) return;
-        var arr = JSON.parse(v), olds = lessonSecs(+k); if (!olds.length || !arr.length) return;
+        var arr = JSON.parse(v), olds = lessonSecs(+k);
+        if (!arr.length) { olds.forEach(function (s) { s.remove(); }); document.querySelectorAll('.book li.les button[data-lesson="' + k + '"]').forEach(function (b) { b.closest('li').remove(); }); var op0 = document.querySelector('#pick option[value="' + k + '"]'); if (op0) op0.remove(); return; }
+        if (!olds.length) return;
         var anchor = olds[0], tmp = document.createElement('div');
         arr.forEach(function (h) { tmp.innerHTML = h; anchor.parentNode.insertBefore(tmp.firstElementChild, anchor); });
         olds.forEach(function (s) { s.remove(); });
       });
+      // 아직 반영 안 된 새 차시 되살리기
+      Object.keys(localStorage).forEach(function (k) {
+        if (k.indexOf(KEY() + 'L') !== 0) return; var l = k.slice((KEY() + 'L').length); if (seen[l]) return;
+        var arr = JSON.parse(localStorage.getItem(k) || '[]'); if (!arr.length) return;
+        var sl = document.getElementById('slide'), tmp = document.createElement('div');
+        arr.forEach(function (h) { tmp.innerHTML = h; sl.appendChild(tmp.firstElementChild); });
+        var cov = sl.querySelector('section.stage[data-l="' + l + '"] header.lesson h1'); bookAddLesson(+l, cov ? cov.textContent.trim() : '');
+      });
       refresh();
     } catch (e) {}
     try { repairTables(document.getElementById('slide')); dropEmpty(document.getElementById('slide')); } catch (e) {}
+    try { lessonNums().forEach(syncLessonTitle); if (window.__refreshLessonBtns) window.__refreshLessonBtns(); } catch (e) {}
 
     var allowed = location.protocol === 'file:' || location.hostname.slice(-9) !== 'github.io' || new URLSearchParams(location.search).has('edit');
     if (allowed) toggle.hidden = false;
@@ -1455,7 +1490,7 @@ function __boot() {
         all.forEach(function (s) { if (+s.dataset.l === en.l && window.__notes) window.__notes.number(s); });
         if (window.__reveal) window.__reveal.wrap();
         setLesson(en.l); go(Math.min(en.p, pages.length - 1)); applyEdit(true);
-        localStorage.setItem(KEY() + 'L' + en.l, en.data); localStorage.setItem(KEY() + 'T' + en.l, String(Date.now())); localStorage.setItem('lesson-dirty', '1'); markDirty();
+        localStorage.setItem(KEY() + 'L' + en.l, en.data); localStorage.setItem(KEY() + 'T' + en.l, String(Date.now())); localStorage.setItem(DIRTY, '1'); markDirty();
       } catch (e) {}
       restoring = false;
     }
@@ -1479,9 +1514,10 @@ function __boot() {
     var pendingStore = null;
     function flushPending() { if (pendingStore !== null) { var l = pendingStore; pendingStore = null; clearTimeout(timer); scrubStyles(lessonSecs(l)[0] || document.body); storeLesson(l); } }
     function storeLesson(l) {
+      try { syncLessonTitle(l); } catch (e) {}
       var data;
       try { data = JSON.stringify(lessonSecs(l).map(clean)); if (!restoring) pushHist(l, data); } catch (e) {}
-      try { localStorage.setItem(KEY() + 'L' + l, data || JSON.stringify(lessonSecs(l).map(clean))); localStorage.setItem(KEY() + 'T' + l, String(Date.now())); localStorage.setItem('lesson-dirty', '1'); markDirty(); state.textContent = '수정 버전 저장됨 (아직 사이트에 안 올림)'; }
+      try { localStorage.setItem(KEY() + 'L' + l, data || JSON.stringify(lessonSecs(l).map(clean))); localStorage.setItem(KEY() + 'T' + l, String(Date.now())); localStorage.setItem(DIRTY, '1'); markDirty(); state.textContent = '수정 버전 저장됨 (아직 사이트에 안 올림)'; }
       catch (e) { state.textContent = '저장 실패(용량 초과)'; }
     }
     function roots(s) { return s.querySelectorAll('.block, header.lesson, .stage-head'); }
@@ -1511,7 +1547,7 @@ function __boot() {
       var g = ghGet() || ghGuess(), hl = document.getElementById('ver-hist');
       if (hl) { if (g && g.repo) { hl.href = 'https://github.com/' + g.repo + '/commits/' + (g.branch || 'main') + '/' + contentPath(g.path); hl.hidden = false; } else hl.hidden = true; }
     }
-    function isDirty() { try { return localStorage.getItem('lesson-dirty') === '1'; } catch (e) { return false; } }
+    function isDirty() { try { return localStorage.getItem(DIRTY) === '1'; } catch (e) { return false; } }
     function markDirty() { verInfo(); toggle.classList.toggle('dirty', isDirty()); toggle.title = isDirty() ? '수정 모드 (아직 사이트에 안 올린 수정이 있어요)' : '수정 모드'; }
     window.addEventListener('beforeunload', function (e) { if (isDirty()) { e.preventDefault(); e.returnValue = ''; } });
     function applyLessonArr(l, arr) {
@@ -1524,8 +1560,8 @@ function __boot() {
       var cur = KEY(), best = {};
       try {
         Object.keys(localStorage).forEach(function (k) {
-          if (k.indexOf('lesson-edit-') !== 0 || k.indexOf(cur) === 0) return;
-          var m = k.slice(12).split(':'), rev = +m[0];
+          if (!mine(k) || k.indexOf(cur) === 0) return;
+          var m = k.slice(PFX.length).split(':'), rev = +m[0];
           if (!m[1] || m[1].charAt(0) !== 'L') return;
           var l = m[1].slice(1);
           if (!l || isNaN(rev)) return;
@@ -1545,7 +1581,7 @@ function __boot() {
       bn.querySelector('.rb-load').addEventListener('click', function () {
         var n = 0; ls = picked(); if (!ls.length) return;
         ls.forEach(function (l) { try { var arr = JSON.parse(localStorage.getItem(o[l].key) || '[]'); if (applyLessonArr(+l, arr)) { n++; storeLesson(+l); } } catch (e) {} });
-        ls.forEach(function (l) { Object.keys(localStorage).forEach(function (k) { if (k.indexOf('lesson-edit-') === 0 && k.indexOf(KEY()) !== 0 && (k.slice(-('L' + l).length - 1) === ':L' + l || k.slice(-('T' + l).length - 1) === ':T' + l)) localStorage.removeItem(k); }); });
+        ls.forEach(function (l) { Object.keys(localStorage).forEach(function (k) { if (mine(k) && k.indexOf(KEY()) !== 0 && (k.slice(-('L' + l).length - 1) === ':L' + l || k.slice(-('T' + l).length - 1) === ':T' + l)) localStorage.removeItem(k); }); });
         bn.remove(); all.forEach(function (s) { if (window.__notes) window.__notes.number(s); }); setLesson(L); go(P);
         state.textContent = n + '개 차시를 되살렸어요. 확인 후 GitHub 반영을 눌러 주세요';
         if (!editing) setEdit(true);
@@ -1802,25 +1838,35 @@ function __boot() {
       var dlg = c.querySelector('#gh-dialog'); if (dlg) dlg.removeAttribute('open');
       return '<!DOCTYPE html>' + String.fromCharCode(10) + c.outerHTML;
     }
-    function contentPath(p) { p = (p || 'index.html').replace(/^[/]+/, ''); var i = p.lastIndexOf('/'); return (i > -1 ? p.slice(0, i + 1) : '') + 'content.html'; }
+    function contentPath(p) { p = (p || 'index.html').replace(/^[/]+/, ''); var i = p.lastIndexOf('/'); var f = (window.__COURSES && window.__COURSES[CID] && window.__COURSES[CID].file) || 'content.html'; return (i > -1 ? p.slice(0, i + 1) : '') + f; }
     function buildContent(rev) {
       var was = editing; if (was) setEdit(false);
       var html = all.map(function (s) { return clean(s); }).join(String.fromCharCode(10));
       if (was) setEdit(true);
       var NL = String.fromCharCode(10);
-      return '<!DOCTYPE html>' + NL + '<html lang="ko"><head><meta charset="UTF-8"><meta name="content-rev" content="' + rev + '"><title>수업 내용</title></head><body>' + NL +
+      var bk = document.getElementById('book').cloneNode(true); bk.querySelectorAll('.current').forEach(function (e) { e.classList.remove('current'); e.removeAttribute('aria-current'); }); bk.querySelectorAll('.course-switch').forEach(function (e) { e.remove(); });
+      var pk = document.getElementById('pick').innerHTML;
+      var extra = '<template id="course-book">' + bk.innerHTML + '</template>' + NL + '<template id="course-pick">' + pk + '</template>' + NL;
+      return '<!DOCTYPE html>' + NL + '<html lang="ko"><head><meta charset="UTF-8"><meta name="content-rev" content="' + rev + '"><meta name="course-title" content="' + document.title.split('"').join('') + '"><title>수업 내용</title></head><body>' + NL + extra +
         '<!-- 이 파일은 수업 페이지의 "내용"입니다. 틀(index.html)이 이 파일을 불러와 보여 줍니다. -->' + NL + html + NL + '</body></html>';
     }
     function download() {
       var blob = new Blob([buildContent(revMeta.content)], { type: 'text/html' });
       var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = 'content.html'; document.body.appendChild(a); a.click();
+      a.download = contentPath('index.html'); document.body.appendChild(a); a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
       state.textContent = '내용 파일(content.html) 저장됨';
     }
     // ===== GitHub 반영 =====
     var dlg = document.getElementById('gh-dialog'), form = document.getElementById('gh-form');
-    function ghGet() { try { return JSON.parse(localStorage.getItem('gh-publish') || 'null'); } catch (e) { return null; } }
+    function ghGet() {
+      var s = null; try { s = JSON.parse(localStorage.getItem('gh-publish') || 'null'); } catch (e) { return null; }
+      if (s && location.hostname.slice(-10) === '.github.io') {
+        var g = ghGuess();
+        if (g.repo && s.repo && g.repo.toLowerCase() !== s.repo.toLowerCase()) { s.repo = g.repo; try { localStorage.setItem('gh-publish', JSON.stringify(s)); } catch (e) {} }
+      }
+      return s;
+    }
     function ghGuess() {
       var h = location.hostname, parts = location.pathname.split('/').filter(Boolean), owner = '', repo = '', path = 'index.html';
       if (h.slice(-10) === '.github.io') {
@@ -1862,7 +1908,7 @@ function __boot() {
       var api = 'https://api.github.com/repos/' + s.repo + '/contents/' + contentPath(s.path).split('/').map(encodeURIComponent).join('/');
       var head = { 'Authorization': 'Bearer ' + s.token, 'Accept': 'application/vnd.github+json' };
       var rev = String(Date.now()), html = buildContent(rev);
-      fetch(api + '?ref=' + encodeURIComponent(s.branch), { headers: head, cache: 'no-store' })
+      fetch(api + '?ref=' + encodeURIComponent(s.branch), { headers: Object.assign({}, head, { 'Accept': 'application/vnd.github.object' }), cache: 'no-store' })
         .then(function (r) { if (r.status === 404) return null; if (!r.ok) throw r; return r.json(); })
         .then(function (cur) {
           var body = { message: '수업 내용 수정 ' + new Date().toLocaleString('ko-KR'), content: b64(html), branch: s.branch };
@@ -1871,9 +1917,9 @@ function __boot() {
         })
         .then(function (r) { if (!r.ok) throw r; return r.json(); })
         .then(function () {
-          try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf('lesson-edit-') === 0) localStorage.removeItem(k); }); } catch (err) {}
+          try { Object.keys(localStorage).forEach(function (k) { if (mine(k)) localStorage.removeItem(k); }); } catch (err) {}
           revMeta.content = rev;
-          try { localStorage.removeItem('lesson-dirty'); } catch (err) {}
+          try { localStorage.removeItem(DIRTY); } catch (err) {}
           markDirty();
           state.textContent = '반영 완료! 1~2분 뒤 학생 화면에 보여요';
         })
@@ -2388,10 +2434,59 @@ function __boot() {
       e.preventDefault(); if (!confirmTwice(u, '한 번 더 누르면 목록으로 되돌려요')) return;
       unWidget(u.closest('.match, .venn'));
     });
+    // ===== 차시 추가 / 삭제 / 제목 동기화 =====
+    var LEGEND = '<div class="legend" aria-label="글자 색 규칙"><span><i style="background:var(--ink)"></i>일반 내용</span><span><i style="background:var(--exam)"></i>시험에 나오는 중요 개념</span><span><i style="background:var(--kwc)"></i>키워드</span></div>';
+    function lessonNums() { var m = {}; document.querySelectorAll('#slide section.stage').forEach(function (s) { m[s.dataset.l] = 1; }); return Object.keys(m).map(Number).sort(function (a, b) { return a - b; }); }
+    function newLessonSections(n) {
+      var cov = document.createElement('section'); cov.className = 'stage'; cov.dataset.l = n; cov.dataset.p = 0; cov.dataset.label = '표지';
+      cov.innerHTML = '<header class="lesson"><p class="unit"><b>단원 이름</b> 중단원 · 소단원</p><p class="lesson-no">' + n + '차시</p><h1>차시 제목</h1><p class="question">핵심 질문을 적어 주세요</p>' + LEGEND + '</header>';
+      var pg = document.createElement('section'); pg.className = 'stage'; pg.dataset.l = n; pg.dataset.p = 1; pg.dataset.label = '개념1';
+      pg.innerHTML = '<div class="stage-head"><span class="no">1</span><h2>전개</h2><span class="time">10분</span></div>'; pg.appendChild(makeBlock('개념'));
+      return [cov, pg];
+    }
+    function bookAddLesson(n, title) {
+      var bk = document.getElementById('book'), ols = bk.querySelectorAll('ol'), ol = ols[ols.length - 1];
+      if (!ol) { ol = document.createElement('ol'); bk.appendChild(ol); }
+      var li = document.createElement('li'); li.className = 'les';
+      li.innerHTML = '<button type="button" data-lesson="' + n + '"><span class="ln">' + n + '차시</span>' + (title || '차시 제목') + '</button>';
+      var after = arguments[2] ? bk.querySelector('li.les button[data-lesson="' + arguments[2] + '"]') : null;
+      if (after) { var ref = after.closest('li'); while (ref.nextElementSibling && ref.nextElementSibling.classList.contains('les')) ref = ref.nextElementSibling; ref.parentNode.insertBefore(li, ref.nextSibling); }
+      else ol.appendChild(li);
+      var pk = document.getElementById('pick'), op = document.createElement('option'); op.value = n; op.textContent = n + '차시 · ' + (title || '차시 제목'); pk.appendChild(op);
+      if (window.__refreshLessonBtns) window.__refreshLessonBtns();
+    }
+    function syncLessonTitle(l) {
+      var s = lessonSecs(l)[0], h = s && s.querySelector('header.lesson h1'); if (!h) return;
+      var t = h.textContent.trim() || '차시 제목';
+      document.querySelectorAll('.book li.les button[data-lesson="' + l + '"]').forEach(function (b) { var ln = b.querySelector('.ln'); b.innerHTML = ''; if (ln) b.appendChild(ln); b.appendChild(document.createTextNode(t)); });
+      var op = document.querySelector('#pick option[value="' + l + '"]'); if (op) op.textContent = l + '차시 · ' + t;
+    }
+    function addLesson() {
+      var nums = lessonNums(), n = (nums[nums.length - 1] || 0) + 1, sl = document.getElementById('slide');
+      newLessonSections(n).forEach(function (s) { sl.appendChild(s); });
+      var cur = L; var cov0 = lessonSecs(cur)[0]; if (cov0) { var u0 = cov0.querySelector('.unit'); var nu = sl.querySelector('section.stage[data-l="' + n + '"] .unit'); if (u0 && nu) nu.innerHTML = u0.innerHTML; }
+      bookAddLesson(n, '', cur); refresh(); storeLesson(n); setLesson(n); go(0); applyEdit(true);
+      state.textContent = n + '차시를 만들었어요. 표지의 제목부터 고쳐 주세요';
+    }
+    function delLesson(btn) {
+      var nums = lessonNums(); if (nums.length <= 1) { state.textContent = '마지막 남은 차시는 지울 수 없어요'; return; }
+      if (!confirmTwice(btn, '한 번 더 누르면 ' + L + '차시 통째로 삭제')) return;
+      var l = L; lessonSecs(l).forEach(function (s) { s.remove(); });
+      document.querySelectorAll('.book li.les button[data-lesson="' + l + '"]').forEach(function (b) { b.closest('li').remove(); });
+      var op = document.querySelector('#pick option[value="' + l + '"]'); if (op) op.remove();
+      try { localStorage.setItem(KEY() + 'L' + l, '[]'); localStorage.setItem(DIRTY, '1'); markDirty(); } catch (e) {}
+      if (window.__refreshLessonBtns) window.__refreshLessonBtns();
+      refresh(); var rest = lessonNums(); setLesson(rest[0]); go(0); applyEdit(true);
+      state.textContent = l + '차시를 지웠어요 (되돌리려면 반영 전에 초기화)';
+    }
     bar.addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });
     bar.addEventListener('change', function (e) {
       var sel = e.target.closest('select'); if (!sel || !sel.value) return;
-      if (sel.dataset.sel === 'tool') {
+      if (sel.dataset.sel === 'backup') {
+        var kind = sel.value; state.textContent = '백업 파일 만드는 중…';
+        window.__backup(kind).then(function () { state.textContent = '백업 파일을 내려받았어요'; }, function () { state.textContent = '백업 실패 (엑셀은 인터넷 연결 필요)'; });
+      }
+      else if (sel.dataset.sel === 'tool') {
         if (sel.value === 'table') tableCmd('tadd');
         else if (sel.value === 'match') { makeMatch(); widgetTools(true); }
         else if (sel.value === 'venn') makeVenn();
@@ -2417,6 +2512,8 @@ function __boot() {
       else if (c === 'right') movePage(1);
       else if (c === 'delpage') delPage(btn);
       else if (c === 'nohead') toggleHead();
+      else if (c === 'addlesson') addLesson();
+      else if (c === 'dellesson') delLesson(btn);
       else if (c === 'undoall') { flushPending(); undoAll(); }
       else if (c === 'redoall') redoAll();
       else if (c === 'save') download();
@@ -2427,14 +2524,14 @@ function __boot() {
       else if (c === 'ghset') openSettings();
       else if (c === 'reset') {
         if (!confirmTwice(btn, '한 번 더 누르면 초기화')) return;
-        try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf('lesson-edit-') === 0) localStorage.removeItem(k); }); } catch (err) {}
+        try { Object.keys(localStorage).forEach(function (k) { if (mine(k)) localStorage.removeItem(k); }); } catch (err) {}
         location.reload();
       }
     });
   }
 
 
-  lessonBtns.forEach(function (b) { b.addEventListener('click', function () { open(+b.dataset.lesson, 0); setToc(false); }); });
+  document.getElementById('book').addEventListener('click', function (e) { var lb = e.target.closest('li.les button'); if (!lb) return; open(+lb.dataset.lesson, 0); setToc(false); });
   pick.addEventListener('change', function () { open(+pick.value, 0); });
   prev.addEventListener('click', function () { go(P - 1); });
   next.addEventListener('click', function () { go(P + 1); });
@@ -2638,7 +2735,7 @@ function __boot() {
         }
       }
       var ln = pages[0] ? pages[0].dataset.l : '';
-      await pptx.writeFile({ fileName: '현대사회와윤리_' + ln + '차시_' + title.replace(/[:/?*"<>|]/g, '') + '.pptx' });
+      await pptx.writeFile({ fileName: (document.title || '수업').split(' ').join('') + '_' + ln + '차시_' + title.replace(/[:/?*"<>|]/g, '') + '.pptx' });
       btn.textContent = '받기 완료';
     } catch (e) {
       console.error(e); btn.textContent = e && e.message === 'lib' ? '인터넷 연결 확인' : '만들기 실패';
@@ -2687,7 +2784,7 @@ function __boot() {
         sl.addImage({ data: canvas.toDataURL('image/jpeg', 0.9), x: 0, y: 0, w: 13.333, h: 7.5 });
       }
       var ln = pages[0] ? pages[0].dataset.l : '';
-      await pptx.writeFile({ fileName: '현대사회와윤리_' + ln + '차시_' + title.replace(/[:/?*"<>|]/g, '') + '.pptx' });
+      await pptx.writeFile({ fileName: (document.title || '수업').split(' ').join('') + '_' + ln + '차시_' + title.replace(/[:/?*"<>|]/g, '') + '.pptx' });
       btn.textContent = '받기 완료';
     } catch (e) {
       console.error(e); btn.textContent = e && e.message === 'lib' ? '인터넷 연결 확인' : '만들기 실패';
@@ -2698,6 +2795,65 @@ function __boot() {
     go(startP); fit(); cover.remove();
     setTimeout(function () { btn.textContent = old; btn.disabled = false; }, 2500);
   }
+  // ===== 내용 백업 (텍스트 / 엑셀) =====
+  var XLSX_LIB = ['https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', 'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'];
+  function itemsText(items) {
+    return items.map(function (it) {
+      if (it.k === 't') return it.rows.map(function (r) { return r.map(function (c) { return c.runs.map(function (x) { return x.options.softBreakBefore ? ' / ' : x.text; }).join('').trim(); }).join(' | '); }).join(String.fromCharCode(10));
+      return it.runs.map(function (x) { return x.options.softBreakBefore ? String.fromCharCode(10) : x.text; }).join('').trim();
+    }).filter(Boolean).join(String.fromCharCode(10));
+  }
+  function backupRows() {
+    var rows = [], NL = String.fromCharCode(10);
+    var subject = (document.title || '').trim();
+    var lessons = {};
+    all.forEach(function (s) { (lessons[s.dataset.l] = lessons[s.dataset.l] || []).push(s); });
+    Object.keys(lessons).sort(function (a, b) { return a - b; }).forEach(function (l) {
+      var secs = lessons[l], cov = secs[0].querySelector('header.lesson h1'), ltitle = cov ? tidy(cov.textContent) : '';
+      secs.forEach(function (s, pi) {
+        var head = s.querySelector('.stage-head'), stage = head ? tidy((head.querySelector('.no') || {}).textContent || '') + ' ' + tidy((head.querySelector('h2') || {}).textContent || '') : '';
+        var hd = s.querySelector('header.lesson');
+        if (hd) { rows.push({ l: l, t: ltitle, p: pi + 1, name: '표지', stage: '', block: '표지', text: [hd.querySelector('.unit'), hd.querySelector('h1'), hd.querySelector('.question')].filter(Boolean).map(function (e) { return tidy(e.textContent); }).join(NL), memo: '' }); return; }
+        s.querySelectorAll('.block').forEach(function (b) {
+          var items = []; var nv = b.querySelector('.news-v');
+          var text;
+          if (nv) {
+            text = ['.headline', '.fact'].map(function (q) { var e = nv.querySelector(q); return e ? tidy(e.textContent) : ''; }).filter(Boolean).join(NL);
+            nv.querySelectorAll('.side').forEach(function (sd) { text += NL + tidy(sd.querySelector('.badge').textContent) + ': ' + tidy(sd.querySelector('p').textContent); });
+            var ms = nv.querySelector('.mission-bar'); if (ms) { var lbm = ms.querySelector('.lab'), lt = lbm ? tidy(lbm.textContent) : ''; text += NL + (lt ? lt + ': ' : '') + tidy(ms.textContent).replace(lt, '').trim(); }
+          } else { collect(b, items, '000000'); text = itemsText(items); }
+          var memos = [].map.call(b.querySelectorAll('.fn-note:not(.fn-copy)'), function (nt) {
+            var a = s.querySelector('.fn-anchor[data-id="' + nt.dataset.id + '"]:not(.fn-auto)'), w = a ? tidy(a.textContent) : '메모';
+            var body = nt.querySelector('.fn-body'); return w + ': ' + (body ? tidy(body.textContent) : '');
+          }).join(NL);
+          var tg = b.querySelector('.tag');
+          rows.push({ l: l, t: ltitle, p: pi + 1, name: s.dataset.label || '', stage: stage.trim(), block: tg ? tidy(tg.textContent) : '', text: text, memo: memos });
+        });
+      });
+    });
+    return { subject: subject, rows: rows };
+  }
+  function saveBlob(blob, name) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
+  function stamp() { var d = new Date(); return d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2) + '_' + ('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2); }
+  async function backup(kind) {
+    var data = backupRows(), NL = String.fromCharCode(10), name = '수업내용백업_' + stamp();
+    if (kind === 'txt') {
+      var out = [data.subject + ' (백업 ' + new Date().toLocaleString('ko-KR') + ')', ''], lastL = null;
+      data.rows.forEach(function (r) {
+        if (r.l !== lastL) { out.push('', '==================== ' + r.l + '차시 ' + r.t + ' ====================', ''); lastL = r.l; }
+        out.push('[' + r.p + '쪽 ' + r.name + (r.stage ? ' · ' + r.stage : '') + (r.block && r.block !== r.name ? ' · ' + r.block : '') + ']');
+        out.push(r.text); if (r.memo) out.push('(메모) ' + r.memo.split(NL).join(NL + '(메모) ')); out.push('');
+      });
+      saveBlob(new Blob([String.fromCharCode(65279) + out.join(String.fromCharCode(13, 10))], { type: 'text/plain;charset=utf-8' }), name + '.txt');
+      return;
+    }
+    await (function load(i) { return new Promise(function (res, rej) { if (window.XLSX) return res(); if (i >= XLSX_LIB.length) return rej(new Error('lib')); var sc = document.createElement('script'); sc.src = XLSX_LIB[i]; sc.onload = function () { res(); }; sc.onerror = function () { sc.remove(); load(i + 1).then(res, rej); }; document.head.appendChild(sc); }); })(0);
+    var aoa = [['차시', '차시 제목', '쪽', '페이지', '구간', '블록', '내용', '메모']].concat(data.rows.map(function (r) { return [+r.l, r.t, r.p, r.name, r.stage, r.block, r.text, r.memo]; }));
+    var ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = [{ wch: 5 }, { wch: 28 }, { wch: 4 }, { wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 80 }, { wch: 40 }];
+    var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '수업 내용');
+    XLSX.writeFile(wb, name + '.xlsx');
+  }
+  window.__backup = backup;
   document.getElementById('ppt-btn').addEventListener('click', function () { if (wide.matches) exportPPTImage(this); else exportPPTText(this); });
   // ===== 전체 화면 =====
   var fsBtn = document.getElementById('fs-btn'), hideT = null;
@@ -2748,6 +2904,14 @@ function __boot() {
   wrapReveals();
   initEdit();
   wrapReveals();
+  (function () {
+    var bk = document.getElementById('book'), C = window.__COURSES || {}; if (!bk || !window.__course) return;
+    var w = document.createElement('div'); w.className = 'course-switch';
+    var keep = new URLSearchParams(location.search).has('edit') ? '&edit' : '';
+    w.innerHTML = '<span>과목</span><select aria-label="과목 바꾸기">' + Object.keys(C).map(function (k) { return '<option value="' + k + '"' + (k === window.__course ? ' selected' : '') + '>' + C[k].title + '</option>'; }).join('') + '</select>';
+    w.querySelector('select').addEventListener('change', function () { location.href = '?s=' + this.value + keep; });
+    bk.insertBefore(w, bk.firstChild);
+  })();
   // ===== 메모(수사보드 쪽지) =====
   function slideScale() { return wide.matches ? slide.getBoundingClientRect().width / 1600 : 1; }
   function noteOf(mark) { var sec = mark.closest('section.stage'); return sec && sec.querySelector('.fn-note[data-id="' + mark.dataset.id + '"]'); }
@@ -3142,21 +3306,50 @@ function __boot() {
   fit();
 }
 (function () {
-  function start() { var ld = document.getElementById('loading'); if (ld) ld.remove(); __boot(); }
-  if (location.protocol === 'file:') { start(); return; }
+  var COURSES = {
+    hyunsayun: { title: '현대사회와 윤리', file: 'content.html' },
+    tongsa: { title: '통합사회2', file: 'content-tongsa.html' },
+    yunsa: { title: '윤리와 사상', file: 'content-yunsa.html' },
+    yunmun: { title: '윤리 문제 탐구', file: 'content-yunmun.html' }
+  };
+  window.__COURSES = COURSES;
+  var qs = new URLSearchParams(location.search), cid = qs.get('s');
+  function landing(msg) {
+    var ld = document.getElementById('loading'); if (ld) ld.remove();
+    document.body.classList.add('landing-on');
+    var box = document.createElement('div'); box.className = 'landing';
+    var keep = qs.has('edit') ? '&edit' : '';
+    box.innerHTML = '<div class="ld-in"><h1>수업</h1>' + (msg ? '<p class="ld-msg">' + msg + '</p>' : '<p class="ld-sub">과목을 골라 주세요</p>') +
+      '<div class="ld-cards">' + Object.keys(COURSES).map(function (k) { return '<a class="ld-card" href="?s=' + k + keep + '"><span class="ld-t">' + COURSES[k].title + '</span><span class="ld-go">열기 →</span></a>'; }).join('') + '</div></div>';
+    document.body.appendChild(box);
+  }
+  function applyCourse(d) {
+    var t = d && d.querySelector('meta[name=course-title]');
+    var title = t ? t.getAttribute('content') : (COURSES[cid] ? COURSES[cid].title : document.title);
+    document.title = title;
+    var bk = d && d.querySelector('template#course-book'); if (bk) document.getElementById('book').innerHTML = bk.innerHTML;
+    var pk = d && d.querySelector('template#course-pick'); if (pk) document.getElementById('pick').innerHTML = pk.innerHTML;
+    var bt = document.querySelector('#book .book-title'); if (bt && !bk) bt.textContent = title;
+  }
+  function start() { var ld = document.getElementById('loading'); if (ld) ld.remove(); window.__course = cid; __boot(); }
+  if (!cid || !COURSES[cid]) { landing(cid ? '없는 과목 주소예요. 아래에서 골라 주세요.' : ''); return; }
+  if (location.protocol === 'file:') { if (cid === 'hyunsayun') { applyCourse(null); start(); } else landing('이 과목은 사이트 주소로 열어야 보여요.'); return; }
   var base = location.pathname.replace(/[^/]*$/, '');
-  fetch(base + 'content.html?t=' + Date.now(), { cache: 'no-store' })
+  fetch(base + COURSES[cid].file + '?t=' + Date.now(), { cache: 'no-store' })
     .then(function (r) { if (!r.ok) throw r; return r.text(); })
     .then(function (t) {
       var d = new DOMParser().parseFromString(t, 'text/html'), secs = d.querySelectorAll('section.stage');
-      if (!secs.length) return;
+      if (!secs.length) throw new Error('empty');
       var sl = document.getElementById('slide');
       sl.querySelectorAll('section.stage').forEach(function (s) { s.remove(); });
       secs.forEach(function (s) { sl.appendChild(document.importNode(s, true)); });
       var rv = d.querySelector('meta[name=content-rev]'); if (rv) document.querySelector('meta[name=lesson-rev]').setAttribute('content', rv.getAttribute('content'));
+      applyCourse(d); start();
     })
-    .catch(function () {})
-    .then(start);
+    .catch(function () {
+      if (cid === 'hyunsayun') { applyCourse(null); start(); }
+      else landing(COURSES[cid].title + '은(는) 아직 준비 중이에요.');
+    });
 })();
 </script>
 </body>
