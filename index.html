@@ -926,6 +926,18 @@
     body.editing .slide .news-v .clip-body:has(> .photo.empty) { grid-template-columns: 220px minmax(0, 1fr) !important; }
   }
   body:not(.editing) .news-v .photo.empty { display: none !important; }
+
+  /* 목록 들여쓰기·머리 기호 */
+  .slide .block li.lv1 { margin-left: 1.5em; font-size: .94em; }
+  .slide .block li.lv2 { margin-left: 3em; font-size: .9em; }
+  .block li.lv1::marker, .block li.lv2::marker { content: "–  "; color: var(--ink-soft); }
+  .block li.bul-dot::marker { content: "•  "; color: var(--ink); }
+  .block li.bul-dash::marker { content: "–  "; color: var(--ink-soft); }
+  .block li.bul-arrow::marker { content: "→  "; color: var(--b-concept); }
+  .block li.bul-check::marker { content: "✓  "; color: #6F7D62; }
+  .block li.bul-none { list-style: none; }
+  .block li.bul-none::marker { content: ""; }
+  ol.steps-list > li.lv1::marker, ol.steps-list > li.lv2::marker { content: "–  "; }
 </style>
 </head>
 <body>
@@ -1327,6 +1339,7 @@
     <div class="grp"><select data-sel="tool" aria-label="수업 도구 넣기" title="커서가 있는 자리에 넣어요. 선 잇기·벤다이어그램은 커서가 있는 목록을 바꿔요"><option value="">＋ 수업 도구</option><option value="table">표</option><option value="match">선 잇기</option><option value="venn">벤다이어그램</option></select></div>
     <span class="grp-sep"></span>
     <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="bd" class="t-bd" title="굵게 (Ctrl+B). 굵은 글자를 선택하고 다시 누르면 해제">굵게</button><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><button type="button" data-cmd="cloze" title="선택한 글자를 ( ) 빈칸으로. 수업 중 누르면 열려요">( ) 빈칸</button><button type="button" data-cmd="clozecho" title="선택한 글자를 초성 힌트가 있는 빈칸으로">초성 빈칸</button><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button><select data-sel="badge" aria-label="배지 넣기" title="커서 자리에 배지를 넣어요"><option value="">＋ 배지</option><option value="짝 질문">짝 질문</option><option value="질문">질문</option><option value="미션">미션</option><option value="핵심 명제">핵심 명제</option><option value="정리">정리</option><option value="예시">예시</option><option value="주의">주의</option><option value="__custom">직접 입력…</option></select><input id="badge-text" class="badge-text" type="text" placeholder="배지 글자 입력 후 Enter" hidden></div>
+    <div class="grp"><span class="glab">줄</span><button type="button" data-cmd="outdent" title="내어쓰기 (Shift+Tab)">← 내어쓰기</button><button type="button" data-cmd="indent" title="들여쓰기 (Tab)">들여쓰기 →</button><select data-sel="bullet" aria-label="머리 기호" title="목록 줄 앞 기호 바꾸기"><option value="">머리 기호</option><option value="auto">기본</option><option value="dot">• 점</option><option value="dash">– 줄표</option><option value="arrow">→ 화살표</option><option value="check">✓ 체크</option><option value="none">없음</option></select></div>
     <div class="grp grp-size"><span class="glab">글씨 크기</span><button type="button" data-cmd="fsdown" title="1씩 작게">가－</button><input id="fs-num" class="fs-num" type="number" min="12" max="120" step="1" value="40" aria-label="글씨 크기"><button type="button" data-cmd="fsup" title="1씩 크게">가＋</button><button type="button" data-cmd="fsauto" title="이 페이지 글씨를 화면에 맞게 자동 조절">자동</button></div>
     <div class="grp grp-save"><div class="ver-info" id="ver-info"></div><a class="ver-hist" id="ver-hist" target="_blank" rel="noopener" hidden title="GitHub에서 반영 기록(버전) 보기">기록</a><button type="button" data-cmd="publish" class="t-save">GitHub 반영</button><button type="button" data-cmd="ghset" title="GitHub 연결 설정">⚙</button><button type="button" data-cmd="save" title="내용 파일(content.html)을 내려받기">내용 저장</button><select data-sel="backup" aria-label="내용 백업" title="지금 과목의 모든 내용을 텍스트나 엑셀로 내려받아요"><option value="">백업</option><option value="txt">텍스트(.txt)</option><option value="xlsx">엑셀(.xlsx)</option></select><button type="button" data-cmd="reset">초기화</button><span class="save-state" id="save-state" aria-live="polite"></span></div>
   </div>
@@ -2696,10 +2709,36 @@ function __boot() {
     document.getElementById('slide').addEventListener('click', onProgClick, true);
     document.getElementById('book').addEventListener('click', onProgClick, true);
     ['keydown', 'keyup', 'keypress'].forEach(function (t) { document.addEventListener(t, function (e) { if (e.target.closest && e.target.closest('.pp-edit')) e.stopPropagation(); }, true); });
+    // ===== 목록 줄: 들여쓰기 · 머리 기호 =====
+    function curLi() { var r = currentRange() || savedRange; if (!r) return null; var n = r.startContainer; if (n.nodeType === 3) n = n.parentNode; return n.closest ? n.closest('section.stage .block li') : null; }
+    function selLis() {
+      var r = currentRange() || savedRange; if (!r) return [];
+      var one = curLi(); var n = r.commonAncestorContainer; if (n.nodeType === 3) n = n.parentNode;
+      var list = n.closest && n.closest('ul, ol');
+      if (list && !r.collapsed) { var got = [].filter.call(list.children, function (li) { return li.tagName === 'LI' && r.intersectsNode(li); }); if (got.length) return got; }
+      return one ? [one] : [];
+    }
+    function indentLi(d) {
+      var lis = selLis(); if (!lis.length) { state.textContent = '목록 줄 안을 먼저 클릭'; return; }
+      lis.forEach(function (li) { var lv = li.classList.contains('lv2') ? 2 : li.classList.contains('lv1') ? 1 : 0; lv = Math.max(0, Math.min(2, lv + d)); li.classList.remove('lv1', 'lv2'); if (lv) li.classList.add('lv' + lv); });
+      storeLesson(+pages[P].dataset.l); state.textContent = d > 0 ? '들여썼어요' : '내어썼어요';
+    }
+    function bulletLi(kind) {
+      var lis = selLis(); if (!lis.length) { state.textContent = '목록 줄 안을 먼저 클릭'; return; }
+      lis.forEach(function (li) { li.classList.remove('bul-dot', 'bul-dash', 'bul-arrow', 'bul-check', 'bul-none'); if (kind) li.classList.add('bul-' + kind); if (!li.className) li.removeAttribute('class'); });
+      storeLesson(+pages[P].dataset.l); state.textContent = '머리 기호를 바꿨어요';
+    }
+    document.addEventListener('keydown', function (e) {
+      if (!editing || e.key !== 'Tab') return;
+      var t = e.target; if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
+      if (!curLi()) return;
+      e.preventDefault(); indentLi(e.shiftKey ? -1 : 1);
+    }, true);
     bar.addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });
     bar.addEventListener('change', function (e) {
       var sel = e.target.closest('select'); if (!sel || !sel.value) return;
-      if (sel.dataset.sel === 'backup') {
+      if (sel.dataset.sel === 'bullet') { bulletLi(sel.value === 'auto' ? '' : sel.value); }
+      else if (sel.dataset.sel === 'backup') {
         var kind = sel.value; state.textContent = '백업 파일 만드는 중…';
         window.__backup(kind).then(function () { state.textContent = '백업 파일을 내려받았어요'; }, function () { state.textContent = '백업 실패 (엑셀은 인터넷 연결 필요)'; });
       }
@@ -2722,6 +2761,8 @@ function __boot() {
       else if (c && c.indexOf('hl:') === 0) mark('hl hl-' + c.slice(3));
       else if (c === 'plain') plain();
       else if (c === 'note') addNote();
+      else if (c === 'indent') indentLi(1);
+      else if (c === 'outdent') indentLi(-1);
       else if (c === 'cloze') makeCloze(false);
       else if (c === 'clozecho') makeCloze(true);
       else if (c === 'fsdown') fontStep(-1);
