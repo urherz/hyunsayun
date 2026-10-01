@@ -896,6 +896,36 @@
 
   body:not(.editing) .cloze:not(.open) .cz-a::selection, body:not(.editing) .cloze:not(.open) .cz-a *::selection { color: transparent; background: transparent; }
   body:not(.editing) .cloze { user-select: none; }
+
+  /* 진도 체크 */
+  .prog-panel { position: absolute; right: 40px; bottom: 18px; z-index: 30; max-width: 760px; padding: 10px 14px 12px; background: #FFFDF8; border: 1.5px solid #CFC2A6; border-radius: 12px; box-shadow: 0 8px 22px rgba(60,40,20,.16); font-size: 18px; line-height: 1.3; }
+  .prog-panel .pp-h, .prog-sum .ps-h { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .prog-panel .pp-h span { color: var(--ink-soft); font-size: .85em; }
+  .pp-set { margin-left: auto; font-family: var(--serif); font-weight: 700; font-size: .8em; color: var(--kwc); background: #FFFFFF; border: 1.5px solid #9FB6CF; border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+  .pp-cls { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pp-c { font-family: var(--serif); font-weight: 700; font-size: .95em; padding: 5px 12px; border-radius: 999px; border: 1.5px solid var(--edge); background: #FFFFFF; color: var(--ink); cursor: pointer; }
+  .pp-c.on { background: #6F7D62; border-color: #6F7D62; color: #FFFFFF; }
+  .pp-c:focus-visible, .pp-set:focus-visible, .ps-c:focus-visible { outline: 3px solid var(--kwc); outline-offset: 2px; }
+  .pp-empty { color: var(--ink-soft); font-size: .9em; }
+  .pp-edit { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--edge); }
+  .pp-edit p { margin: 0 0 4px; font-size: .85em; color: var(--ink-soft); }
+  .pp-edit textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: .95em; padding: 6px 8px; border: 1.5px solid var(--edge); border-radius: 6px; }
+  .pp-edit div { display: flex; gap: 6px; margin-top: 6px; }
+  .pp-edit button { font-family: var(--serif); font-weight: 700; font-size: .85em; padding: 3px 12px; border-radius: 6px; border: 1.5px solid var(--edge); background: #FFFFFF; cursor: pointer; }
+  .pp-edit .pe-ok { background: var(--b-concept); color: #FFFFFF; border-color: var(--b-concept); }
+  .prog-sum { margin: 0 0 14px; padding: 10px 12px; background: #F0F3EC; border: 1.5px solid #B9C4AC; border-radius: 10px; }
+  .prog-sum .ps-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ps-c { font-size: .85em; padding: 3px 10px; border-radius: 999px; border: 1.5px solid #B9C4AC; background: #FFFFFF; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .ps-c b { color: #4E5C42; }
+  .ps-c.none { opacity: .55; cursor: default; }
+  .book .prog-chips { display: inline-flex; gap: 3px; margin-left: 8px; vertical-align: middle; }
+  .book .prog-chips i { font-style: normal; font-size: .7em; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: #6F7D62; color: #FFFFFF; }
+
+  @media (min-width: 700px) {
+    .slide .news-v .clip-body:has(> .photo.empty) { grid-template-columns: minmax(0, 1fr) !important; }
+    body.editing .slide .news-v .clip-body:has(> .photo.empty) { grid-template-columns: 220px minmax(0, 1fr) !important; }
+  }
+  body:not(.editing) .news-v .photo.empty { display: none !important; }
 </style>
 </head>
 <body>
@@ -1375,6 +1405,7 @@ function __boot() {
     if (cb) { var dt = cb.closest('details'); if (dt) dt.open = true; cb.scrollIntoView({ block: 'nearest' }); }
   }
   function go(p) {
+    if (!pages.length) return;
     p = Math.max(0, Math.min(pages.length - 1, p)); P = p;
     all.forEach(function (s) { s.classList.remove('active'); });
     if (window.__notes) window.__notes.close();
@@ -1451,7 +1482,7 @@ function __boot() {
       var c = s.cloneNode(true);
       c.classList.remove('active', 'scrolly', 'measuring'); c.style.fontSize = ''; if (!c.getAttribute('style')) c.removeAttribute('style');
       c.querySelectorAll('.block, header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -1495,7 +1526,7 @@ function __boot() {
 
     var allowed = location.protocol === 'file:' || location.hostname.slice(-9) !== 'github.io' || new URLSearchParams(location.search).has('edit');
     if (allowed) toggle.hidden = false;
-    setTimeout(function () { markDirty(); showRecovery(); }, 300);
+    setTimeout(function () { markDirty(); showRecovery(); progRender(); }, 300);
 
     window.__saveLesson = function (l) { storeLesson(l); };
     // ===== 되돌리기 / 다시 실행 (글자 + 서식 + 구조 전부) =====
@@ -1563,7 +1594,7 @@ function __boot() {
         });
       });
       photoTools(on); blockTools(on); gripTools(on); noteTools(on); widgetTools(on); if (!on) clearTableBar();
-      bookEditTools(on);
+      bookEditTools(on); try { progRender(); } catch (e) {}
       if (window.__reveal) window.__reveal.wrap();
     }
     // ===== 반영 안 된 수정 알림 · 되살리기 · 자동 반영 =====
@@ -1852,7 +1883,7 @@ function __boot() {
       c.querySelectorAll('section.stage').forEach(function (s) { s.classList.remove('active'); s.style.fontSize = ''; if (!s.getAttribute('style')) s.removeAttribute('style'); });
       c.querySelectorAll('section.stage .block, section.stage header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
       c.querySelectorAll('.current').forEach(function (e) { e.classList.remove('current'); e.removeAttribute('aria-current'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, input[type=file]').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, input[type=file]').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -1877,9 +1908,9 @@ function __boot() {
       var html = all.map(function (s) { return clean(s); }).join(String.fromCharCode(10));
       if (was) setEdit(true);
       var NL = String.fromCharCode(10);
-      var bk = document.getElementById('book').cloneNode(true); bk.querySelectorAll('.current').forEach(function (e) { e.classList.remove('current'); e.removeAttribute('aria-current'); }); bk.querySelectorAll('.course-switch, .les-chk, .book-edit').forEach(function (e) { e.remove(); });
+      var bk = document.getElementById('book').cloneNode(true); bk.querySelectorAll('.current').forEach(function (e) { e.classList.remove('current'); e.removeAttribute('aria-current'); }); bk.querySelectorAll('.course-switch, .les-chk, .book-edit, .prog-sum, .prog-chips').forEach(function (e) { e.remove(); });
       var pk = document.getElementById('pick').innerHTML;
-      var extra = '<template id="course-book">' + bk.innerHTML + '</template>' + NL + '<template id="course-pick">' + pk + '</template>' + NL;
+      var extra = '<template id="course-book">' + bk.innerHTML + '</template>' + NL + '<template id="course-pick">' + pk + '</template>' + NL + '<script type="application/json" id="course-progress">' + JSON.stringify(window.__getProgress ? window.__getProgress() : { classes: [], done: {} }).split('<').join('') + '</scr' + 'ipt>' + NL;
       return '<!DOCTYPE html>' + NL + '<html lang="ko"><head><meta charset="UTF-8"><meta name="content-rev" content="' + rev + '"><meta name="course-title" content="' + document.title.split('"').join('') + '"><title>수업 내용</title></head><body>' + NL + extra +
         '<!-- 이 파일은 수업 페이지의 "내용"입니다. 틀(index.html)이 이 파일을 불러와 보여 줍니다. -->' + NL + html + NL + '</body></html>';
     }
@@ -2547,6 +2578,7 @@ function __boot() {
         var op = document.querySelector('#pick option[value="' + l + '"]'); if (op) op.remove();
         try { localStorage.setItem(KEY() + 'L' + l, '[]'); } catch (e) {}
       });
+      list.forEach(function (l) { if (PROG.done[l]) delete PROG.done[l]; }); try { localStorage.setItem(PROG_KEY, JSON.stringify(PROG)); } catch (e) {}
       try { localStorage.setItem(DIRTY, '1'); markDirty(); } catch (e) {}
       if (window.__refreshLessonBtns) window.__refreshLessonBtns();
       if (window.__renumber) window.__renumber(); lessonNums().forEach(function (x) { try { localStorage.setItem(KEY() + 'L' + x, JSON.stringify(lessonSecs(x).map(clean))); } catch (e) {} });
@@ -2576,6 +2608,94 @@ function __boot() {
       r.insertNode(z); syncHints(z.parentNode);
       storeLesson(+pages[P].dataset.l); state.textContent = withCho ? '초성 빈칸을 만들었어요' : '빈칸을 만들었어요';
     }
+    // ===== 진도 체크 (과목별 · 반 이름 직접 설정) =====
+    var PROG_KEY = PFX + 'progress';
+    function progLoad() {
+      try { var loc = localStorage.getItem(PROG_KEY); if (loc) return JSON.parse(loc); } catch (e) {}
+      var b0 = window.__progressBase; return b0 ? JSON.parse(JSON.stringify(b0)) : { classes: [], done: {} };
+    }
+    var PROG = progLoad(); if (!PROG.classes) PROG.classes = []; if (!PROG.done) PROG.done = {};
+    window.__getProgress = function () { return PROG; };
+    var pubT = null;
+    function progSave() {
+      try { localStorage.setItem(PROG_KEY, JSON.stringify(PROG)); localStorage.setItem(DIRTY, '1'); } catch (e) {}
+      markDirty(); progRender();
+      clearTimeout(pubT); pubT = setTimeout(function () { if (!editing && ghGet()) publish(); }, 2500);
+    }
+    function lessonOrder() { return [].map.call(document.querySelectorAll('#book li.les button'), function (b) { return b.dataset.lesson; }); }
+    function latestOf(cls) {
+      var ord = lessonOrder(), best = -1;
+      Object.keys(PROG.done).forEach(function (id) { if ((PROG.done[id] || []).indexOf(cls) > -1) best = Math.max(best, ord.indexOf(id)); });
+      return best > -1 ? ord[best] : null;
+    }
+    function esc2(t) { var e = document.createElement('span'); e.textContent = t; return e.innerHTML; }
+    function progPanels() {
+      document.querySelectorAll('.prog-panel').forEach(function (x) { x.remove(); });
+      if (toggle.hidden) return;
+      lessonNums().forEach(function (l) {
+        var secs = lessonSecs(l), last = secs[secs.length - 1]; if (!last || secs.length < 2) return;
+        var done = PROG.done[l] || [], p = document.createElement('div'); p.className = 'prog-panel'; p.setAttribute('contenteditable', 'false'); p.dataset.l = l;
+        p.innerHTML = '<div class="pp-h"><b>진도 체크</b><span>이 차시를 마친 반</span><button type="button" class="pp-set">반 설정</button></div>' +
+          (PROG.classes.length ? '<div class="pp-cls">' + PROG.classes.map(function (c) { var on = done.indexOf(c) > -1; return '<button type="button" class="pp-c' + (on ? ' on' : '') + '" aria-pressed="' + on + '" data-c="' + esc2(c) + '">' + (on ? '✓ ' : '') + esc2(c) + '</button>'; }).join('') + '</div>'
+          : '<div class="pp-empty">반 설정을 눌러 반 이름을 먼저 정해 주세요</div>');
+        last.appendChild(p);
+      });
+    }
+    function progToc() {
+      var bk = document.getElementById('book'); if (!bk) return;
+      bk.querySelectorAll('.prog-sum, .prog-chips').forEach(function (x) { x.remove(); });
+      if (toggle.hidden || !PROG.classes.length) return;
+      var ln = function (id) { return window.__lessonNo ? window.__lessonNo(id) : id; };
+      var sum = document.createElement('div'); sum.className = 'prog-sum';
+      sum.innerHTML = '<div class="ps-h"><b>반별 진도</b><button type="button" class="pp-set">반 설정</button></div><div class="ps-list">' + PROG.classes.map(function (c) {
+        var lt = latestOf(c); return '<button type="button" class="ps-c' + (lt ? '' : ' none') + '"' + (lt ? ' data-go="' + lt + '"' : '') + '><b>' + esc2(c) + '</b> ' + (lt ? ln(lt) + '차시' : '시작 전') + '</button>';
+      }).join('') + '</div>';
+      var anchor = bk.querySelector('.book-edit') || bk.querySelector('.course-switch');
+      bk.insertBefore(sum, anchor ? anchor.nextSibling : bk.firstChild);
+      var at = {};
+      PROG.classes.forEach(function (c) { var lt = latestOf(c); if (lt) (at[lt] = at[lt] || []).push(c); });
+      Object.keys(at).forEach(function (id) {
+        var b = bk.querySelector('li.les button[data-lesson="' + id + '"]'); if (!b) return;
+        var ch = document.createElement('span'); ch.className = 'prog-chips'; ch.innerHTML = at[id].map(function (c) { return '<i>' + esc2(c) + '</i>'; }).join('');
+        b.appendChild(ch);
+      });
+    }
+    function progRender() { progPanels(); progToc(); }
+    window.__progRender = progRender;
+    function classEditor(host) {
+      if (host.querySelector('.pp-edit')) return;
+      var ed = document.createElement('div'); ed.className = 'pp-edit';
+      ed.innerHTML = '<p>반 이름을 한 줄에 하나씩 (최대 10개)</p><textarea rows="6">' + esc2(PROG.classes.join(String.fromCharCode(10))) + '</textarea><div><button type="button" class="pe-ok">저장</button><button type="button" class="pe-no">취소</button></div>';
+      host.appendChild(ed); ed.querySelector('textarea').focus();
+    }
+    function onProgClick(e) {
+      var set = e.target.closest('.pp-set'); if (set) { e.preventDefault(); e.stopPropagation(); classEditor(set.closest('.prog-panel, .prog-sum')); return; }
+      var ok = e.target.closest('.pe-ok'), no = e.target.closest('.pe-no');
+      if (ok || no) {
+        e.preventDefault(); e.stopPropagation(); var ed = (ok || no).closest('.pp-edit');
+        if (ok) {
+          var names = ed.querySelector('textarea').value.split(String.fromCharCode(10)).map(function (s) { return s.trim(); }).filter(Boolean);
+          var uniq = []; names.forEach(function (n) { if (uniq.indexOf(n) < 0 && uniq.length < 10) uniq.push(n); });
+          PROG.classes = uniq;
+          Object.keys(PROG.done).forEach(function (id) { PROG.done[id] = (PROG.done[id] || []).filter(function (c) { return uniq.indexOf(c) > -1; }); });
+          progSave(); state.textContent = '반 이름을 저장했어요';
+        } else ed.remove();
+        return;
+      }
+      var c = e.target.closest('.pp-c');
+      if (c) {
+        e.preventDefault(); e.stopPropagation();
+        var l = c.closest('.prog-panel').dataset.l, name = c.dataset.c, arr = PROG.done[l] = PROG.done[l] || [], i = arr.indexOf(name);
+        if (i > -1) arr.splice(i, 1); else arr.push(name);
+        if (!arr.length) delete PROG.done[l];
+        progSave(); state.textContent = name + (i > -1 ? ' 진도 체크 해제' : ' 진도 체크');
+        return;
+      }
+      var g = e.target.closest('.ps-c[data-go]'); if (g) { e.preventDefault(); if (window.__open) window.__open(+g.dataset.go, 0); }
+    }
+    document.getElementById('slide').addEventListener('click', onProgClick, true);
+    document.getElementById('book').addEventListener('click', onProgClick, true);
+    ['keydown', 'keyup', 'keypress'].forEach(function (t) { document.addEventListener(t, function (e) { if (e.target.closest && e.target.closest('.pp-edit')) e.stopPropagation(); }, true); });
     bar.addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });
     bar.addEventListener('change', function (e) {
       var sel = e.target.closest('select'); if (!sel || !sel.value) return;
@@ -2877,7 +2997,7 @@ function __boot() {
         var canvas = await h2c(pages[i], {
           backgroundColor: '#F3ECDD', scale: 1.5, width: 1600, height: 900, windowWidth: 1600, windowHeight: 900, x: 0, y: 0, scrollX: 0, scrollY: 0,
           useCORS: true, logging: false,
-          ignoreElements: function (el) { return el.classList && (el.classList.contains('block-tools') || el.classList.contains('photo-tools') || el.classList.contains('col-grip') || el.classList.contains('table-bar') || el.classList.contains('fn-tools') || el.classList.contains('fn-resize') || el.classList.contains('photo-win')); }
+          ignoreElements: function (el) { return el.classList && (el.classList.contains('block-tools') || el.classList.contains('photo-tools') || el.classList.contains('col-grip') || el.classList.contains('table-bar') || el.classList.contains('fn-tools') || el.classList.contains('fn-resize') || el.classList.contains('photo-win') || el.classList.contains('prog-panel')); }
         });
         var sl = pptx.addSlide(); sl.background = { color: 'F3ECDD' };
         sl.addImage({ data: canvas.toDataURL('image/jpeg', 0.9), x: 0, y: 0, w: 13.333, h: 7.5 });
@@ -3011,6 +3131,7 @@ function __boot() {
       if (op) { op.textContent = op.textContent.replace(/^[0-9]+차시/, no + '차시'); pk.appendChild(op); }
     });
     window.__lessonNo = function (id) { return map[id] || id; };
+    if (window.__progRender) try { window.__progRender(); } catch (e) {}
   }
   window.__renumber = renumber;
   wrapReveals();
@@ -3421,7 +3542,10 @@ function __boot() {
     if (!sm.parentNode.classList.contains('concealed')) placeReveal(sm.parentNode);
   });
   var m = /^#L([0-9]+)(?:-([0-9]+))?$/.exec(location.hash);
-  open(m ? +m[1] : 1, m && m[2] ? +m[2] : 0);
+  var firstL = (function () { var fb = document.querySelector('#book li.les button'); if (fb) return +fb.dataset.lesson; var fs = document.querySelector('#slide section.stage'); return fs ? +fs.dataset.l : 1; })();
+  var wantL = m ? +m[1] : firstL;
+  if (!document.querySelector('#slide section.stage[data-l="' + wantL + '"]')) wantL = firstL;
+  open(wantL, m && m[2] ? +m[2] : 0);
   fit();
 }
 (function () {
@@ -3448,6 +3572,7 @@ function __boot() {
     document.title = title;
     var bk = d && d.querySelector('template#course-book'); if (bk) document.getElementById('book').innerHTML = bk.innerHTML;
     var pk = d && d.querySelector('template#course-pick'); if (pk) document.getElementById('pick').innerHTML = pk.innerHTML;
+    var pg0 = d && d.querySelector('script#course-progress'); if (pg0) { try { window.__progressBase = JSON.parse(pg0.textContent); } catch (e) {} }
     var bt = document.querySelector('#book .book-title'); if (bt && !bk) bt.textContent = title;
   }
   function start() { var ld = document.getElementById('loading'); if (ld) ld.remove(); window.__course = cid; __boot(); }
