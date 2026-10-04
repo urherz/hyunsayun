@@ -938,6 +938,12 @@
   .block li.bul-none { list-style: none; }
   .block li.bul-none::marker { content: ""; }
   ol.steps-list > li.lv1::marker, ol.steps-list > li.lv2::marker { content: "–  "; }
+
+  /* 표 선 진하게 (가독성) */
+  .tablewrap table, .slide table { border-collapse: collapse; }
+  .tablewrap th, .tablewrap td, .slide .block table th, .slide .block table td { border: 2px solid #86714F !important; }
+  .slide .block thead th { border-bottom: 3px solid #5E4B33 !important; }
+  .slide .block thead th[style*="background"] { border-color: #6E5A40 !important; }
 </style>
 </head>
 <body>
