@@ -944,6 +944,19 @@
   .tablewrap th, .tablewrap td, .slide .block table th, .slide .block table td { border: 2px solid #86714F !important; }
   .slide .block thead th { border-bottom: 3px solid #5E4B33 !important; }
   .slide .block thead th[style*="background"] { border-color: #6E5A40 !important; }
+
+  .course-mobile { display: none; }
+  @media (max-width: 699px) {
+    .lesson-pick { display: flex; flex-direction: column; gap: 6px; }
+    .course-mobile { display: block; width: 100%; font: inherit; font-weight: 700; font-size: 15px; padding: 6px 8px; border: 1.5px solid var(--edge); border-radius: 8px; background: #FFFDF8; color: var(--ink); }
+  }
+
+  @media (max-width: 699px) {
+    .topbar .center-nav { grid-column: 1 / -1 !important; grid-row: 2; justify-content: flex-start; width: auto; }
+    .topbar .right-tools { grid-row: 2; grid-column: 2 / -1; justify-self: end; }
+    .center-nav nav.steps { display: none !important; }
+    .center-nav #counter[hidden] { display: inline-block !important; min-width: 64px; text-align: center; font-family: var(--serif); font-weight: 700; color: var(--ink-soft); }
+  }
 </style>
 </head>
 <body>
@@ -3192,6 +3205,13 @@ function __boot() {
     w.innerHTML = '<span>과목</span><select aria-label="과목 바꾸기">' + Object.keys(C).map(function (k) { return '<option value="' + k + '"' + (k === window.__course ? ' selected' : '') + '>' + C[k].title + '</option>'; }).join('') + '</select>';
     w.querySelector('select').addEventListener('change', function () { location.href = '?s=' + this.value + keep; });
     bk.insertBefore(w, bk.firstChild);
+    var lp = document.querySelector('.lesson-pick');
+    if (lp) {
+      var ms = document.createElement('select'); ms.className = 'course-mobile'; ms.setAttribute('aria-label', '과목 바꾸기');
+      ms.innerHTML = Object.keys(C).map(function (k) { return '<option value="' + k + '"' + (k === window.__course ? ' selected' : '') + '>' + C[k].title + '</option>'; }).join('');
+      ms.addEventListener('change', function () { location.href = '?s=' + this.value + keep; });
+      lp.insertBefore(ms, lp.firstChild);
+    }
   })();
   // ===== 메모(수사보드 쪽지) =====
   function slideScale() { return wide.matches ? slide.getBoundingClientRect().width / 1600 : 1; }
@@ -3598,6 +3618,7 @@ function __boot() {
 (function () {
   var COURSES = {
     hyunsayun: { title: '현대사회와 윤리', file: 'content.html' },
+    tongsa1: { title: '통합사회1', file: 'content-tongsa1.html' },
     tongsa: { title: '통합사회2', file: 'content-tongsa.html' },
     yunsa: { title: '윤리와 사상', file: 'content-yunsa.html' },
     yunmun: { title: '윤리 문제 탐구', file: 'content-yunmun.html' }
