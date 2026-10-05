@@ -942,7 +942,7 @@
   /* 표 선 진하게 (가독성) */
   .tablewrap table, .slide table { border-collapse: collapse; }
   .tablewrap th, .tablewrap td, .slide .block table th, .slide .block table td { border: 2px solid #86714F !important; }
-  .slide .block thead th { border-bottom: 3px solid #5E4B33 !important; }
+  .slide .block thead th { border-bottom: 2px solid #86714F !important; }
   .slide .block thead th[style*="background"] { border-color: #6E5A40 !important; }
 
   .course-mobile { display: none; }
@@ -956,6 +956,23 @@
     .topbar .right-tools { grid-row: 2; grid-column: 2 / -1; justify-self: end; }
     .center-nav nav.steps { display: none !important; }
     .center-nav #counter[hidden] { display: inline-block !important; min-width: 64px; text-align: center; font-family: var(--serif); font-weight: 700; color: var(--ink-soft); }
+  }
+
+  /* 휴대폰: 표가 화면 폭 안에 들어오게 */
+  @media (max-width: 699px) {
+    .slide .tablewrap { overflow-x: visible !important; }
+    .slide .tablewrap table { width: 100% !important; min-width: 0 !important; }
+    .slide .block table th, .slide .block table td { font-size: .74em !important; padding: .35em .4em !important; word-break: keep-all; overflow-wrap: anywhere; line-height: 1.45; }
+  }
+
+  .landing { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  .landing .ld-in { margin: auto 0; padding: 24px 0 40px; }
+  @media (max-width: 699px) {
+    .landing { display: block; padding: 28px 18px calc(28px + env(safe-area-inset-bottom, 0px)); }
+    .landing .ld-in { width: 100%; margin: 0 auto; padding: 0; }
+    .landing h1 { font-size: 34px; }
+    .ld-cards { grid-template-columns: 1fr; gap: 12px; }
+    .ld-card { padding: 16px 18px; }
   }
 </style>
 </head>
