@@ -974,6 +974,24 @@
     .ld-cards { grid-template-columns: 1fr; gap: 12px; }
     .ld-card { padding: 16px 18px; }
   }
+
+  .table-panel .tp-title { width: 100% !important; background: none !important; border: 0 !important; border-bottom: 1px dashed var(--edge) !important; border-radius: 0 !important; box-shadow: none !important; padding: 0 0 6px !important; cursor: pointer; display: flex; justify-content: center; gap: 6px; }
+  .table-panel .tp-body { display: flex; flex-direction: column; gap: 10px; }
+  .table-panel.min { width: auto !important; padding: 6px 10px !important; }
+  .table-panel.min .tp-body { display: none; }
+  .table-panel.min .tp-title { border-bottom: 0 !important; padding: 0 !important; }
+  @media (max-width: 699px) {
+    .table-panel { left: auto !important; right: 8px; z-index: 60 !important; max-height: 55vh; }
+  }
+
+  @media (max-width: 699px) {
+    .edit-bar { left: 0 !important; right: 0 !important; width: 100% !important; max-width: 100vw !important; box-sizing: border-box; overflow-x: hidden !important; max-height: 42vh; overflow-y: auto; }
+    .edit-bar .grp { flex-wrap: wrap !important; max-width: 100%; min-width: 0; }
+    .edit-bar .grp > * { flex-shrink: 1; min-width: 0; }
+  }
+
+  .table-panel { flex-wrap: nowrap !important; overflow-y: auto !important; }
+  .table-panel .tp-body { width: 100%; }
 </style>
 </head>
 <body>
@@ -2137,12 +2155,12 @@ function __boot() {
     // ===== 표 전용 도구 막대 (칸을 클릭하면 표 위에 나타남) =====
     var TB_COLORS = [['default', '#FFFDF8', '무지(기본)'], ['#6E4B2E', '#6E4B2E', '나무'], ['#7D8559', '#7D8559', '올리브'], ['#5F7383', '#5F7383', '청회색'], ['#6F7D62', '#6F7D62', '이끼'], ['#9A6F42', '#9A6F42', '호박'], ['#3F3833', '#3F3833', '먹색'], ['#1F5A96', '#1F5A96', '파랑'], ['#B3372B', '#B3372B', '빨강']];
     function tableBarHTML() {
-      return '<div class="tp-title">표 편집</div>' +
+      return '<button type="button" class="tp-title" data-t="toggle" aria-expanded="true" title="도구판 접기/펴기">표 편집 <span class="tp-arrow">▾</span></button><div class="tp-body">' +
         '<div class="tp-g"><span class="tb-l">가로줄(행)</span><div class="tp-row"><button type="button" data-t="rowadd" title="아래에 가로줄 추가"><span class="tp-ic">＋</span>추가</button><button type="button" data-t="rowdel" class="tb-danger" title="이 가로줄 삭제"><span class="tp-ic">－</span>삭제</button></div></div>' +
         '<div class="tp-g"><span class="tb-l">세로줄(열)</span><div class="tp-row"><button type="button" data-t="coladd" title="오른쪽에 세로줄 추가"><span class="tp-ic">＋</span>추가</button><button type="button" data-t="coldel" class="tb-danger" title="이 세로줄 삭제"><span class="tp-ic">－</span>삭제</button></div></div>' +
         '<div class="tp-g"><span class="tb-l">너비</span><button type="button" data-t="eqall">모두 같게</button><button type="button" data-t="eqothers">이 칸 빼고 같게</button></div>' +
         '<div class="tp-g"><span class="tb-l">이 칸 머리색</span><div class="tp-sw">' + TB_COLORS.map(function (c) { return '<button type="button" class="sw" data-t="color:' + c[0] + '" title="' + c[2] + '" style="background:' + c[1] + '"></button>'; }).join('') + '</div><button type="button" data-t="colorall">모든 칸에 적용</button></div>' +
-        '<div class="tp-g"><button type="button" data-t="undo" class="tb-undo">↶ 되돌리기</button><button type="button" data-t="tdel" class="tb-danger">표 삭제</button></div>';
+        '<div class="tp-g"><button type="button" data-t="undo" class="tb-undo">↶ 되돌리기</button><button type="button" data-t="tdel" class="tb-danger">표 삭제</button></div></div>';
     }
     function clearTableBar() {
       var p = document.getElementById('table-panel'); if (p) p.hidden = true;
@@ -2154,8 +2172,12 @@ function __boot() {
       document.querySelectorAll('.cur-col').forEach(function (x) { x.classList.remove('cur-col'); });
       [].forEach.call(table.rows, function (r) { if (r.cells[colIdx]) r.cells[colIdx].classList.add('cur-col'); });
       var bar = document.getElementById('table-panel');
-      if (!bar) { bar = document.createElement('div'); bar.id = 'table-panel'; bar.className = 'table-bar table-panel'; bar.innerHTML = tableBarHTML(); document.body.appendChild(bar); }
+      if (!bar) {
+        bar = document.createElement('div'); bar.id = 'table-panel'; bar.className = 'table-bar table-panel'; bar.innerHTML = tableBarHTML(); document.body.appendChild(bar);
+        if (window.matchMedia('(max-width: 699px)').matches) { bar.classList.add('min'); var tt = bar.querySelector('.tp-title'); tt.setAttribute('aria-expanded', 'false'); tt.querySelector('.tp-arrow').textContent = '▸'; }
+      }
       bar.hidden = false;
+      if (window.matchMedia('(max-width: 699px)').matches) { var tb = document.querySelector('.topbar'); bar.style.top = Math.max(8, (tb ? tb.getBoundingClientRect().bottom : 0) + 6) + 'px'; } else bar.style.top = '';
     }
     function clearPrev() { document.querySelectorAll('.del-prev').forEach(function (x) { x.classList.remove('del-prev'); }); }
     document.addEventListener('mouseover', function (e) {
@@ -2176,6 +2198,7 @@ function __boot() {
     document.addEventListener('click', function (e) {
       var b = e.target.closest('.table-bar button'); if (!b || !editing) return;
       e.preventDefault();
+      if (b.dataset.t === 'toggle') { var pn = b.closest('.table-panel'); var mn = pn.classList.toggle('min'); b.setAttribute('aria-expanded', String(!mn)); b.querySelector('.tp-arrow').textContent = mn ? '▸' : '▾'; return; }
       if (b.dataset.t === 'tdel' && !confirmTwice(b, '한 번 더 누르면 표 삭제')) return;
       if (b.dataset.t === 'rowdel' && !confirmTwice(b, '한 번 더 누르면 가로줄 삭제')) return;
       if (b.dataset.t === 'coldel' && !confirmTwice(b, '한 번 더 누르면 세로줄 삭제')) return;
