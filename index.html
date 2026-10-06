@@ -1080,6 +1080,12 @@
   #ws-root .ws-exam { --ws-hl: #F6CFCB; }
   #ws-root .ws-link b { color: #111 !important; background: linear-gradient(transparent 50%, #FFE58A 50%, #FFE58A 94%, transparent 94%); padding: 0 2px; }
   #ws-root .ws-box h2 .kind { background: #FFFFFF; }
+
+  .block table td[rowspan], .block table th[rowspan] { vertical-align: middle; }
+
+  /* 선 잇기·벤다이어그램에서도 빨간 큰 화살표 유지 */
+  body:not(.editing) .slide .match .m-dot, body:not(.editing) .slide .venn .v-tok, body:not(.editing) .slide .venn .v-put, body:not(.editing) .slide .venn .v-stage, body:not(.editing) .slide .m-clear, body:not(.editing) .slide .v-clear { cursor: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2256%22%20height%3D%2256%22%20viewBox%3D%220%200%2056%2056%22%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23D0342C%22%20stroke%3D%22%235A1510%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E) 5 4, pointer !important; }
+  body.wd-dragging, body.wd-dragging * { cursor: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2256%22%20height%3D%2256%22%20viewBox%3D%220%200%2056%2056%22%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23D0342C%22%20stroke%3D%22%235A1510%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E) 5 4, grabbing !important; }
 </style>
 </head>
 <body>
@@ -1742,6 +1748,11 @@ function __boot() {
       all.forEach(function (s) {
         roots(s).forEach(function (r) { if (on) r.setAttribute('contenteditable', 'true'); else r.removeAttribute('contenteditable'); });
         s.querySelectorAll('.tag, .lab, .badge, .kind').forEach(function (t) { if (on) t.setAttribute('contenteditable', 'false'); else t.removeAttribute('contenteditable'); });
+        if (on && window.__fixVersus) window.__fixVersus(s);
+        s.querySelectorAll('.news-v .versus').forEach(function (v) {
+          if (on) { v.setAttribute('contenteditable', 'false'); v.querySelectorAll(':scope > .side > p').forEach(function (p) { p.setAttribute('contenteditable', 'true'); }); }
+          else { v.removeAttribute('contenteditable'); v.querySelectorAll('[contenteditable]').forEach(function (p) { p.removeAttribute('contenteditable'); }); }
+        });
         s.querySelectorAll('details.reveal').forEach(function (d) {
           d.open = true; if (!on) d.classList.add('concealed');
           d.removeAttribute('data-closed');
@@ -2297,6 +2308,7 @@ function __boot() {
       return '<button type="button" class="tp-title" data-t="toggle" aria-expanded="true" title="도구판 접기/펴기">표 편집 <span class="tp-arrow">▾</span></button><div class="tp-body">' +
         '<div class="tp-g"><span class="tb-l">가로줄(행)</span><div class="tp-row"><button type="button" data-t="rowadd" title="아래에 가로줄 추가"><span class="tp-ic">＋</span>추가</button><button type="button" data-t="rowdel" class="tb-danger" title="이 가로줄 삭제"><span class="tp-ic">－</span>삭제</button></div></div>' +
         '<div class="tp-g"><span class="tb-l">세로줄(열)</span><div class="tp-row"><button type="button" data-t="coladd" title="오른쪽에 세로줄 추가"><span class="tp-ic">＋</span>추가</button><button type="button" data-t="coldel" class="tb-danger" title="이 세로줄 삭제"><span class="tp-ic">－</span>삭제</button></div></div>' +
+        '<div class="tp-g"><span class="tb-l">칸 합치기</span><button type="button" data-t="merge" title="드래그로 선택한 칸들을 하나로 합쳐요">선택 칸 합치기</button><button type="button" data-t="split" title="합쳐진 칸을 다시 나눠요">합친 칸 나누기</button></div>' +
         '<div class="tp-g"><span class="tb-l">너비</span><button type="button" data-t="eqall">모두 같게</button><button type="button" data-t="eqothers">이 칸 빼고 같게</button></div>' +
         '<div class="tp-g"><span class="tb-l">이 칸 머리색</span><div class="tp-sw">' + TB_COLORS.map(function (c) { return '<button type="button" class="sw" data-t="color:' + c[0] + '" title="' + c[2] + '" style="background:' + c[1] + '"></button>'; }).join('') + '</div><button type="button" data-t="colorall">모든 칸에 적용</button></div>' +
         '<div class="tp-g"><button type="button" data-t="undo" class="tb-undo">↶ 되돌리기</button><button type="button" data-t="tdel" class="tb-danger">표 삭제</button></div></div>';
@@ -2436,8 +2448,54 @@ function __boot() {
       else u.parent.insertBefore(u.clone, u.next && u.next.parentNode === u.parent ? u.next : null);
       document.querySelectorAll('.cur-col').forEach(function (x) { x.classList.remove('cur-col'); }); gripTools(true); storeLesson(+u.sec.dataset.l); state.textContent = '표를 되돌렸어요. 표 칸을 다시 클릭하세요';
     }
+    // ===== 표 칸 합치기 / 나누기 =====
+    function mergeCells() {
+      if (cellSel.length < 2) { state.textContent = '합칠 칸들을 드래그로 먼저 선택하세요'; return; }
+      var t = cellSel[0].closest('table'), pos = tableGrid(t);
+      var r1 = 1e9, r2 = -1, c1 = 1e9, c2 = -1;
+      cellSel.forEach(function (c) { var p = pos.get(c); r1 = Math.min(r1, p.r); r2 = Math.max(r2, p.r2); c1 = Math.min(c1, p.c); c2 = Math.max(c2, p.c2); });
+      var ok = true;
+      pos.forEach(function (p, c) {
+        var inside = p.r >= r1 && p.r2 <= r2 && p.c >= c1 && p.c2 <= c2, overlap = p.r <= r2 && p.r2 >= r1 && p.c <= c2 && p.c2 >= c1;
+        if (overlap && !inside) ok = false;
+      });
+      if (!ok) { state.textContent = '이미 합쳐진 칸이 범위에 걸쳐 있어요. 범위를 넓혀 선택하세요'; return; }
+      var hasHead = cellSel.some(function (c) { return c.parentNode.parentNode.tagName === 'THEAD'; }), hasBody = cellSel.some(function (c) { return c.parentNode.parentNode.tagName !== 'THEAD'; });
+      if (hasHead && hasBody) { state.textContent = '머리줄과 아래 칸은 함께 합칠 수 없어요'; return; }
+      snapTable(t);
+      var cells = []; pos.forEach(function (p, c) { if (p.r >= r1 && p.r2 <= r2 && p.c >= c1 && p.c2 <= c2) cells.push({ c: c, p: p }); });
+      cells.sort(function (a, b) { return a.p.r - b.p.r || a.p.c - b.p.c; });
+      var keep = cells[0].c, parts = [];
+      cells.forEach(function (x) { var h = x.c.innerHTML.replace(/&nbsp;/g, ' ').trim(); if (h && h !== '<br>') parts.push(x.c.innerHTML.trim()); });
+      keep.innerHTML = parts.length ? parts.join('<br>') : '&nbsp;';
+      cells.slice(1).forEach(function (x) { x.c.remove(); });
+      keep.rowSpan = r2 - r1 + 1; keep.colSpan = c2 - c1 + 1;
+      if (keep.rowSpan === 1) keep.removeAttribute('rowspan'); if (keep.colSpan === 1) keep.removeAttribute('colspan');
+      clearCellSel(); gripTools(true); storeLesson(+t.closest('section.stage').dataset.l);
+      state.textContent = '칸을 합쳤어요 (' + (r2 - r1 + 1) + '×' + (c2 - c1 + 1) + ')';
+    }
+    function splitCell() {
+      var cell = cellSel.length === 1 ? cellSel[0] : cellRange(); if (!cell) { state.textContent = '나눌 칸을 먼저 클릭'; return; }
+      if ((cell.rowSpan || 1) === 1 && (cell.colSpan || 1) === 1) { state.textContent = '합쳐진 칸이 아니에요'; return; }
+      var t = cell.closest('table'), pos = tableGrid(t), p = pos.get(cell); snapTable(t);
+      var tag = cell.tagName.toLowerCase(), plan = [];
+      for (var y = p.r; y <= p.r2; y++) {
+        var tr = t.rows[y], idx = 0;
+        [].forEach.call(tr.cells, function (c) { var q = pos.get(c); if (q.c < p.c) idx++; });
+        if (y === p.r) idx++;
+        plan.push({ tr: tr, idx: idx, n: y === p.r ? p.c2 - p.c : p.c2 - p.c + 1 });
+      }
+      cell.removeAttribute('rowspan'); cell.removeAttribute('colspan');
+      plan.forEach(function (pl) {
+        for (var k = 0; k < pl.n; k++) { var nc = document.createElement(tag); nc.innerHTML = '&nbsp;'; pl.tr.insertBefore(nc, pl.tr.cells[pl.idx + k] || null); }
+      });
+      clearCellSel(); gripTools(true); storeLesson(+t.closest('section.stage').dataset.l);
+      state.textContent = '합친 칸을 나눴어요';
+    }
     function tableCmd(c) {
       if (c === 'undo') { undoTable(); return; }
+      if (c === 'merge') { mergeCells(); return; }
+      if (c === 'split') { splitCell(); return; }
       if (c === 'tadd') { placeTable(makeTable([['제목', '제목', '제목'], ['', '', ''], ['', '', '']])); return; }
       var cell = cellRange(); if (!cell) { state.textContent = '표 칸을 먼저 클릭'; return; }
       var tr = cell.parentNode, table = cell.closest('table'), col = [].indexOf.call(tr.cells, cell), sec = table.closest('section.stage');
@@ -3399,6 +3457,28 @@ function __boot() {
     if (window.__progRender) try { window.__progRender(); } catch (e) {}
   }
   window.__renumber = renumber;
+  // 시사 A·B 입장 칸 구조 바로잡기 (편집 중 글이 칸 밖으로 빠져나온 경우)
+  function fixVersus(root) {
+    (root || document).querySelectorAll('.news-v .versus').forEach(function (v) {
+      var sides = v.querySelectorAll(':scope > .side'); if (sides.length < 2) return;
+      [].slice.call(v.childNodes).forEach(function (n) {
+        if (n.nodeType === 1 && (n.classList.contains('side') || n.classList.contains('vs'))) return;
+        var txt = (n.textContent || '').trim();
+        if (!txt) { n.remove(); return; }
+        var target = [].filter.call(sides, function (s) { var p = s.querySelector('p'); return !p || !p.textContent.trim(); })[0] || sides[0];
+        var p = target.querySelector('p');
+        if (!p) { p = document.createElement('p'); target.appendChild(p); }
+        if (n.nodeType === 1 && n.tagName === 'P') { if (!p.textContent.trim()) p.innerHTML = n.innerHTML; else p.innerHTML += '<br>' + n.innerHTML; }
+        else { p.appendChild(document.createTextNode((p.textContent.trim() ? ' ' : '') + txt)); }
+        n.remove();
+      });
+      sides.forEach(function (s) { var ps = s.querySelectorAll(':scope > p'); for (var i = 1; i < ps.length; i++) { ps[0].innerHTML += '<br>' + ps[i].innerHTML; ps[i].remove(); } if (!ps.length) { var np = document.createElement('p'); np.innerHTML = '&nbsp;'; s.appendChild(np); } });
+      var vs = v.querySelector(':scope > .vs'), a = v.querySelector(':scope > .side-a'), bb = v.querySelector(':scope > .side-b');
+      if (a && vs && bb) { v.appendChild(a); v.appendChild(vs); v.appendChild(bb); }
+    });
+  }
+  window.__fixVersus = fixVersus;
+  fixVersus();
   wrapReveals();
   initEdit();
   renumber();
@@ -3695,11 +3775,13 @@ function __boot() {
     var dot = e.target.closest('.match .m-dot'); if (!dot) return;
     e.preventDefault(); e.stopPropagation();
     var m = dot.closest('.match'), s = mScale(), box = m.getBoundingClientRect(), p = mCenter(dot, box, s), moved = false, sx = e.clientX, sy = e.clientY;
+    document.body.classList.add('wd-dragging');
     function mv(ev) {
       if (Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) > 6) moved = true;
       if (moved) mDraw(m, [p[0], p[1], (ev.clientX - box.left) / s, (ev.clientY - box.top) / s]);
     }
     function up(ev) {
+      document.body.classList.remove('wd-dragging');
       document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up);
       var t = document.elementFromPoint(ev.clientX, ev.clientY), other = t && t.closest && (t.closest('.m-dot') || (t.closest('.match li') && t.closest('.match li').querySelector('.m-dot')));
       if (moved) {
@@ -3760,11 +3842,13 @@ function __boot() {
     e.preventDefault(); e.stopPropagation();
     var v = tok.closest('.venn'), i = tok.classList.contains('v-put') ? +tok.dataset.i : [].indexOf.call(tok.closest('.v-items').children, tok.closest('li'));
     var sx = e.clientX, sy = e.clientY, moved = false, ghost = null;
+    document.body.classList.add('wd-dragging');
     function mv(ev) {
       if (!moved && Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) > 6) { moved = true; ghost = document.createElement('span'); ghost.className = 'v-ghost'; ghost.textContent = i + 1; document.body.appendChild(ghost); }
       if (ghost) { ghost.style.left = ev.clientX + 'px'; ghost.style.top = ev.clientY + 'px'; }
     }
     function up(ev) {
+      document.body.classList.remove('wd-dragging');
       document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up);
       if (ghost) ghost.remove();
       if (moved) { vPlace(v, i, ev.clientX, ev.clientY); vArmed = null; v.querySelectorAll('.armed').forEach(function (x) { x.classList.remove('armed'); }); return; }
