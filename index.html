@@ -1067,6 +1067,19 @@
   #ws-root .ws-concept { border-color: #C9B79A; }
   #ws-root .ws-activity { border-color: #A9B8C8; }
   #ws-root .ws-exam { border-color: #DDB3AD; }
+
+  /* 학습지 제목: 글자색은 그대로, 형광펜 칠하듯 */
+  #ws-root, #ws-root * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #ws-root h1 { color: #111 !important; display: inline; background: linear-gradient(transparent 52%, #FFE58A 52%, #FFE58A 92%, transparent 92%); padding: 0 3px; }
+  #ws-root .ws-box h2 { color: #111 !important; border-left: 0 !important; padding-left: 0 !important; }
+  #ws-root .ws-box h2 { display: inline-block; padding: 0 4px !important; margin-bottom: 6px; background: linear-gradient(transparent 50%, var(--ws-hl, #FFE58A) 50%, var(--ws-hl, #FFE58A) 94%, transparent 94%); }
+  #ws-root .ws-concept { --ws-hl: #F3D9B5; }
+  #ws-root .ws-summary { --ws-hl: #DCE8C8; }
+  #ws-root .ws-activity { --ws-hl: #CFE0F2; }
+  #ws-root .ws-news { --ws-hl: #E6EBC4; }
+  #ws-root .ws-exam { --ws-hl: #F6CFCB; }
+  #ws-root .ws-link b { color: #111 !important; background: linear-gradient(transparent 50%, #FFE58A 50%, #FFE58A 94%, transparent 94%); padding: 0 2px; }
+  #ws-root .ws-box h2 .kind { background: #FFFFFF; }
 </style>
 </head>
 <body>
