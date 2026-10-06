@@ -1037,6 +1037,36 @@
   .edit-bar button[data-cmd="nohead"].is-hidden-head { color: #4E5C42 !important; border-color: #B9C4AC !important; background: #F0F3EC !important; }
 
   .slide section.stage.active:not(:has(> .stage-head)):not(:has(header.lesson)) { padding-top: 48px; }
+
+  /* 휴대폰: 아래 도구 줄은 좌우로 밀어서 보기 */
+  @media (max-width: 699px) {
+    .edit-bar { display: flex !important; flex-wrap: nowrap !important; align-items: center; gap: 10px; overflow-x: auto !important; overflow-y: hidden !important; max-height: none !important; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important; }
+    .edit-bar > * { flex: 0 0 auto !important; }
+    .edit-bar .grp { flex-wrap: nowrap !important; max-width: none !important; white-space: nowrap; }
+    .edit-bar .grp > * { flex-shrink: 0 !important; }
+    .edit-bar .ver-info { white-space: nowrap; }
+  }
+
+  body.editing table.cell-selecting ::selection { background: transparent; }
+  body.editing td.cell-sel, body.editing th.cell-sel { background-image: linear-gradient(rgba(31,90,150,.14), rgba(31,90,150,.14)) !important; outline: 2px solid #1F5A96; outline-offset: -2px; }
+
+  #ws-root table { table-layout: auto !important; }
+  #ws-root th, #ws-root td { white-space: normal !important; word-break: keep-all; overflow-wrap: anywhere; }
+  #ws-root tbody th { width: 16%; background: #f6f6f6; }
+  #ws-root td .ws-blank, #ws-root th .ws-blank { max-width: 92%; }
+  #ws-root .ws-blank { max-width: 100%; }
+  /* 학습지 제목 색 */
+  #ws-root h1 { color: #5A3A22; }
+  #ws-root .ws-box h2 { padding-left: 7px; border-left: 4px solid #999; }
+  #ws-root .ws-concept h2 { color: #6B4423; border-left-color: #6B4423; }
+  #ws-root .ws-summary h2 { color: #5E6E4E; border-left-color: #6F7D62; }
+  #ws-root .ws-activity h2 { color: #3E5875; border-left-color: #4F6A86; }
+  #ws-root .ws-news h2 { color: #5E6E4E; border-left-color: #7D8559; }
+  #ws-root .ws-exam h2 { color: #9A2E24; border-left-color: #B3372B; }
+  #ws-root .ws-link b { color: #8A6A3A; }
+  #ws-root .ws-concept { border-color: #C9B79A; }
+  #ws-root .ws-activity { border-color: #A9B8C8; }
+  #ws-root .ws-exam { border-color: #DDB3AD; }
 </style>
 </head>
 <body>
@@ -1605,6 +1635,7 @@ function __boot() {
       c.querySelectorAll('.fn-auto').forEach(function (e) { var p = e.parentNode; while (e.firstChild) p.insertBefore(e.firstChild, e); p.removeChild(e); });
       c.querySelectorAll('.fn-note').forEach(function (e) { e.classList.remove('open'); e.removeAttribute('style'); });
       c.querySelectorAll('.cloze.open').forEach(function (e) { e.classList.remove('open'); });
+      c.querySelectorAll('.cell-sel, .cell-selecting').forEach(function (e) { e.classList.remove('cell-sel', 'cell-selecting'); });
       if (c.dataset && c.dataset.nohead) { var oh = c.querySelector(':scope > .stage-head'); if (oh) oh.remove(); delete c.dataset.nohead; }
       c.querySelectorAll('.fn-mark, .fn-anchor, .win-open').forEach(function (e) { e.classList.remove('on', 'win-open'); if (!e.getAttribute('class')) e.removeAttribute('class'); });
       c.querySelectorAll('.cur-col, .del-prev').forEach(function (e) { e.classList.remove('cur-col', 'del-prev'); if (!e.className) e.removeAttribute('class'); });
@@ -1884,7 +1915,52 @@ function __boot() {
       return n.closest('[contenteditable="true"]') ? r : null;
     }
     // ===== 표 안에서 여러 칸에 걸친 서식 처리 + 깨진 표 복구 =====
+    // ===== 표 칸 사각형 선택 (드래그한 범위의 가로·세로 칸만) =====
+    var cellSel = [], cellAnchor = null, cellDragging = false;
+    function tableGrid(t) {
+      var grid = [], pos = new Map();
+      [].forEach.call(t.rows, function (tr, ri) {
+        grid[ri] = grid[ri] || []; var ci = 0;
+        [].forEach.call(tr.cells, function (c) {
+          while (grid[ri][ci]) ci++;
+          var rs = c.rowSpan || 1, cs = c.colSpan || 1;
+          for (var y = 0; y < rs; y++) for (var x = 0; x < cs; x++) { grid[ri + y] = grid[ri + y] || []; grid[ri + y][ci + x] = c; }
+          pos.set(c, { r: ri, c: ci, r2: ri + rs - 1, c2: ci + cs - 1 }); ci += cs;
+        });
+      });
+      return pos;
+    }
+    function clearCellSel() { document.querySelectorAll('.cell-sel').forEach(function (c) { c.classList.remove('cell-sel'); }); document.querySelectorAll('table.cell-selecting').forEach(function (t) { t.classList.remove('cell-selecting'); }); cellSel = []; }
+    function setCellRect(a, b) {
+      var t = a.closest('table'); if (!t || t !== b.closest('table')) return;
+      var pos = tableGrid(t), pa = pos.get(a), pb = pos.get(b);
+      var r1 = Math.min(pa.r, pb.r), r2 = Math.max(pa.r2, pb.r2), c1 = Math.min(pa.c, pb.c), c2 = Math.max(pa.c2, pb.c2);
+      clearCellSel(); t.classList.add('cell-selecting');
+      pos.forEach(function (p, c) { if (p.r <= r2 && p.r2 >= r1 && p.c <= c2 && p.c2 >= c1) { c.classList.add('cell-sel'); cellSel.push(c); } });
+      var sel = window.getSelection(), rg = document.createRange();
+      rg.setStart(a, 0); rg.setEnd(b, b.childNodes.length);
+      if (rg.collapsed) { rg.setStart(b, 0); rg.setEnd(a, a.childNodes.length); }
+      sel.removeAllRanges(); sel.addRange(rg);
+      state.textContent = cellSel.length + '칸 선택됨 (가로·세로 범위)';
+    }
+    document.getElementById('slide').addEventListener('mousedown', function (e) {
+      if (!editing || e.button !== 0) return;
+      var c = e.target.closest && e.target.closest('section.stage td, section.stage th');
+      if (!c || e.target.closest('.col-grip')) { if (!e.target.closest('.table-bar')) clearCellSel(); cellAnchor = null; return; }
+      if (e.shiftKey && cellSel.length && cellSel[0].closest('table') === c.closest('table')) { e.preventDefault(); setCellRect(cellAnchor || cellSel[0], c); return; }
+      clearCellSel(); cellAnchor = c; cellDragging = false;
+    });
+    document.addEventListener('mousemove', function (e) {
+      if (!editing || !cellAnchor || !(e.buttons & 1)) return;
+      var el = document.elementFromPoint(e.clientX, e.clientY), c = el && el.closest && el.closest('td, th');
+      if (!c || c.closest('table') !== cellAnchor.closest('table')) return;
+      if (c === cellAnchor && !cellDragging) return;
+      cellDragging = true; e.preventDefault(); setCellRect(cellAnchor, c);
+    });
+    document.addEventListener('mouseup', function () { if (cellDragging) { cellDragging = false; } });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && cellSel.length) clearCellSel(); });
     function cellsIn(r) {
+      if (cellSel.length > 1) { var tt = cellSel[0].closest('table'); if (tt && tt.isConnected && r && r.intersectsNode(tt)) return cellSel.filter(function (c) { return c.isConnected; }); }
       var a = r.startContainer, z = r.endContainer; if (a.nodeType === 3) a = a.parentNode; if (z.nodeType === 3) z = z.parentNode;
       var ca = a.closest && a.closest('td, th'), cz = z.closest && z.closest('td, th');
       if (!ca && !cz) return null;
@@ -1960,6 +2036,7 @@ function __boot() {
       var cz0 = n.closest('.cloze'); if (cz0) { var ca0 = cz0.querySelector('.cz-a'); if (ca0) unwrap(ca0); unwrap(cz0); }
       var anc = n.closest('.imp, .kw, .hl, .bd'); if (anc) unwrap(anc);
       s.querySelectorAll('.cloze').forEach(function (z) { if (r.intersectsNode(z)) { var ca = z.querySelector('.cz-a'); if (ca) unwrap(ca); unwrap(z); } });
+      if (cellSel.length > 1) { cellSel.forEach(function (c) { c.querySelectorAll('.imp, .kw, .hl, .bd').forEach(unwrap); }); storeLesson(+s.dataset.l); return; }
       s.querySelectorAll('.imp, .kw, .hl, .bd').forEach(function (el) { if (r.intersectsNode(el)) unwrap(el); });
       storeLesson(+s.dataset.l);
     }
@@ -2007,6 +2084,7 @@ function __boot() {
       c.querySelectorAll('.fn-auto').forEach(function (e) { var p = e.parentNode; while (e.firstChild) p.insertBefore(e.firstChild, e); p.removeChild(e); });
       c.querySelectorAll('.fn-note').forEach(function (e) { e.classList.remove('open'); e.removeAttribute('style'); });
       c.querySelectorAll('.cloze.open').forEach(function (e) { e.classList.remove('open'); });
+      c.querySelectorAll('.cell-sel, .cell-selecting').forEach(function (e) { e.classList.remove('cell-sel', 'cell-selecting'); });
       if (c.dataset && c.dataset.nohead) { var oh = c.querySelector(':scope > .stage-head'); if (oh) oh.remove(); delete c.dataset.nohead; }
       c.querySelectorAll('.fn-mark, .fn-anchor, .win-open').forEach(function (e) { e.classList.remove('on', 'win-open'); if (!e.getAttribute('class')) e.removeAttribute('class'); });
       c.querySelectorAll('.cur-col, .del-prev').forEach(function (e) { e.classList.remove('cur-col', 'del-prev'); if (!e.className) e.removeAttribute('class'); });
@@ -3709,7 +3787,8 @@ function __boot() {
   function wsClean(el) {
     el.querySelectorAll('.tag, .prog-panel, .rv-open, .rv-close, .m-clear, .v-clear, .wd-undo, .fn-mark, .fn-note, figure, svg, img, .m-dot, .v-tok, .v-drop, .v-stage, .lab').forEach(function (x) { x.remove(); });
     el.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); });
-    el.querySelectorAll('[style]').forEach(function (x) { if (!x.closest('table')) x.removeAttribute('style'); });
+    el.querySelectorAll('[style]').forEach(function (x) { x.removeAttribute('style'); });
+    el.querySelectorAll('colgroup').forEach(function (x) { x.remove(); });
     return el;
   }
   function wsLines(n) { var s = ''; for (var i = 0; i < n; i++) s += '<div class="ws-line"></div>'; return s; }
@@ -3729,14 +3808,14 @@ function __boot() {
         if (/b-link/.test(cls)) { html = '<div class="ws-box ws-link"><b>생각 열기</b> ' + blk.textContent.trim() + '</div>'; }
         else if (/b-news/.test(cls)) {
           var hl = blk.querySelector('.headline'), ft = blk.querySelector('.fact'), sides = blk.querySelectorAll('.side');
-          html = '<div class="ws-box"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.textContent.trim() + '</p>' : '') + (ft ? '<p>' + ft.innerHTML + '</p>' : '') +
+          html = '<div class="ws-box ws-news"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.textContent.trim() + '</p>' : '') + (ft ? '<p>' + ft.innerHTML + '</p>' : '') +
             '<ul class="ws-sides">' + [].map.call(sides, function (sd) { var bd = sd.querySelector('.badge'), pp = sd.querySelector('p'); return '<li><b>' + (bd ? bd.textContent.trim() : '') + '</b>: ' + (pp ? pp.textContent.trim() : '') + '</li>'; }).join('') + '</ul>' +
             '<p>나의 입장: A □ / B □ &nbsp; 이유:</p>' + wsLines(2) + '</div>';
         }
-        else if (/b-concept/.test(cls)) { wsBlankify(blk, withAns); html = '<div class="ws-box"><h2>' + (blk.querySelector('h3') ? blk.querySelector('h3').innerHTML : '핵심 개념') + '</h2>'; blk.querySelector('h3') && blk.querySelector('h3').remove(); html += blk.innerHTML + '</div>'; }
+        else if (/b-concept/.test(cls)) { wsBlankify(blk, withAns); html = '<div class="ws-box ws-concept"><h2>' + (blk.querySelector('h3') ? blk.querySelector('h3').innerHTML : '핵심 개념') + '</h2>'; blk.querySelector('h3') && blk.querySelector('h3').remove(); html += blk.innerHTML + '</div>'; }
         else if (/b-summary/.test(cls)) {
           var pq = blk.querySelector('.pairq'), prop = blk.querySelector('details.reveal');
-          html = '<div class="ws-box"><h2>정리</h2>' + (pq ? '<p><b>짝 질문</b> ' + pq.textContent.trim() + '</p>' + wsLines(1) : '');
+          html = '<div class="ws-box ws-summary"><h2>정리</h2>' + (pq ? '<p><b>짝 질문</b> ' + pq.textContent.trim() + '</p>' + wsLines(1) : '');
           if (prop) { var body = prop.querySelector('.rv-body') || prop; var c = body.cloneNode(true); c.querySelectorAll('summary').forEach(function (x) { x.remove(); }); wsBlankify(c, withAns); html += '<p class="ws-prop"><b>핵심 명제</b> ' + c.innerHTML.split('<p>').join(' ').split('</p>').join(' ') + '</p>'; }
           html += '</div>';
         }
@@ -3759,12 +3838,12 @@ function __boot() {
           lis.forEach(function (li) { li.remove(); });
           blk.querySelectorAll('ol.steps-list, ul.concepts').forEach(function (x) { x.remove(); });
           blk.querySelectorAll('td').forEach(function (td) { if (!td.textContent.trim()) td.innerHTML = '<div class="ws-cell"></div>'; });
-          html = '<div class="ws-box"><h2>활동 · ' + (h3 ? h3.innerHTML : '') + '</h2>' + (intro ? '<p class="ws-intro">' + intro.innerHTML + '</p>' : '') + bodyHtml + (steps ? '<ol class="ws-steps">' + steps + '</ol>' : '') + blk.innerHTML + ans + '</div>';
+          html = '<div class="ws-box ws-activity"><h2>활동 · ' + (h3 ? h3.innerHTML : '') + '</h2>' + (intro ? '<p class="ws-intro">' + intro.innerHTML + '</p>' : '') + bodyHtml + (steps ? '<ol class="ws-steps">' + steps + '</ol>' : '') + blk.innerHTML + ans + '</div>';
         }
         else if (/b-exam/.test(cls)) {
           var det2 = blk.querySelectorAll('details.reveal'); var ans2 = withAns ? [].map.call(det2, function (d) { var b = d.querySelector('.rv-body') || d; var c = b.cloneNode(true); c.querySelectorAll('summary').forEach(function (x) { x.remove(); }); return '<p class="ws-key"><b>정답</b> ' + c.textContent.trim() + '</p>'; }).join('') : '<p>정답: ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</p>';
           det2.forEach(function (d) { d.remove(); });
-          html = '<div class="ws-box"><h2>기출</h2>' + blk.innerHTML + ans2 + '</div>';
+          html = '<div class="ws-box ws-exam"><h2>기출</h2>' + blk.innerHTML + ans2 + '</div>';
         }
         out += html;
       });
