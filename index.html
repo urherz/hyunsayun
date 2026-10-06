@@ -1086,6 +1086,13 @@
   /* 선 잇기·벤다이어그램에서도 빨간 큰 화살표 유지 */
   body:not(.editing) .slide .match .m-dot, body:not(.editing) .slide .venn .v-tok, body:not(.editing) .slide .venn .v-put, body:not(.editing) .slide .venn .v-stage, body:not(.editing) .slide .m-clear, body:not(.editing) .slide .v-clear { cursor: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2256%22%20height%3D%2256%22%20viewBox%3D%220%200%2056%2056%22%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23D0342C%22%20stroke%3D%22%235A1510%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E) 5 4, pointer !important; }
   body.wd-dragging, body.wd-dragging * { cursor: url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2256%22%20height%3D%2256%22%20viewBox%3D%220%200%2056%2056%22%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23FFFFFF%22%20stroke%3D%22%23FFFFFF%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M5%204%20L5%2045%20L16%2034%20L24%2051%20L32%2047.5%20L24%2031%20L40%2031%20Z%22%20fill%3D%22%23D0342C%22%20stroke%3D%22%235A1510%22%20stroke-width%3D%221.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E) 5 4, grabbing !important; }
+
+  /* 동영상 */
+  .video-wrap { position: relative; width: min(100%, 26em); max-width: none; margin: .3em auto; aspect-ratio: 16 / 9; background: #111; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 18px rgba(60,40,20,.18); }
+  .video-wrap iframe, .video-wrap video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video-tools { position: absolute; right: 10px; top: 10px; z-index: 5; }
+  .video-tools button { font-family: var(--serif); font-weight: 700; font-size: 16px; padding: 4px 12px; color: #B3372B; background: #FFFFFF; border: 1.5px solid #E2B4AE; border-radius: 6px; cursor: pointer; }
+  body.capturing .video-wrap::after { content: "▶ 동영상"; position: absolute; inset: 0; display: grid; place-items: center; color: #FFF; font-size: 40px; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -1484,7 +1491,7 @@
     <div class="grp"><button type="button" data-cmd="undoall" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-cmd="redoall" title="다시 실행 (Ctrl+Y)">↷ 다시</button></div>
     <div class="grp"><span class="glab">페이지</span><select data-sel="page" aria-label="페이지 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select><button type="button" data-cmd="left" title="앞으로 옮기기">◀</button><button type="button" data-cmd="right" title="뒤로 옮기기">▶</button><button type="button" data-cmd="delpage">삭제</button><button type="button" data-cmd="nohead" title="이 페이지 위쪽 제목 줄(예: 2 전개 1 · 10분)을 지워요. 지운 뒤엔 다시 넣을 수 있어요">✕ 제목 줄 지우기</button></div>
     <div class="grp"><span class="glab">차시</span><button type="button" data-cmd="addlesson" title="지금 차시 바로 뒤(같은 소단원)에 새 차시(표지 + 개념 1쪽)를 만들어요">＋ 차시</button><button type="button" data-cmd="dellesson" title="지금 차시를 통째로 지워요">차시 삭제</button></div>
-    <div class="grp"><select data-sel="tool" aria-label="수업 도구 넣기" title="커서가 있는 자리에 넣어요. 선 잇기·벤다이어그램은 커서가 있는 목록을 바꿔요"><option value="">＋ 수업 도구</option><option value="table">표</option><option value="match">선 잇기</option><option value="venn">벤다이어그램</option></select></div>
+    <div class="grp"><select data-sel="tool" aria-label="수업 도구 넣기" title="커서가 있는 자리에 넣어요. 선 잇기·벤다이어그램은 커서가 있는 목록을 바꿔요"><option value="">＋ 수업 도구</option><option value="table">표</option><option value="match">선 잇기</option><option value="venn">벤다이어그램</option><option value="video">동영상 (유튜브)</option></select></div>
     <span class="grp-sep"></span>
     <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="bd" class="t-bd" title="굵게 (Ctrl+B). 굵은 글자를 선택하고 다시 누르면 해제">굵게</button><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><button type="button" data-cmd="cloze" title="선택한 글자를 ( ) 빈칸으로. 수업 중 누르면 열려요">( ) 빈칸</button><button type="button" data-cmd="clozecho" title="선택한 글자를 초성 힌트가 있는 빈칸으로">초성 빈칸</button><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button><select data-sel="badge" aria-label="배지 넣기" title="커서 자리에 배지를 넣어요"><option value="">＋ 배지</option><option value="짝 질문">짝 질문</option><option value="질문">질문</option><option value="미션">미션</option><option value="핵심 명제">핵심 명제</option><option value="정리">정리</option><option value="예시">예시</option><option value="주의">주의</option><option value="__custom">직접 입력…</option></select><input id="badge-text" class="badge-text" type="text" placeholder="배지 글자 입력 후 Enter" hidden></div>
     <div class="grp"><span class="glab">줄</span><button type="button" data-cmd="outdent" title="내어쓰기 (Shift+Tab)">← 내어쓰기</button><button type="button" data-cmd="indent" title="들여쓰기 (Tab)">들여쓰기 →</button><select data-sel="bullet" aria-label="머리 기호" title="목록 줄 앞 기호 바꾸기"><option value="">머리 기호</option><option value="auto">기본</option><option value="dot">• 점</option><option value="dash">– 줄표</option><option value="arrow">→ 화살표</option><option value="check">✓ 체크</option><option value="none">없음</option></select></div>
@@ -1644,7 +1651,7 @@ function __boot() {
       var c = s.cloneNode(true);
       c.classList.remove('active', 'scrolly', 'measuring'); c.style.fontSize = ''; if (!c.getAttribute('style')) c.removeAttribute('style');
       c.querySelectorAll('.block, header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -1763,7 +1770,7 @@ function __boot() {
         });
       });
       photoTools(on); blockTools(on); gripTools(on); noteTools(on); widgetTools(on); if (!on) clearTableBar();
-      bookEditTools(on); try { progRender(); } catch (e) {}
+      bookEditTools(on); videoTools(on); try { progRender(); } catch (e) {}
       if (window.__reveal) window.__reveal.wrap();
     }
     // ===== 반영 안 된 수정 알림 · 되살리기 · 자동 반영 =====
@@ -2007,7 +2014,7 @@ function __boot() {
     function dropEmpty(root) {
       var n = 0;
       (root || document).querySelectorAll('section.stage .block li, section.stage .block p, section.stage .block h3').forEach(function (el) {
-        if (el.closest('.fn-note, .table-bar, .block-tools, td, th, summary, .clip, .sides, .mission-bar, .match, .venn')) return;
+        if (el.closest('.fn-note, .table-bar, .block-tools, td, th, summary, .clip, .sides, .mission-bar, .match, .venn, .video-wrap') || el.querySelector('.video-wrap, iframe, video')) return;
         if (el.querySelector('img, svg, table, .fn-mark, input')) return;
         if (el.textContent.split(String.fromCharCode(160)).join('').trim() === '') { el.remove(); n++; }
       });
@@ -2098,7 +2105,7 @@ function __boot() {
       c.querySelectorAll('section.stage').forEach(function (s) { s.classList.remove('active'); s.style.fontSize = ''; if (!s.getAttribute('style')) s.removeAttribute('style'); });
       c.querySelectorAll('section.stage .block, section.stage header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
       c.querySelectorAll('.current').forEach(function (e) { e.classList.remove('current'); e.removeAttribute('aria-current'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, input[type=file]').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, input[type=file]').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -3003,6 +3010,60 @@ function __boot() {
       if (!curLi()) return;
       e.preventDefault(); indentLi(e.shiftKey ? -1 : 1);
     }, true);
+    // ===== 동영상 넣기 (유튜브 / 동영상 파일 주소) =====
+    function ytInfo(u) {
+      try {
+        var url = new URL(u.trim()), id = '', start = 0, h = url.hostname.replace('www.', '').replace('m.', '');
+        if (h === 'youtu.be') id = url.pathname.slice(1).split('/')[0];
+        else if (h.indexOf('youtube.com') > -1 || h.indexOf('youtube-nocookie.com') > -1) {
+          if (url.searchParams.get('v')) id = url.searchParams.get('v');
+          else { var parts = url.pathname.split('/').filter(Boolean); var k = parts.indexOf('embed') > -1 ? parts.indexOf('embed') : (parts.indexOf('shorts') > -1 ? parts.indexOf('shorts') : parts.indexOf('live')); if (k > -1) id = parts[k + 1] || ''; }
+        }
+        var t = url.searchParams.get('t') || url.searchParams.get('start') || '';
+        if (t) {
+          var hh = t.match(/([0-9]+)h/), mi = t.match(/([0-9]+)m/), se = t.match(/([0-9]+)s/);
+          start = (hh || mi || se) ? (+(hh ? hh[1] : 0)) * 3600 + (+(mi ? mi[1] : 0)) * 60 + (+(se ? se[1] : 0)) : (parseInt(t, 10) || 0);
+        }
+        return id ? { id: id.replace(/[^A-Za-z0-9_-]/g, ''), start: start } : null;
+      } catch (e) { return null; }
+    }
+    function makeVideoNode(u) {
+      var w = document.createElement('div'); w.className = 'video-wrap'; w.setAttribute('contenteditable', 'false');
+      var yt = ytInfo(u);
+      if (yt) {
+        w.dataset.src = u.trim();
+        w.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + yt.id + '?rel=0' + (yt.start ? '&start=' + yt.start : '') + '" title="동영상" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+        return w;
+      }
+      if (/^https?:[/][/].+[.](mp4|webm|ogg|mov)([?#].*)?$/i.test(u.trim())) {
+        w.dataset.src = u.trim();
+        var v = document.createElement('video'); v.controls = true; v.preload = 'metadata'; v.src = u.trim(); w.appendChild(v);
+        return w;
+      }
+      return null;
+    }
+    function addVideo() {
+      var u = window.prompt('유튜브 주소(또는 mp4 동영상 파일 주소)를 붙여 넣어 주세요. 예: https://youtu.be/영상번호');
+      if (!u) return;
+      var node = makeVideoNode(u);
+      if (!node) { state.textContent = '동영상 주소를 알아보지 못했어요. 유튜브 주소나 mp4 주소를 넣어 주세요'; return; }
+      placeTable(node); videoTools(true); state.textContent = '동영상을 넣었어요';
+    }
+    window.__makeVideoNode = makeVideoNode;
+    function videoTools(on) {
+      document.querySelectorAll('.video-tools').forEach(function (x) { x.remove(); });
+      if (!on) return;
+      document.querySelectorAll('section.stage .video-wrap').forEach(function (w) {
+        var t = document.createElement('div'); t.className = 'video-tools'; t.setAttribute('contenteditable', 'false');
+        t.innerHTML = '<button type="button" class="vt-del">동영상 삭제</button>';
+        w.appendChild(t);
+      });
+    }
+    document.getElementById('slide').addEventListener('click', function (e) {
+      var d = e.target.closest('.vt-del'); if (!d || !editing) return;
+      e.preventDefault(); if (!confirmTwice(d, '한 번 더 누르면 삭제')) return;
+      var w = d.closest('.video-wrap'), sec = w.closest('section.stage'); w.remove(); storeLesson(+sec.dataset.l); state.textContent = '동영상을 지웠어요';
+    });
     bar.addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });
     bar.addEventListener('change', function (e) {
       var sel = e.target.closest('select'); if (!sel || !sel.value) return;
@@ -3015,6 +3076,7 @@ function __boot() {
         if (sel.value === 'table') tableCmd('tadd');
         else if (sel.value === 'match') { makeMatch(); widgetTools(true); }
         else if (sel.value === 'venn') makeVenn();
+        else if (sel.value === 'video') addVideo();
       }
       else if (sel.dataset.sel === 'badge') {
         if (sel.value === '__custom') { badgeInput.hidden = false; badgeInput.focus(); }
@@ -3882,6 +3944,7 @@ function __boot() {
     });
   }
   function wsClean(el) {
+    el.querySelectorAll('.video-wrap').forEach(function (x) { var p = document.createElement('p'); p.textContent = '▶ 동영상: ' + (x.dataset.src || ''); x.replaceWith(p); });
     el.querySelectorAll('.tag, .prog-panel, .rv-open, .rv-close, .m-clear, .v-clear, .wd-undo, .fn-mark, .fn-note, figure, svg, img, .m-dot, .v-tok, .v-drop, .v-stage, .lab').forEach(function (x) { x.remove(); });
     el.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); });
     el.querySelectorAll('[style]').forEach(function (x) { x.removeAttribute('style'); });
