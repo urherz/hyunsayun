@@ -1033,7 +1033,7 @@
   #ws-root thead th { background: #eee; }
   #ws-root .ws-cell { min-height: 2.6em; }
   /* 제목 줄 숨기기 버튼: 눈에 띄게 */
-  .edit-bar button[data-cmd="nohead"] { color: #B3372B !important; border-color: #E2B4AE !important; background: #FFF1EF !important; }
+  .edit-bar button[data-cmd="delpage"] { color: #B3372B !important; border-color: #E2B4AE !important; background: #FFF1EF !important; }
   .edit-bar button[data-cmd="nohead"].is-hidden-head { color: #4E5C42 !important; border-color: #B9C4AC !important; background: #F0F3EC !important; }
 
   .slide section.stage.active:not(:has(> .stage-head)):not(:has(header.lesson)) { padding-top: 48px; }
@@ -1093,6 +1093,14 @@
   .video-tools { position: absolute; right: 10px; top: 10px; z-index: 5; }
   .video-tools button { font-family: var(--serif); font-weight: 700; font-size: 16px; padding: 4px 12px; color: #B3372B; background: #FFFFFF; border: 1.5px solid #E2B4AE; border-radius: 6px; cursor: pointer; }
   body.capturing .video-wrap::after { content: "▶ 동영상"; position: absolute; inset: 0; display: grid; place-items: center; color: #FFF; font-size: 40px; font-weight: 700; }
+
+  /* 학습지: 형광펜은 글자 전체, 칸 테두리 색 통일 */
+  #ws-root h1 { background: #FFE58A !important; padding: 1px 6px !important; border-radius: 2px; }
+  #ws-root .ws-box h2 { background: var(--ws-hl, #FFE58A) !important; padding: 1px 6px !important; border-radius: 2px; }
+  #ws-root .ws-link b { background: #FFE58A !important; padding: 0 4px; border-radius: 2px; }
+  #ws-root .ws-box, #ws-root .ws-concept, #ws-root .ws-activity, #ws-root .ws-exam, #ws-root .ws-summary, #ws-root .ws-news, #ws-root .ws-link { border-color: #9A9A9A !important; }
+
+  #ws-root .ws-sub + .ws-sub { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #BBBBBB; }
 </style>
 </head>
 <body>
@@ -1489,7 +1497,7 @@
   </div></div>
   <div class="edit-bar" id="edit-bar" hidden>
     <div class="grp"><button type="button" data-cmd="undoall" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-cmd="redoall" title="다시 실행 (Ctrl+Y)">↷ 다시</button></div>
-    <div class="grp"><span class="glab">페이지</span><select data-sel="page" aria-label="페이지 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select><button type="button" data-cmd="left" title="앞으로 옮기기">◀</button><button type="button" data-cmd="right" title="뒤로 옮기기">▶</button><button type="button" data-cmd="delpage">삭제</button><button type="button" data-cmd="nohead" title="이 페이지 위쪽 제목 줄(예: 2 전개 1 · 10분)을 지워요. 지운 뒤엔 다시 넣을 수 있어요">✕ 제목 줄 지우기</button></div>
+    <div class="grp"><span class="glab">페이지</span><select data-sel="page" aria-label="페이지 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select><button type="button" data-cmd="left" title="앞으로 옮기기">◀</button><button type="button" data-cmd="right" title="뒤로 옮기기">▶</button><button type="button" data-cmd="delpage" title="지금 보고 있는 페이지를 통째로 지워요 (두 번 눌러야 지워져요)">✕ 페이지 삭제</button></div>
     <div class="grp"><span class="glab">차시</span><button type="button" data-cmd="addlesson" title="지금 차시 바로 뒤(같은 소단원)에 새 차시(표지 + 개념 1쪽)를 만들어요">＋ 차시</button><button type="button" data-cmd="dellesson" title="지금 차시를 통째로 지워요">차시 삭제</button></div>
     <div class="grp"><select data-sel="tool" aria-label="수업 도구 넣기" title="커서가 있는 자리에 넣어요. 선 잇기·벤다이어그램은 커서가 있는 목록을 바꿔요"><option value="">＋ 수업 도구</option><option value="table">표</option><option value="match">선 잇기</option><option value="venn">벤다이어그램</option><option value="video">동영상 (유튜브)</option></select></div>
     <span class="grp-sep"></span>
@@ -2083,8 +2091,8 @@ function __boot() {
     }
     function addBlock(t) { var cur = pages[P]; cur.appendChild(makeBlock(t)); changed(cur); }
     function delPage(btn) {
-      if (pages.length <= 1) return;
-      if (!confirmTwice(btn)) return;
+      if (pages.length <= 1) { state.textContent = '마지막 남은 페이지는 지울 수 없어요'; return; }
+      if (!confirmTwice(btn, '한 번 더 누르면 이 페이지 삭제')) return;
       var l = L, i = P; pages[P].remove(); renumber(l); refresh(); storeLesson(l);
       setLesson(l); go(Math.min(i, pages.length - 1)); applyEdit(true);
     }
@@ -3958,21 +3966,23 @@ function __boot() {
     var title = cov ? cov.querySelector('h1').textContent.trim() : '';
     var q = cov && cov.querySelector('.question') ? cov.querySelector('.question').textContent.trim() : '';
     var no = (window.__lessonNo ? window.__lessonNo(L) : L);
-    var out = '<header class="ws-head"><div class="ws-meta">' + wsEsc(document.title) + ' · ' + no + '차시' + (withAns ? ' · <b>정답지</b>' : '') + '</div><h1>' + wsEsc(title) + '</h1>' + (q ? '<p class="ws-q">' + wsEsc(q) + '</p>' : '') + '<div class="ws-name">학번 <span></span> 이름 <span></span></div></header>';
+    var out = '<header class="ws-head"><div class="ws-meta">' + wsEsc(document.title) + (withAns ? ' · <b>정답지</b>' : '') + '</div><h1>' + wsEsc(title) + '</h1>' + (q ? '<p class="ws-q">' + wsEsc(q) + '</p>' : '') + '<div class="ws-name">학번 <span></span> 이름 <span></span></div></header>';
+    var parts = [];
     secs.forEach(function (s) {
       var lab = s.dataset.label || '';
       if (/표지|성취기준|예고/.test(lab)) return;
       s.querySelectorAll('.block').forEach(function (blk0) {
         var blk = wsClean(blk0.cloneNode(true)), cls = blk0.className;
         var html = '';
-        if (/b-link/.test(cls)) { html = '<div class="ws-box ws-link"><b>생각 열기</b> ' + blk.textContent.trim() + '</div>'; }
+        if (/b-link/.test(cls)) { wsBlankify(blk, withAns); html = '<div class="ws-box ws-link"><b>생각 열기</b> ' + blk.innerHTML.trim() + '</div>'; }
         else if (/b-news/.test(cls)) {
+          wsBlankify(blk, withAns);
           var hl = blk.querySelector('.headline'), ft = blk.querySelector('.fact'), sides = blk.querySelectorAll('.side');
-          html = '<div class="ws-box ws-news"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.textContent.trim() + '</p>' : '') + (ft ? '<p>' + ft.innerHTML + '</p>' : '') +
-            '<ul class="ws-sides">' + [].map.call(sides, function (sd) { var bd = sd.querySelector('.badge'), pp = sd.querySelector('p'); return '<li><b>' + (bd ? bd.textContent.trim() : '') + '</b>: ' + (pp ? pp.textContent.trim() : '') + '</li>'; }).join('') + '</ul>' +
+          html = '<div class="ws-box ws-news"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.innerHTML.trim() + '</p>' : '') + (ft ? '<p>' + ft.innerHTML + '</p>' : '') +
+            '<ul class="ws-sides">' + [].map.call(sides, function (sd) { var bd = sd.querySelector('.badge'), pp = sd.querySelector('p'); return '<li><b>' + (bd ? bd.textContent.trim() : '') + '</b>: ' + (pp ? pp.innerHTML.trim() : '') + '</li>'; }).join('') + '</ul>' +
             '<p>나의 입장: A □ / B □ &nbsp; 이유:</p>' + wsLines(2) + '</div>';
         }
-        else if (/b-concept/.test(cls)) { wsBlankify(blk, withAns); html = '<div class="ws-box ws-concept"><h2>' + (blk.querySelector('h3') ? blk.querySelector('h3').innerHTML : '핵심 개념') + '</h2>'; blk.querySelector('h3') && blk.querySelector('h3').remove(); html += blk.innerHTML + '</div>'; }
+        else if (/b-concept/.test(cls)) { wsBlankify(blk, withAns); html = '[[CONCEPT]]<h2>' + (blk.querySelector('h3') ? blk.querySelector('h3').innerHTML : '핵심 개념') + '</h2>'; blk.querySelector('h3') && blk.querySelector('h3').remove(); html += blk.innerHTML; }
         else if (/b-summary/.test(cls)) {
           var pq = blk.querySelector('.pairq'), prop = blk.querySelector('details.reveal');
           html = '<div class="ws-box ws-summary"><h2>정리</h2>' + (pq ? '<p><b>짝 질문</b> ' + pq.textContent.trim() + '</p>' + wsLines(1) : '');
@@ -3980,6 +3990,8 @@ function __boot() {
           html += '</div>';
         }
         else if (/b-activity/.test(cls)) {
+          blk.querySelectorAll('details.reveal').forEach(function (d) { d.classList.add('ws-keep'); });
+          wsBlankify(blk, withAns);
           var h3 = blk.querySelector('h3'), intro = blk.querySelector('.intro'), det = blk.querySelectorAll('details.reveal');
           var ans = withAns ? [].map.call(det, function (d) { var b = d.querySelector('.rv-body') || d; var c = b.cloneNode(true); c.querySelectorAll('summary').forEach(function (x) { x.remove(); }); return '<p class="ws-key"><b>' + (d.querySelector('summary') ? d.querySelector('summary').textContent.trim() : '정리') + '</b> ' + c.textContent.trim() + '</p>'; }).join('') : '';
           det.forEach(function (d) { d.remove(); });
@@ -4005,9 +4017,17 @@ function __boot() {
           det2.forEach(function (d) { d.remove(); });
           html = '<div class="ws-box ws-exam"><h2>기출</h2>' + blk.innerHTML + ans2 + '</div>';
         }
-        out += html;
+        parts.push(html);
       });
     });
+    var i = 0;
+    while (i < parts.length) {
+      if (parts[i].indexOf('[[CONCEPT]]') === 0) {
+        var grp = [];
+        while (i < parts.length && parts[i].indexOf('[[CONCEPT]]') === 0) { grp.push('<div class="ws-sub">' + parts[i].slice(11) + '</div>'); i++; }
+        out += '<div class="ws-box ws-concept">' + grp.join('') + '</div>';
+      } else { out += parts[i]; i++; }
+    }
     return out;
   }
   function printWorksheet(withAns) {
