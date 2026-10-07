@@ -1101,6 +1101,16 @@
   #ws-root .ws-box, #ws-root .ws-concept, #ws-root .ws-activity, #ws-root .ws-exam, #ws-root .ws-summary, #ws-root .ws-news, #ws-root .ws-link { border-color: #9A9A9A !important; }
 
   #ws-root .ws-sub + .ws-sub { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #BBBBBB; }
+
+  #ws-root .ws-subt { font-family: var(--serif); font-size: 11pt; font-weight: 700; margin: 4px 0 4px; padding-bottom: 2px; border-bottom: 1px solid #CCCCCC; }
+  #ws-root .ws-sub + .ws-sub { margin-top: 10px; }
+
+  /* 학습지 표: 배경 없이, 머리칸 글자색은 살림 */
+  #ws-root table th, #ws-root table td, #ws-root thead th, #ws-root tbody th { background: none !important; }
+  #ws-root thead th { color: #111 !important; }
+  #ws-root th .imp { color: var(--exam, #B3372B) !important; font-weight: 700; }
+  #ws-root th .kw { color: var(--kwc, #1F5A96) !important; font-weight: 700; }
+  #ws-root th .bd { font-weight: 800; }
 </style>
 </head>
 <body>
@@ -1580,15 +1590,20 @@ function __boot() {
     var cb = lessonBtns.filter(function (b) { return +b.dataset.lesson === l; })[0];
     if (cb) { var dt = cb.closest('details'); if (dt) dt.open = true; cb.scrollIntoView({ block: 'nearest' }); }
   }
+  function lessonSeq() { var o = [].map.call(document.querySelectorAll('#book li.les button'), function (x) { return +x.dataset.lesson; }); return o.length ? o : []; }
+  function nextLessonId(d) { var o = lessonSeq(), i = o.indexOf(L); if (i < 0) return null; var j = i + d; return (j >= 0 && j < o.length) ? o[j] : null; }
   function go(p) {
     if (!pages.length) return;
+    if (p > pages.length - 1 && P === pages.length - 1) { var nl = nextLessonId(1); if (nl != null) { setLesson(nl); p = 0; } }
+    else if (p < 0 && P === 0) { var pl = nextLessonId(-1); if (pl != null) { setLesson(pl); p = pages.length - 1; } }
     p = Math.max(0, Math.min(pages.length - 1, p)); P = p;
     all.forEach(function (s) { s.classList.remove('active'); });
     if (window.__notes) window.__notes.close();
     var tpn = document.getElementById('table-panel'); if (tpn) tpn.hidden = true;
     pages[p].classList.add('active'); pages[p].scrollTop = 0; setTimeout(function () { if (window.__match) window.__match.drawAll(); if (window.__venn) window.__venn.drawAll(); }, 0); if (!document.body.classList.contains('editing') || !pages[p].querySelector('.block[style*=font-size]')) { var ed = document.body.classList.contains('editing'); if (ed) document.body.classList.remove('editing'); autofit(pages[p]); if (ed) document.body.classList.add('editing'); }
     links.forEach(function (a, k) { a.classList.toggle('current', k === p); if (k === p) a.setAttribute('aria-current', 'step'); else a.removeAttribute('aria-current'); });
-    prev.disabled = p === 0; next.disabled = p === pages.length - 1;
+    prev.disabled = p === 0 && nextLessonId(-1) == null; next.disabled = p === pages.length - 1 && nextLessonId(1) == null;
+    prev.title = p === 0 && nextLessonId(-1) != null ? '이전 차시로' : '이전 페이지'; next.title = p === pages.length - 1 && nextLessonId(1) != null ? '다음 차시로' : '다음 페이지';
     counter.textContent = (p + 1) + ' / ' + pages.length;
     if (window.__headBtnState) window.__headBtnState(pages[p]);
     if (!wide.matches) window.scrollTo(0, 0);
@@ -3943,7 +3958,7 @@ function __boot() {
   function wsEsc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
   function wsBlankify(root, withAns) {
     root.querySelectorAll('.imp, .kw, .cloze').forEach(function (s) {
-      if (s.closest('.ws-keep')) return;
+      if (s.closest('.ws-keep') || s.closest('th')) return;
       var txt = (s.querySelector('.cz-a') || s).textContent.trim(); if (!txt) return;
       var b = document.createElement('span');
       if (withAns) { b.className = 'ws-ans'; b.textContent = txt; }
@@ -3952,6 +3967,7 @@ function __boot() {
     });
   }
   function wsClean(el) {
+    el.querySelectorAll('.fn-anchor').forEach(function (a) { while (a.firstChild) a.parentNode.insertBefore(a.firstChild, a); a.remove(); });
     el.querySelectorAll('.video-wrap').forEach(function (x) { var p = document.createElement('p'); p.textContent = '▶ 동영상: ' + (x.dataset.src || ''); x.replaceWith(p); });
     el.querySelectorAll('.tag, .prog-panel, .rv-open, .rv-close, .m-clear, .v-clear, .wd-undo, .fn-mark, .fn-note, figure, svg, img, .m-dot, .v-tok, .v-drop, .v-stage, .lab').forEach(function (x) { x.remove(); });
     el.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); });
@@ -3982,7 +3998,7 @@ function __boot() {
             '<ul class="ws-sides">' + [].map.call(sides, function (sd) { var bd = sd.querySelector('.badge'), pp = sd.querySelector('p'); return '<li><b>' + (bd ? bd.textContent.trim() : '') + '</b>: ' + (pp ? pp.innerHTML.trim() : '') + '</li>'; }).join('') + '</ul>' +
             '<p>나의 입장: A □ / B □ &nbsp; 이유:</p>' + wsLines(2) + '</div>';
         }
-        else if (/b-concept/.test(cls)) { wsBlankify(blk, withAns); html = '[[CONCEPT]]<h2>' + (blk.querySelector('h3') ? blk.querySelector('h3').innerHTML : '핵심 개념') + '</h2>'; blk.querySelector('h3') && blk.querySelector('h3').remove(); html += blk.innerHTML; }
+        else if (/b-concept/.test(cls)) { wsBlankify(blk, withAns); var h3c = blk.querySelector('h3'); html = '[[CONCEPT]]' + (h3c && h3c.textContent.trim() ? '<h3 class="ws-subt">' + h3c.innerHTML + '</h3>' : ''); h3c && h3c.remove(); html += blk.innerHTML; }
         else if (/b-summary/.test(cls)) {
           var pq = blk.querySelector('.pairq'), prop = blk.querySelector('details.reveal');
           html = '<div class="ws-box ws-summary"><h2>정리</h2>' + (pq ? '<p><b>짝 질문</b> ' + pq.textContent.trim() + '</p>' + wsLines(1) : '');
@@ -4025,7 +4041,7 @@ function __boot() {
       if (parts[i].indexOf('[[CONCEPT]]') === 0) {
         var grp = [];
         while (i < parts.length && parts[i].indexOf('[[CONCEPT]]') === 0) { grp.push('<div class="ws-sub">' + parts[i].slice(11) + '</div>'); i++; }
-        out += '<div class="ws-box ws-concept">' + grp.join('') + '</div>';
+        out += '<div class="ws-box ws-concept"><h2>핵심 개념</h2>' + grp.join('') + '</div>';
       } else { out += parts[i]; i++; }
     }
     return out;
