@@ -1582,7 +1582,23 @@ function __boot() {
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !document.body.classList.contains('toc-closed')) setToc(false); });
 
+  // 다른 차시로 들어갈 때 펼친 정답·빈칸·선 잇기 등을 처음 상태로
+  function resetLessonState(l) {
+    if (document.body.classList.contains('editing')) return;
+    all.forEach(function (s) {
+      if (+s.dataset.l !== l) return;
+      s.querySelectorAll('details.reveal').forEach(function (d) { d.open = true; d.classList.add('concealed'); });
+      s.querySelectorAll('.cloze.open').forEach(function (z) { z.classList.remove('open'); });
+      s.querySelectorAll('.match').forEach(function (m) { m.removeAttribute('data-lines'); var sv = m.querySelector('svg.m-lines'); if (sv) sv.innerHTML = ''; m.querySelectorAll('.m-dot').forEach(function (d) { d.classList.remove('on', 'armed'); }); });
+      s.querySelectorAll('.venn').forEach(function (v) { v.removeAttribute('data-pos'); var dr = v.querySelector('.v-drop'); if (dr) dr.innerHTML = ''; v.querySelectorAll('.v-tok').forEach(function (t) { t.classList.remove('placed', 'armed'); }); });
+      s.querySelectorAll('.photo-win').forEach(function (w) { w.remove(); });
+      s.querySelectorAll('.win-open').forEach(function (w) { w.classList.remove('win-open'); });
+    });
+    if (window.__notes) try { window.__notes.close(); } catch (e) {}
+  }
+  window.__resetLessonState = resetLessonState;
   function setLesson(l) {
+    if (l !== L) resetLessonState(l);
     L = l;
     if (window.__onLesson) window.__onLesson(l);
     pages = all.filter(function (s) { return +s.dataset.l === l; });
