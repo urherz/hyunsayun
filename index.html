@@ -1111,6 +1111,14 @@
   #ws-root th .imp { color: var(--exam, #B3372B) !important; font-weight: 700; }
   #ws-root th .kw { color: var(--kwc, #1F5A96) !important; font-weight: 700; }
   #ws-root th .bd { font-weight: 800; }
+
+  /* 학습지: 기출 보기 상자 등 바탕색 없음 */
+  #ws-root .bogi, #ws-root .item, #ws-root .stem, #ws-root ul, #ws-root ol, #ws-root li, #ws-root p { background: none !important; box-shadow: none !important; }
+  #ws-root .bogi { border: 1px solid #9A9A9A !important; border-radius: 3px; padding: 4px 10px !important; list-style: none; margin: 4px 0 !important; }
+
+  #ws-root .ws-pick { float: right; letter-spacing: .1em; }
+  #ws-root li::after { content: ""; display: table; clear: both; }
+  #ws-root *::first-letter { color: inherit !important; font-size: inherit !important; }
 </style>
 </head>
 <body>
@@ -4024,7 +4032,9 @@ function __boot() {
             venn.remove();
           }
           var lis = blk.querySelectorAll('ol.steps-list > li, ul.concepts > li');
-          var steps = [].map.call(lis, function (li) { return '<li>' + li.innerHTML + wsLines(1) + '</li>'; }).join('');
+          var itxt = intro ? intro.textContent : '';
+          var choice = /손가락|투표|판정/.test(itxt) || /[0-9]번 *[/]/.test(itxt);
+          var steps = [].map.call(lis, function (li) { return '<li>' + li.innerHTML + (choice ? ' <span class="ws-pick">( &nbsp;&nbsp;&nbsp;&nbsp; )</span>' : wsLines(1)) + '</li>'; }).join('');
           lis.forEach(function (li) { li.remove(); });
           blk.querySelectorAll('ol.steps-list, ul.concepts').forEach(function (x) { x.remove(); });
           blk.querySelectorAll('td').forEach(function (td) { if (!td.textContent.trim()) td.innerHTML = '<div class="ws-cell"></div>'; });
