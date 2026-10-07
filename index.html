@@ -3957,7 +3957,8 @@ function __boot() {
   // ===== 학습지 받기 (A4 인쇄 / PDF 저장) =====
   function wsEsc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
   function wsBlankify(root, withAns) {
-    root.querySelectorAll('.imp, .kw, .cloze').forEach(function (s) {
+    root.querySelectorAll('.imp, .kw, .cloze, .hl, .bd, .ws-colored').forEach(function (s) {
+      if (s.parentNode && s.parentNode.closest && s.parentNode.closest('.imp, .kw, .cloze, .hl, .bd, .ws-colored') && s.parentNode.closest('#ws-root, .block, div')) { var outer = s.parentNode.closest('.imp, .kw, .cloze, .hl, .bd, .ws-colored'); if (outer !== s && outer.contains(s)) return; }
       if (s.closest('.ws-keep') || s.closest('th')) return;
       var txt = (s.querySelector('.cz-a') || s).textContent.trim(); if (!txt) return;
       var b = document.createElement('span');
@@ -3971,6 +3972,7 @@ function __boot() {
     el.querySelectorAll('.video-wrap').forEach(function (x) { var p = document.createElement('p'); p.textContent = '▶ 동영상: ' + (x.dataset.src || ''); x.replaceWith(p); });
     el.querySelectorAll('.tag, .prog-panel, .rv-open, .rv-close, .m-clear, .v-clear, .wd-undo, .fn-mark, .fn-note, figure, svg, img, .m-dot, .v-tok, .v-drop, .v-stage, .lab').forEach(function (x) { x.remove(); });
     el.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); });
+    el.querySelectorAll('span[style], font[color]').forEach(function (x) { var c = (x.style && x.style.color) || x.getAttribute('color') || ''; if (c && !/^(rgb\(0, 0, 0\)|#000|#000000|black|inherit)$/i.test(c.trim())) x.classList.add('ws-colored'); });
     el.querySelectorAll('[style]').forEach(function (x) { x.removeAttribute('style'); });
     el.querySelectorAll('colgroup').forEach(function (x) { x.remove(); });
     return el;
