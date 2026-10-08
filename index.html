@@ -1119,6 +1119,90 @@
   #ws-root .ws-pick { float: right; letter-spacing: .1em; }
   #ws-root li::after { content: ""; display: table; clear: both; }
   #ws-root *::first-letter { color: inherit !important; font-size: inherit !important; }
+
+  #ws-root .ws-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #444 !important; vertical-align: middle; margin: 0 4px; }
+
+  /* 학습지 글씨 11pt */
+  @media print { body.ws-print #ws-root { font-size: 11pt !important; } }
+  #ws-root { font-size: 11pt; }
+  #ws-root table { font-size: 11pt !important; }
+  #ws-root .ws-box h2 { font-size: 12.5pt !important; }
+  #ws-root .ws-subt { font-size: 11.5pt !important; }
+  #ws-root h1 { font-size: 18pt !important; }
+  #ws-root .ws-link, #ws-root .ws-name { font-size: 11pt !important; }
+  #ws-root .ws-key { font-size: 10.5pt !important; }
+  #ws-root .ws-meta { font-size: 9.5pt !important; }
+
+  #ws-root .ws-box p, #ws-root .ws-box li, #ws-root .ws-box td, #ws-root .ws-box th, #ws-root .ws-box span:not(.ws-blank), #ws-root .next-q, #ws-root .fact, #ws-root .ws-hl, #ws-root .ws-intro, #ws-root .stem, #ws-root .ws-link { font-size: 11pt !important; line-height: 1.6 !important; }
+
+  /* 학습지 한 장: 2단 배치 */
+  #ws-root .ws-cols { column-count: 2; column-gap: 6mm; }
+  #ws-root .ws-cols .ws-box { break-inside: avoid; display: inline-block; width: 100%; box-sizing: border-box; margin: 0 0 3mm; }
+  #ws-measure .ws-cols { column-count: 2; column-gap: 6mm; }
+  #ws-measure .ws-cols .ws-box { break-inside: avoid; display: inline-block; width: 100%; box-sizing: border-box; margin: 0 0 3mm; }
+  #ws-root .ws-head, #ws-measure .ws-head { margin-bottom: 3mm; }
+  #ws-root .ws-line { height: 1.35em; }
+
+  #ws-root th, #ws-root td { word-break: normal !important; overflow-wrap: anywhere !important; }
+  #ws-root table { width: 100% !important; max-width: 100% !important; }
+
+  #ws-root table, #ws-root .tablewrap { min-width: 0 !important; }
+
+  /* 학습지: 글씨는 11pt 그대로, 여백 최소화 */
+  @media print { @page { size: A4; margin: 7mm 7mm 7mm 7mm; } }
+  #ws-root { line-height: 1.42 !important; }
+  #ws-root .ws-box p, #ws-root .ws-box li, #ws-root .ws-box td, #ws-root .ws-box th, #ws-root .ws-box span:not(.ws-blank), #ws-root .next-q, #ws-root .fact, #ws-root .ws-hl, #ws-root .ws-intro, #ws-root .stem, #ws-root .ws-link { line-height: 1.42 !important; }
+  #ws-root .ws-head { margin: 0 0 2mm !important; padding-bottom: 1.5mm !important; border-bottom-width: 1.5px !important; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 4mm; }
+  #ws-root .ws-head .ws-meta { width: 100%; }
+  #ws-root h1 { font-size: 16pt !important; margin: 0 !important; }
+  #ws-root .ws-q { margin: 0 !important; flex: 1; }
+  #ws-root .ws-name { margin: 0 0 0 auto !important; }
+  #ws-root .ws-cols { column-gap: 4mm !important; }
+  #ws-root .ws-cols .ws-box { margin: 0 0 2mm !important; padding: 2.5px 6px 3px !important; border-width: 1px !important; border-radius: 3px !important; }
+  #ws-root .ws-box h2 { font-size: 12pt !important; margin: 0 0 2px !important; }
+  #ws-root .ws-subt { margin: 2px 0 2px !important; }
+  #ws-root .ws-sub + .ws-sub { margin-top: 4px !important; padding-top: 4px !important; }
+  #ws-root p { margin: 1px 0 !important; }
+  #ws-root ul, #ws-root ol { margin: 1px 0 1px 1.2em !important; }
+  #ws-root li { margin: 0 !important; }
+  #ws-root .ws-line { height: 1.25em !important; }
+  #ws-root th, #ws-root td { padding: 1.5px 4px !important; }
+  #ws-root table { margin: 2px 0 !important; }
+  #ws-root .bogi { padding: 2px 6px !important; margin: 2px 0 !important; }
+  #ws-root .ws-cell { min-height: 2em !important; }
+
+  @media print { #ws-root .ws-cols { column-fill: auto !important; } }
+
+  #ws-root .ws-cols .ws-box { display: block !important; break-inside: auto !important; }
+  #ws-root .ws-box h2, #ws-root .ws-subt { break-after: avoid; }
+  #ws-root table, #ws-root .bogi, #ws-root li, #ws-root .ws-match { break-inside: avoid; }
+
+  #ws-root, #ws-root .ws-box p, #ws-root .ws-box li, #ws-root .ws-box td, #ws-root .ws-box th, #ws-root .ws-box span:not(.ws-blank), #ws-root .fact, #ws-root .ws-hl, #ws-root .ws-intro, #ws-root .stem { line-height: 1.36 !important; }
+  #ws-root .ws-line { height: 1.15em !important; }
+
+  #ws-root .ws-hk { break-inside: avoid; }
+
+  #ws-root .ws-sides { margin: 0 !important; padding: 0 !important; }
+  #ws-root .ws-cols .ws-box { padding: 2px 5px 2px !important; margin: 0 0 1.6mm !important; }
+  #ws-root .ws-cols { column-gap: 3.5mm !important; }
+  #ws-root .ws-box h2 { font-size: 11.5pt !important; margin: 0 0 1px !important; }
+  #ws-root h1 { font-size: 15pt !important; }
+  #ws-root .ws-head { margin-bottom: 1.5mm !important; padding-bottom: 1mm !important; }
+  #ws-root .ws-subt { padding-bottom: 0 !important; border-bottom: 0 !important; }
+  #ws-root .ws-sub + .ws-sub { margin-top: 2px !important; padding-top: 2px !important; }
+
+  #ws-root .ws-head { display: grid !important; grid-template-columns: auto 1fr; grid-template-areas: "meta meta" "title name" "q q"; align-items: end; column-gap: 4mm; }
+  #ws-root .ws-head .ws-meta { grid-area: meta; }
+  #ws-root .ws-head h1 { grid-area: title; justify-self: start; }
+  #ws-root .ws-head .ws-name { grid-area: name; justify-self: end; }
+  #ws-root .ws-head .ws-q { grid-area: q; margin-top: 1px !important; }
+
+
+  #ws-root .ws-inline-line { display: inline-block; width: 55%; border-bottom: 1px dotted #999; height: 1em; vertical-align: -2px; }
+  #ws-root .stem .ws-pick { float: none; margin-left: 4px; }
+
+  body:not(.editing) .slide { -webkit-user-select: none; user-select: none; }
+  body:not(.editing) .slide .fn-note, body:not(.editing) .slide .fn-note * { -webkit-user-select: text; user-select: text; }
 </style>
 </head>
 <body>
@@ -1235,7 +1319,7 @@
     </div>
     <div class="right-tools">
       <button type="button" class="fs-btn" id="fs-btn" aria-label="전체 화면" title="전체 화면 (Esc로 나가기)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <span class="ws-wrap"><button type="button" class="ppt-btn" id="ws-btn" title="이 차시를 A4 학습지로 인쇄하거나 PDF로 저장">학습지</button><span class="ws-menu" id="ws-menu" hidden><button type="button" data-ws="blank">학생용 (빈칸)</button><button type="button" data-ws="ans">정답지</button></span></span><button type="button" class="ppt-btn" id="ppt-btn" title="이 차시를 PPT 파일로 내려받기">PPT 받기</button>
+      <span class="ws-wrap"><button type="button" class="ppt-btn" id="ws-btn" title="이 차시를 A4 학습지로 인쇄하거나 PDF로 저장">학습지</button><span class="ws-menu" id="ws-menu" hidden><button type="button" data-ws="blank1">학생용 (빈칸)</button><button type="button" data-ws="ans1">정답지</button></span></span><button type="button" class="ppt-btn" id="ppt-btn" title="이 차시를 PPT 파일로 내려받기">PPT 받기</button>
       <button type="button" class="edit-toggle" id="edit-toggle" hidden aria-pressed="false" title="수정 모드">✎</button>
     </div>
   </div>
@@ -1630,6 +1714,7 @@ function __boot() {
     prev.title = p === 0 && nextLessonId(-1) != null ? '이전 차시로' : '이전 페이지'; next.title = p === pages.length - 1 && nextLessonId(1) != null ? '다음 차시로' : '다음 페이지';
     counter.textContent = (p + 1) + ' / ' + pages.length;
     if (window.__headBtnState) window.__headBtnState(pages[p]);
+    if (!document.body.classList.contains('editing')) { try { var sl0 = window.getSelection(); if (sl0 && !sl0.isCollapsed) sl0.removeAllRanges(); } catch (e) {} }
     if (!wide.matches) window.scrollTo(0, 0);
     try { history.replaceState(null, '', '#L' + L + '-' + p); } catch (e) {}
     if (links[p]) links[p].scrollIntoView({ inline: 'nearest', block: 'nearest' });
@@ -2686,8 +2771,46 @@ function __boot() {
       } else setPageSize(px);
       storeLesson(+pages[P].dataset.l); showSize(); if (sizeBox) sizeBox.value = px;
     }
+    // 선택한 글자를 "각자 자기 크기에서" 1씩 키우거나 줄이기 (섞인 크기도 함께 움직임)
+    function stepSelection(r, d) {
+      var root = r.commonAncestorContainer; if (root.nodeType === 3) root = root.parentNode;
+      var sec = root.closest && root.closest('section.stage'); if (!sec) return false;
+      var cellsSel = (typeof cellSel !== 'undefined' && cellSel.length > 1) ? cellSel.slice() : null;
+      var nodes = [];
+      var walkRoot = cellsSel ? cellsSel[0].closest('table') : root;
+      var tw = document.createTreeWalker(walkRoot, NodeFilter.SHOW_TEXT, { acceptNode: function (n) {
+        if (!n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        var p = n.parentElement; if (!p || p.closest('[contenteditable="false"], .fn-note, .table-bar, .tag, .lab, .badge, .kind')) return NodeFilter.FILTER_REJECT;
+        if (cellsSel) return cellsSel.some(function (c) { return c.contains(n); }) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        return r.intersectsNode(n) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      } });
+      while (tw.nextNode()) nodes.push(tw.currentNode);
+      if (!nodes.length) return false;
+      var first = null, last = null;
+      nodes.forEach(function (n) {
+        var t = n;
+        if (!cellsSel) {
+          if (t === r.endContainer && r.endOffset < t.nodeValue.length) t.splitText(r.endOffset);
+          if (t === r.startContainer && r.startOffset > 0) t = t.splitText(r.startOffset);
+        }
+        if (!t.nodeValue.trim()) return;
+        var p = t.parentElement, px = Math.max(8, Math.round(parseFloat(getComputedStyle(p).fontSize)) + d);
+        if (p.classList.contains('fsz') && p.childNodes.length === 1) { p.style.fontSize = px + 'px'; first = first || p; last = p; return; }
+        var sp = document.createElement('span'); sp.className = 'fsz'; sp.style.fontSize = px + 'px';
+        t.parentNode.insertBefore(sp, t); sp.appendChild(t); first = first || sp; last = sp;
+      });
+      if (first) {
+        var nr = document.createRange(); nr.setStartBefore(first); nr.setEndAfter(last);
+        var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(nr); savedRange = nr.cloneRange();
+        if (sizeBox) sizeBox.value = Math.round(parseFloat(first.style.fontSize));
+      }
+      storeLesson(+sec.dataset.l);
+      state.textContent = '선택한 글자 ' + (d > 0 ? '1씩 키움' : '1씩 줄임');
+      return true;
+    }
     function fontStep(d) {
       var r = currentRange() || savedRange, cur;
+      if (r && (!r.collapsed || (typeof cellSel !== 'undefined' && cellSel.length > 1))) { if (stepSelection(r, d)) return; }
       if (r && !r.collapsed) { cur = pxOf(selEl(r)); applySize(Math.round(cur) + d, false); return; }
       var s = pages[P], b = s.querySelector('.block, header.lesson'); if (!b) return;
       cur = s.dataset.fs ? +s.dataset.fs : pxOf(b);
@@ -3987,13 +4110,13 @@ function __boot() {
       var txt = (s.querySelector('.cz-a') || s).textContent.trim(); if (!txt) return;
       var b = document.createElement('span');
       if (withAns) { b.className = 'ws-ans'; b.textContent = txt; }
-      else { b.className = 'ws-blank'; b.style.minWidth = Math.max(3, Math.min(14, txt.length * 1.05)) + 'em'; b.innerHTML = '&nbsp;'; }
+      else { b.className = 'ws-blank'; b.style.width = Math.max(3, Math.min(14, txt.length * 1.05)) + 'em'; b.innerHTML = '&nbsp;'; }
       s.replaceWith(b);
     });
   }
   function wsClean(el) {
     el.querySelectorAll('.fn-anchor').forEach(function (a) { while (a.firstChild) a.parentNode.insertBefore(a.firstChild, a); a.remove(); });
-    el.querySelectorAll('.video-wrap').forEach(function (x) { var p = document.createElement('p'); p.textContent = '▶ 동영상: ' + (x.dataset.src || ''); x.replaceWith(p); });
+    el.querySelectorAll('.video-wrap').forEach(function (x) { x.remove(); });
     el.querySelectorAll('.kind, .tag, .prog-panel, .rv-open, .rv-close, .m-clear, .v-clear, .wd-undo, .fn-mark, .fn-note, figure, svg, img, .m-dot, .v-tok, .v-drop, .v-stage, .lab').forEach(function (x) { x.remove(); });
     el.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); });
     el.querySelectorAll('span[style], font[color]').forEach(function (x) { var c = (x.style && x.style.color) || x.getAttribute('color') || ''; if (c && !/^(rgb\(0, 0, 0\)|#000|#000000|black|inherit)$/i.test(c.trim())) x.classList.add('ws-colored'); });
@@ -4016,13 +4139,13 @@ function __boot() {
       s.querySelectorAll('.block').forEach(function (blk0) {
         var blk = wsClean(blk0.cloneNode(true)), cls = blk0.className;
         var html = '';
-        if (/b-link/.test(cls)) { wsBlankify(blk, withAns); html = '<div class="ws-box ws-link"><b>생각 열기</b> ' + blk.innerHTML.trim() + '</div>'; }
+        if (/b-link/.test(cls)) { html = ''; }
         else if (/b-news/.test(cls)) {
           wsBlankify(blk, withAns);
           var hl = blk.querySelector('.headline'), ft = blk.querySelector('.fact'), sides = blk.querySelectorAll('.side');
           html = '<div class="ws-box ws-news"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.innerHTML.trim() + '</p>' : '') + (ft ? '<p>' + ft.innerHTML + '</p>' : '') +
             '<ul class="ws-sides">' + [].map.call(sides, function (sd) { var bd = sd.querySelector('.badge'), pp = sd.querySelector('p'); return '<li><b>' + (bd ? bd.textContent.trim() : '') + '</b>: ' + (pp ? pp.innerHTML.trim() : '') + '</li>'; }).join('') + '</ul>' +
-            '<p>나의 입장: A □ / B □ &nbsp; 이유:</p>' + wsLines(2) + '</div>';
+            '<p>나의 입장: A □ / B □ &nbsp; 이유: <span class="ws-inline-line"></span></p></div>';
         }
         else if (/b-concept/.test(cls)) { wsBlankify(blk, withAns); var h3c = blk.querySelector('h3'); html = '[[CONCEPT]]' + (h3c && h3c.textContent.trim() ? '<h3 class="ws-subt">' + h3c.innerHTML + '</h3>' : ''); h3c && h3c.remove(); html += blk.innerHTML; }
         else if (/b-summary/.test(cls)) {
@@ -4031,6 +4154,7 @@ function __boot() {
           if (prop) { var body = prop.querySelector('.rv-body') || prop; var c = body.cloneNode(true); c.querySelectorAll('summary').forEach(function (x) { x.remove(); }); wsBlankify(c, withAns); html += '<p class="ws-prop"><b>핵심 명제</b> ' + c.innerHTML.split('<p>').join(' ').split('</p>').join(' ') + '</p>'; }
           html += '</div>';
         }
+        else if (/b-activity/.test(cls) && /층위 질문으로 생각 열기/.test((blk0.querySelector('h3') || {}).textContent || '')) { html = ''; }
         else if (/b-activity/.test(cls)) {
           blk.querySelectorAll('details.reveal').forEach(function (d) { d.classList.add('ws-keep'); });
           wsBlankify(blk, withAns);
@@ -4041,7 +4165,7 @@ function __boot() {
           var bodyHtml = '';
           var match = blk.querySelector('.match'), venn = blk.querySelector('.venn');
           if (match) {
-            bodyHtml = '<div class="ws-match"><ol>' + [].map.call(match.querySelectorAll('.m-left > li'), function (li) { return '<li>' + li.textContent.trim() + ' <span class="ws-dot">●</span></li>'; }).join('') + '</ol><ul>' + [].map.call(match.querySelectorAll('.m-right > li'), function (li) { return '<li><span class="ws-dot">●</span> ' + li.textContent.trim() + '</li>'; }).join('') + '</ul></div>';
+            bodyHtml = '<div class="ws-match"><ol>' + [].map.call(match.querySelectorAll('.m-left > li'), function (li) { return '<li>' + li.textContent.trim() + ' <span class="ws-dot"></span></li>'; }).join('') + '</ol><ul>' + [].map.call(match.querySelectorAll('.m-right > li'), function (li) { return '<li><span class="ws-dot"></span> ' + li.textContent.trim() + '</li>'; }).join('') + '</ul></div>';
             match.remove();
           } else if (venn) {
             bodyHtml = '<ol class="ws-steps">' + [].map.call(venn.querySelectorAll('.v-items > li'), function (li) { return '<li>' + li.textContent.trim() + ' &nbsp; → ( &nbsp;&nbsp;&nbsp; )</li>'; }).join('') + '</ol>';
@@ -4057,8 +4181,9 @@ function __boot() {
           html = '<div class="ws-box ws-activity"><h2>활동 · ' + (h3 ? h3.innerHTML : '') + '</h2>' + (intro ? '<p class="ws-intro">' + intro.innerHTML + '</p>' : '') + bodyHtml + (steps ? '<ol class="ws-steps">' + steps + '</ol>' : '') + blk.innerHTML + ans + '</div>';
         }
         else if (/b-exam/.test(cls)) {
-          var det2 = blk.querySelectorAll('details.reveal'); var ans2 = withAns ? [].map.call(det2, function (d) { var b = d.querySelector('.rv-body') || d; var c = b.cloneNode(true); c.querySelectorAll('summary').forEach(function (x) { x.remove(); }); return '<p class="ws-key"><b>정답</b> ' + c.textContent.trim() + '</p>'; }).join('') : '<p>정답: ( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</p>';
+          var det2 = blk.querySelectorAll('details.reveal'); var ans2 = withAns ? [].map.call(det2, function (d) { var b = d.querySelector('.rv-body') || d; var c = b.cloneNode(true); c.querySelectorAll('summary').forEach(function (x) { x.remove(); }); return '<p class="ws-key"><b>정답</b> ' + c.textContent.trim() + '</p>'; }).join('') : '';
           det2.forEach(function (d) { d.remove(); });
+          if (!withAns) { var stm = blk.querySelector('.stem'); if (stm) stm.insertAdjacentHTML('beforeend', ' <span class="ws-pick">( &nbsp;&nbsp;&nbsp;&nbsp; )</span>'); }
           html = '<div class="ws-box ws-exam"><h2>기출</h2>' + blk.innerHTML + ans2 + '</div>';
         }
         parts.push(html);
@@ -4074,9 +4199,36 @@ function __boot() {
     }
     return out;
   }
-  function printWorksheet(withAns) {
+  function fitOnePage(root, pages) {
+    var head = root.querySelector('.ws-head'), body = document.createElement('div'); body.className = 'ws-cols';
+    while (head && head.nextSibling) body.appendChild(head.nextSibling);
+    root.appendChild(body);
+    root.querySelectorAll('.ws-box > h2').forEach(function (h) { var nx = h.nextElementSibling; if (!nx) return; var w = document.createElement('div'); w.className = 'ws-hk'; h.parentNode.insertBefore(w, h); w.appendChild(h); w.appendChild(nx); });
+    root.style.zoom = ''; root.style.width = ''; root.dataset.zoom = 1;
+    // 글씨는 그대로 두고, 넘치면 덜 중요한 부분부터 덜어 내기
+    var pg = document.createElement('div'); pg.style.cssText = 'position:absolute;height:279mm;width:1px;left:-10000px;top:0;'; document.body.appendChild(pg);
+    var limit = pg.getBoundingClientRect().height; pg.remove();
+    root.style.cssText = 'display:block !important;position:absolute;left:-10000px;top:0;width:196mm;';
+    var hd = root.querySelector('.ws-head'), colsH = limit - (hd ? hd.getBoundingClientRect().height + 8 : 0);
+    body.style.height = colsH + 'px'; body.style.columnFill = 'auto';
+    var over = function () { return body.scrollWidth > body.clientWidth + 2; };
+    var steps = [
+      function () { root.querySelectorAll('.ws-link').forEach(function (x) { x.remove(); }); },
+      function () { root.querySelectorAll('.ws-news .ws-hl + p').forEach(function (x) { x.remove(); }); },
+      function () { root.querySelectorAll('.ws-summary').forEach(function (bx) { var ps = bx.querySelectorAll('p'); if (ps.length > 1) { var pq = ps[0], ln = pq.nextElementSibling; if (ln && ln.classList.contains('ws-line')) ln.remove(); pq.remove(); } }); },
+      function () { root.querySelectorAll('.ws-news').forEach(function (x) { x.remove(); }); }
+    ];
+    var trimmed = 0;
+    for (var i = 0; i < steps.length && over(); i++) { steps[i](); trimmed++; }
+    root.style.cssText = ''; body.style.height = ''; body.style.columnFill = '';
+    root.dataset.trimmed = trimmed;
+    return 1;
+  }
+  window.__fitOnePage = fitOnePage;
+  function printWorksheet(withAns, pages) {
     var root = document.getElementById('ws-root'); if (root) root.remove();
     root = document.createElement('div'); root.id = 'ws-root'; root.innerHTML = buildWorksheet(withAns); document.body.appendChild(root);
+    fitOnePage(root, pages || 1);
     document.body.classList.add('ws-print');
     var done = function () { document.body.classList.remove('ws-print'); var r = document.getElementById('ws-root'); if (r) r.remove(); window.removeEventListener('afterprint', done); };
     window.addEventListener('afterprint', done);
@@ -4091,7 +4243,7 @@ function __boot() {
       if (!teacher) { printWorksheet(false); return; }
       wm.hidden = !wm.hidden;
     });
-    wm.addEventListener('click', function (e) { var b = e.target.closest('button[data-ws]'); if (!b) return; wm.hidden = true; printWorksheet(b.dataset.ws === 'ans'); });
+    wm.addEventListener('click', function (e) { var b = e.target.closest('button[data-ws]'); if (!b) return; wm.hidden = true; printWorksheet(b.dataset.ws.indexOf('ans') === 0, b.dataset.ws.slice(-1) === '2' ? 2 : 1); });
     document.addEventListener('click', function (e) { if (!wm.hidden && !e.target.closest('#ws-btn, #ws-menu')) wm.hidden = true; });
   })();
   // ===== 빈 곳 클릭으로 넘기기 =====
