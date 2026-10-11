@@ -1203,6 +1203,18 @@
 
   body:not(.editing) .slide { -webkit-user-select: none; user-select: none; }
   body:not(.editing) .slide .fn-note, body:not(.editing) .slide .fn-note * { -webkit-user-select: text; user-select: text; }
+
+  .book .prog-chips { flex-wrap: wrap; row-gap: 3px; }
+  .book .prog-chips i.past { background: #FFFFFF; color: #4E5C42; border: 1.5px solid #9AA88C; }
+  .book .prog-chips i.cur { background: #4E5C42; color: #FFFFFF; border: 1.5px solid #4E5C42; }
+
+  #ws-root.ws-land .ws-cols { column-count: 3 !important; }
+
+  .table-panel .tp-row3 button { font-size: .8em !important; padding: 5px 0 !important; }
+  .slide .block table td[style*="text-align"], .slide .block table th[style*="text-align"] { }
+
+  #ws-root td.ws-al-center, #ws-root th.ws-al-center { text-align: center !important; }
+  #ws-root td.ws-al-right, #ws-root th.ws-al-right { text-align: right !important; }
 </style>
 </head>
 <body>
@@ -1319,7 +1331,7 @@
     </div>
     <div class="right-tools">
       <button type="button" class="fs-btn" id="fs-btn" aria-label="전체 화면" title="전체 화면 (Esc로 나가기)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <span class="ws-wrap"><button type="button" class="ppt-btn" id="ws-btn" title="이 차시를 A4 학습지로 인쇄하거나 PDF로 저장">학습지</button><span class="ws-menu" id="ws-menu" hidden><button type="button" data-ws="blank1">학생용 (빈칸)</button><button type="button" data-ws="ans1">정답지</button></span></span><button type="button" class="ppt-btn" id="ppt-btn" title="이 차시를 PPT 파일로 내려받기">PPT 받기</button>
+      <span class="ws-wrap"><button type="button" class="ppt-btn" id="ws-btn" title="이 차시를 A4 학습지로 인쇄하거나 PDF로 저장">학습지</button><span class="ws-menu" id="ws-menu" hidden><button type="button" data-ws="blank-p">학생용 · A4 세로</button><button type="button" data-ws="blank-l">학생용 · A4 가로</button><button type="button" data-ws="ans-p">정답지 · A4 세로</button><button type="button" data-ws="ans-l">정답지 · A4 가로</button></span></span><button type="button" class="ppt-btn" id="ppt-btn" title="이 차시를 PPT 파일로 내려받기">PPT 받기</button>
       <button type="button" class="edit-toggle" id="edit-toggle" hidden aria-pressed="false" title="수정 모드">✎</button>
     </div>
   </div>
@@ -2447,6 +2459,7 @@ function __boot() {
       return '<button type="button" class="tp-title" data-t="toggle" aria-expanded="true" title="도구판 접기/펴기">표 편집 <span class="tp-arrow">▾</span></button><div class="tp-body">' +
         '<div class="tp-g"><span class="tb-l">가로줄(행)</span><div class="tp-row"><button type="button" data-t="rowadd" title="아래에 가로줄 추가"><span class="tp-ic">＋</span>추가</button><button type="button" data-t="rowdel" class="tb-danger" title="이 가로줄 삭제"><span class="tp-ic">－</span>삭제</button></div></div>' +
         '<div class="tp-g"><span class="tb-l">세로줄(열)</span><div class="tp-row"><button type="button" data-t="coladd" title="오른쪽에 세로줄 추가"><span class="tp-ic">＋</span>추가</button><button type="button" data-t="coldel" class="tb-danger" title="이 세로줄 삭제"><span class="tp-ic">－</span>삭제</button></div></div>' +
+        '<div class="tp-g"><span class="tb-l">글자 정렬</span><div class="tp-row tp-row3"><button type="button" data-t="al-left" title="왼쪽 정렬">왼쪽</button><button type="button" data-t="al-center" title="가운데 정렬">가운데</button><button type="button" data-t="al-right" title="오른쪽 정렬">오른쪽</button></div><div class="tp-row"><button type="button" data-t="al-col" title="이 칸이 있는 세로줄 전체를 같은 정렬로">세로줄 전체 가운데</button></div></div>' +
         '<div class="tp-g"><span class="tb-l">칸 합치기</span><button type="button" data-t="merge" title="드래그로 선택한 칸들을 하나로 합쳐요">선택 칸 합치기</button><button type="button" data-t="split" title="합쳐진 칸을 다시 나눠요">합친 칸 나누기</button></div>' +
         '<div class="tp-g"><span class="tb-l">너비</span><button type="button" data-t="eqall">모두 같게</button><button type="button" data-t="eqothers">이 칸 빼고 같게</button></div>' +
         '<div class="tp-g"><span class="tb-l">이 칸 머리색</span><div class="tp-sw">' + TB_COLORS.map(function (c) { return '<button type="button" class="sw" data-t="color:' + c[0] + '" title="' + c[2] + '" style="background:' + c[1] + '"></button>'; }).join('') + '</div><button type="button" data-t="colorall">모든 칸에 적용</button></div>' +
@@ -2631,9 +2644,24 @@ function __boot() {
       clearCellSel(); gripTools(true); storeLesson(+t.closest('section.stage').dataset.l);
       state.textContent = '합친 칸을 나눴어요';
     }
+    function alignCells(how) {
+      var cells = cellSel.length > 1 ? cellSel.slice() : [];
+      if (!cells.length) { var c0 = cellRange(); if (c0) cells = [c0]; }
+      if (!cells.length) { state.textContent = '정렬할 칸을 먼저 클릭하거나 드래그로 선택하세요'; return; }
+      var t = cells[0].closest('table'); snapTable(t);
+      if (how === 'col') {
+        var pos = tableGrid(t), p0 = pos.get(cells[0]); cells = [];
+        pos.forEach(function (p, c) { if (p.c <= p0.c2 && p.c2 >= p0.c) cells.push(c); });
+        how = 'center';
+      }
+      cells.forEach(function (c) { if (how === 'left') c.style.removeProperty('text-align'); else c.style.textAlign = how; if (!c.getAttribute('style')) c.removeAttribute('style'); });
+      storeLesson(+t.closest('section.stage').dataset.l);
+      state.textContent = cells.length + '칸 ' + (how === 'center' ? '가운데' : how === 'right' ? '오른쪽' : '왼쪽') + ' 정렬';
+    }
     function tableCmd(c) {
       if (c === 'undo') { undoTable(); return; }
       if (c === 'merge') { mergeCells(); return; }
+      if (c.indexOf('al-') === 0) { alignCells(c.slice(3)); return; }
       if (c === 'split') { splitCell(); return; }
       if (c === 'tadd') { placeTable(makeTable([['제목', '제목', '제목'], ['', '', ''], ['', '', '']])); return; }
       var cell = cellRange(); if (!cell) { state.textContent = '표 칸을 먼저 클릭'; return; }
@@ -3111,11 +3139,14 @@ function __boot() {
       }).join('') + '</div>';
       var anchor = bk.querySelector('.book-edit') || bk.querySelector('.course-switch');
       bk.insertBefore(sum, anchor ? anchor.nextSibling : bk.firstChild);
-      var at = {};
-      PROG.classes.forEach(function (c) { var lt = latestOf(c); if (lt) (at[lt] = at[lt] || []).push(c); });
-      Object.keys(at).forEach(function (id) {
+      var latest = {};
+      PROG.classes.forEach(function (c) { latest[c] = latestOf(c); });
+      Object.keys(PROG.done).forEach(function (id) {
         var b = bk.querySelector('li.les button[data-lesson="' + id + '"]'); if (!b) return;
-        var ch = document.createElement('span'); ch.className = 'prog-chips'; ch.innerHTML = at[id].map(function (c) { return '<i>' + esc2(c) + '</i>'; }).join('');
+        var list = PROG.classes.filter(function (c) { return (PROG.done[id] || []).indexOf(c) > -1; });
+        if (!list.length) return;
+        var ch = document.createElement('span'); ch.className = 'prog-chips';
+        ch.innerHTML = list.map(function (c) { var cur = String(latest[c]) === String(id); return '<i class="' + (cur ? 'cur' : 'past') + '" title="' + esc2(c) + (cur ? ' · 지금 여기까지' : ' · 마침') + '">' + esc2(c) + '</i>'; }).join('');
         b.appendChild(ch);
       });
     }
@@ -4120,6 +4151,7 @@ function __boot() {
     el.querySelectorAll('.kind, .tag, .prog-panel, .rv-open, .rv-close, .m-clear, .v-clear, .wd-undo, .fn-mark, .fn-note, figure, svg, img, .m-dot, .v-tok, .v-drop, .v-stage, .lab').forEach(function (x) { x.remove(); });
     el.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); });
     el.querySelectorAll('span[style], font[color]').forEach(function (x) { var c = (x.style && x.style.color) || x.getAttribute('color') || ''; if (c && !/^(rgb\(0, 0, 0\)|#000|#000000|black|inherit)$/i.test(c.trim())) x.classList.add('ws-colored'); });
+    el.querySelectorAll('td[style], th[style]').forEach(function (x) { var ta = x.style.textAlign; if (ta === 'center' || ta === 'right') x.classList.add('ws-al-' + ta); });
     el.querySelectorAll('[style]').forEach(function (x) { x.removeAttribute('style'); });
     el.querySelectorAll('colgroup').forEach(function (x) { x.remove(); });
     return el;
@@ -4206,9 +4238,9 @@ function __boot() {
     root.querySelectorAll('.ws-box > h2').forEach(function (h) { var nx = h.nextElementSibling; if (!nx) return; var w = document.createElement('div'); w.className = 'ws-hk'; h.parentNode.insertBefore(w, h); w.appendChild(h); w.appendChild(nx); });
     root.style.zoom = ''; root.style.width = ''; root.dataset.zoom = 1;
     // 글씨는 그대로 두고, 넘치면 덜 중요한 부분부터 덜어 내기
-    var pg = document.createElement('div'); pg.style.cssText = 'position:absolute;height:279mm;width:1px;left:-10000px;top:0;'; document.body.appendChild(pg);
+    var land = root.classList.contains('ws-land'); var pg = document.createElement('div'); pg.style.cssText = 'position:absolute;height:' + (land ? 192 : 279) + 'mm;width:1px;left:-10000px;top:0;'; document.body.appendChild(pg);
     var limit = pg.getBoundingClientRect().height; pg.remove();
-    root.style.cssText = 'display:block !important;position:absolute;left:-10000px;top:0;width:196mm;';
+    root.style.cssText = 'display:block !important;position:absolute;left:-10000px;top:0;width:' + (land ? 283 : 196) + 'mm;';
     var hd = root.querySelector('.ws-head'), colsH = limit - (hd ? hd.getBoundingClientRect().height + 8 : 0);
     body.style.height = colsH + 'px'; body.style.columnFill = 'auto';
     var over = function () { return body.scrollWidth > body.clientWidth + 2; };
@@ -4225,12 +4257,14 @@ function __boot() {
     return 1;
   }
   window.__fitOnePage = fitOnePage;
-  function printWorksheet(withAns, pages) {
+  function printWorksheet(withAns, pages, land) {
     var root = document.getElementById('ws-root'); if (root) root.remove();
-    root = document.createElement('div'); root.id = 'ws-root'; root.innerHTML = buildWorksheet(withAns); document.body.appendChild(root);
+    root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; root.innerHTML = buildWorksheet(withAns); document.body.appendChild(root);
+    var ps = document.getElementById('ws-page-style'); if (ps) ps.remove();
+    ps = document.createElement('style'); ps.id = 'ws-page-style'; ps.textContent = '@media print { @page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 7mm; } }'; document.head.appendChild(ps);
     fitOnePage(root, pages || 1);
     document.body.classList.add('ws-print');
-    var done = function () { document.body.classList.remove('ws-print'); var r = document.getElementById('ws-root'); if (r) r.remove(); window.removeEventListener('afterprint', done); };
+    var done = function () { document.body.classList.remove('ws-print'); var r = document.getElementById('ws-root'); if (r) r.remove(); var s2 = document.getElementById('ws-page-style'); if (s2) s2.remove(); window.removeEventListener('afterprint', done); };
     window.addEventListener('afterprint', done);
     setTimeout(function () { window.print(); setTimeout(function () { if (!window.matchMedia('print').matches) {} }, 0); }, 60);
   }
@@ -4243,7 +4277,7 @@ function __boot() {
       if (!teacher) { printWorksheet(false); return; }
       wm.hidden = !wm.hidden;
     });
-    wm.addEventListener('click', function (e) { var b = e.target.closest('button[data-ws]'); if (!b) return; wm.hidden = true; printWorksheet(b.dataset.ws.indexOf('ans') === 0, b.dataset.ws.slice(-1) === '2' ? 2 : 1); });
+    wm.addEventListener('click', function (e) { var b = e.target.closest('button[data-ws]'); if (!b) return; wm.hidden = true; printWorksheet(b.dataset.ws.indexOf('ans') === 0, 1, b.dataset.ws.slice(-1) === 'l'); });
     document.addEventListener('click', function (e) { if (!wm.hidden && !e.target.closest('#ws-btn, #ws-menu')) wm.hidden = true; });
   })();
   // ===== 빈 곳 클릭으로 넘기기 =====
