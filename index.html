@@ -1227,6 +1227,14 @@
   #ws-root .ws-cols2 .ws-box { break-inside: avoid; margin: 0 0 2mm !important; }
 
   #ws-root .ws-cols { column-fill: balance !important; }
+
+  /* 학습지 표: 깔끔한 회색 선 */
+  #ws-root table { border-collapse: collapse !important; border: 1px solid #8C8C8C !important; }
+  #ws-root table th, #ws-root table td { border: 1px solid #B4B4B4 !important; }
+  #ws-root thead th { border-bottom: 1.5px solid #707070 !important; font-weight: 700; color: #111 !important; }
+  #ws-root tbody th { font-weight: 700; color: #222 !important; }
+  #ws-root .ws-hl { font-weight: 700; margin-top: 0 !important; }
+  #ws-root .ws-fact { color: #333; }
 </style>
 </head>
 <body>
@@ -4188,7 +4196,7 @@ function __boot() {
         else if (/b-news/.test(cls)) {
           wsBlankify(blk, withAns);
           var hl = blk.querySelector('.headline'), ft = blk.querySelector('.fact'), sides = blk.querySelectorAll('.side');
-          html = '<div class="ws-box ws-news"><h2>시사</h2>' +
+          html = '<div class="ws-box ws-news"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.innerHTML.trim() + '</p>' : '') + (ft ? '<p class="ws-fact">' + ft.innerHTML + '</p>' : '') +
             '<ul class="ws-sides">' + [].map.call(sides, function (sd) { var bd = sd.querySelector('.badge'), pp = sd.querySelector('p'); return '<li><b>' + (bd ? bd.textContent.trim() : '') + '</b>: ' + (pp ? pp.innerHTML.trim() : '') + '</li>'; }).join('') + '</ul>' +
             '<p>나의 입장: A □ / B □ &nbsp; 이유: <span class="ws-inline-line"></span></p></div>';
         }
@@ -4199,7 +4207,6 @@ function __boot() {
           if (prop) { var body = prop.querySelector('.rv-body') || prop; var c = body.cloneNode(true); c.querySelectorAll('summary').forEach(function (x) { x.remove(); }); wsBlankify(c, withAns); html += '<p class="ws-prop"><b>핵심 명제</b> ' + c.innerHTML.split('<p>').join(' ').split('</p>').join(' ') + '</p>'; }
           html += '</div>';
         }
-        else if (/b-activity/.test(cls) && /층위 질문으로 생각 열기/.test((blk0.querySelector('h3') || {}).textContent || '')) { html = ''; }
         else if (/b-activity/.test(cls)) {
           blk.querySelectorAll('details.reveal').forEach(function (d) { d.classList.add('ws-keep'); });
           wsBlankify(blk, withAns);
@@ -4252,7 +4259,7 @@ function __boot() {
     root.style.zoom = ''; root.style.width = ''; root.dataset.zoom = 1;
     // 글씨는 그대로 두고, 넘치면 덜 중요한 부분부터 덜어 내기
     var land = root.classList.contains('ws-land'); var pg = document.createElement('div'); pg.style.cssText = 'position:absolute;height:' + (land ? 192 : 279) + 'mm;width:1px;left:-10000px;top:0;'; document.body.appendChild(pg);
-    var limit = pg.getBoundingClientRect().height; pg.remove();
+    var limit = pg.getBoundingClientRect().height * (pages > 1 ? pages * 0.96 : 1); pg.remove();
     root.style.cssText = 'display:block !important;position:absolute;left:-10000px;top:0;width:' + (land ? 283 : 196) + 'mm;';
     var hd = root.querySelector('.ws-head'), colsH = limit - (hd ? hd.getBoundingClientRect().height + 8 : 0);
     body.style.height = colsH + 'px'; body.style.columnFill = 'auto';
@@ -4276,7 +4283,7 @@ function __boot() {
     root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; root.innerHTML = buildWorksheet(withAns); document.body.appendChild(root);
     var ps = document.getElementById('ws-page-style'); if (ps) ps.remove();
     ps = document.createElement('style'); ps.id = 'ws-page-style'; ps.textContent = '@media print { @page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 7mm; } }'; document.head.appendChild(ps);
-    fitOnePage(root, pages || 1);
+    fitOnePage(root, pages || 2);
     document.body.classList.add('ws-print');
     var done = function () { document.body.classList.remove('ws-print'); var r = document.getElementById('ws-root'); if (r) r.remove(); var s2 = document.getElementById('ws-page-style'); if (s2) s2.remove(); window.removeEventListener('afterprint', done); };
     window.addEventListener('afterprint', done);
@@ -4288,10 +4295,10 @@ function __boot() {
     if (!wb) return;
     wb.addEventListener('click', function () {
       var teacher = document.getElementById('edit-toggle') && !document.getElementById('edit-toggle').hidden;
-      if (!teacher) { printWorksheet(false); return; }
+      if (!teacher) { printWorksheet(false, 2, false); return; }
       wm.hidden = !wm.hidden;
     });
-    wm.addEventListener('click', function (e) { var b = e.target.closest('button[data-ws]'); if (!b) return; wm.hidden = true; printWorksheet(b.dataset.ws.indexOf('ans') === 0, 1, b.dataset.ws.slice(-1) === 'l'); });
+    wm.addEventListener('click', function (e) { var b = e.target.closest('button[data-ws]'); if (!b) return; wm.hidden = true; printWorksheet(b.dataset.ws.indexOf('ans') === 0, 2, b.dataset.ws.slice(-1) === 'l'); });
     document.addEventListener('click', function (e) { if (!wm.hidden && !e.target.closest('#ws-btn, #ws-menu')) wm.hidden = true; });
   })();
   // ===== 빈 곳 클릭으로 넘기기 =====
