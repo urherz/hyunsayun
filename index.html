@@ -1235,6 +1235,15 @@
   #ws-root tbody th { font-weight: 700; color: #222 !important; }
   #ws-root .ws-hl { font-weight: 700; margin-top: 0 !important; }
   #ws-root .ws-fact { color: #333; }
+
+  /* 시사: 제목 줄 바로 아래, 단 나누지 않고 */
+  #ws-root .ws-news-top { display: block !important; margin: 0 0 2mm !important; break-inside: avoid; }
+  #ws-root .ws-news-top > h2 { display: inline-block !important; margin: 0 6px 0 0 !important; vertical-align: baseline; }
+  #ws-root .ws-news-top .ws-hl { display: inline; margin: 0 !important; }
+  #ws-root .ws-news-top .ws-sides { display: grid; grid-template-columns: 1fr 1fr; column-gap: 6mm; margin: 1mm 0 0 !important; padding: 0; list-style: none; }
+  #ws-root .ws-news-top .ws-sides li { margin: 0 !important; }
+  #ws-root .ws-news-top > p:last-child { margin: 1mm 0 0 !important; }
+  #ws-root .ws-news-top .ws-inline-line { width: 75%; }
 </style>
 </head>
 <body>
@@ -4196,7 +4205,7 @@ function __boot() {
         else if (/b-news/.test(cls)) {
           wsBlankify(blk, withAns);
           var hl = blk.querySelector('.headline'), ft = blk.querySelector('.fact'), sides = blk.querySelectorAll('.side');
-          html = '<div class="ws-box ws-news"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.innerHTML.trim() + '</p>' : '') + (ft ? '<p class="ws-fact">' + ft.innerHTML + '</p>' : '') +
+          html = '<div class="ws-box ws-news ws-news-top"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.innerHTML.trim() + '</p>' : '') +
             '<ul class="ws-sides">' + [].map.call(sides, function (sd) { var bd = sd.querySelector('.badge'), pp = sd.querySelector('p'); return '<li><b>' + (bd ? bd.textContent.trim() : '') + '</b>: ' + (pp ? pp.innerHTML.trim() : '') + '</li>'; }).join('') + '</ul>' +
             '<p>나의 입장: A □ / B □ &nbsp; 이유: <span class="ws-inline-line"></span></p></div>';
         }
@@ -4255,13 +4264,14 @@ function __boot() {
     var head = root.querySelector('.ws-head'), body = document.createElement('div'); body.className = 'ws-cols';
     while (head && head.nextSibling) body.appendChild(head.nextSibling);
     root.appendChild(body);
+    var newsTop = body.querySelector('.ws-news-top'); if (newsTop) root.insertBefore(newsTop, body);
     root.querySelectorAll('.ws-box > h2').forEach(function (h) { var nx = h.nextElementSibling; if (!nx) return; var w = document.createElement('div'); w.className = 'ws-hk'; h.parentNode.insertBefore(w, h); w.appendChild(h); w.appendChild(nx); });
     root.style.zoom = ''; root.style.width = ''; root.dataset.zoom = 1;
     // 글씨는 그대로 두고, 넘치면 덜 중요한 부분부터 덜어 내기
     var land = root.classList.contains('ws-land'); var pg = document.createElement('div'); pg.style.cssText = 'position:absolute;height:' + (land ? 192 : 279) + 'mm;width:1px;left:-10000px;top:0;'; document.body.appendChild(pg);
     var limit = pg.getBoundingClientRect().height * (pages > 1 ? pages * 0.96 : 1); pg.remove();
     root.style.cssText = 'display:block !important;position:absolute;left:-10000px;top:0;width:' + (land ? 283 : 196) + 'mm;';
-    var hd = root.querySelector('.ws-head'), colsH = limit - (hd ? hd.getBoundingClientRect().height + 8 : 0);
+    var hd = root.querySelector('.ws-head'), nt = root.querySelector('.ws-news-top'), colsH = limit - (hd ? hd.getBoundingClientRect().height + 8 : 0) - (nt ? nt.getBoundingClientRect().height + 8 : 0);
     body.style.height = colsH + 'px'; body.style.columnFill = 'auto';
     var over = function () { return body.scrollWidth > body.clientWidth + 2; };
     var steps = [
