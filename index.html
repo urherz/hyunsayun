@@ -1669,6 +1669,7 @@ function __boot() {
     fit();
   }
   tocBtn.addEventListener('click', function () { setToc(document.body.classList.contains('toc-closed')); });
+  var tocAtStart = !/^#L[0-9]/.test(location.hash) && window.matchMedia('(min-width: 700px)').matches;
   setToc(false);
   document.addEventListener('click', function (e) {
     if (document.body.classList.contains('toc-closed')) return;
@@ -4175,7 +4176,7 @@ function __boot() {
         else if (/b-news/.test(cls)) {
           wsBlankify(blk, withAns);
           var hl = blk.querySelector('.headline'), ft = blk.querySelector('.fact'), sides = blk.querySelectorAll('.side');
-          html = '<div class="ws-box ws-news"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.innerHTML.trim() + '</p>' : '') + (ft ? '<p>' + ft.innerHTML + '</p>' : '') +
+          html = '<div class="ws-box ws-news"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.innerHTML.trim() + '</p>' : '') +
             '<ul class="ws-sides">' + [].map.call(sides, function (sd) { var bd = sd.querySelector('.badge'), pp = sd.querySelector('p'); return '<li><b>' + (bd ? bd.textContent.trim() : '') + '</b>: ' + (pp ? pp.innerHTML.trim() : '') + '</li>'; }).join('') + '</ul>' +
             '<p>나의 입장: A □ / B □ &nbsp; 이유: <span class="ws-inline-line"></span></p></div>';
         }
@@ -4314,6 +4315,7 @@ function __boot() {
   if (!document.querySelector('#slide section.stage[data-l="' + wantL + '"]')) wantL = firstL;
   open(wantL, m && m[2] ? +m[2] : 0);
   fit();
+  if (tocAtStart) setTimeout(function () { setToc(true); }, 0);
 }
 (function () {
   var COURSES = {
