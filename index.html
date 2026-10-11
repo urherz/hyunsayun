@@ -1264,6 +1264,17 @@
   #ws-editor .wse-ctl button { font-size: 11px; padding: 1px 6px; border: 1px solid #BBB; border-radius: 4px; background: #FFF; cursor: pointer; font-family: var(--sans); }
   #ws-editor .wse-ctl button[data-wse="del"] { color: #B3372B; border-color: #E2B4AE; }
   @media print { .wse-ctl { display: none !important; } }
+
+  /* 학습지 수정 창: 표 빼기 버튼 */
+  #ws-editor .wse-tctl { position: relative; height: 0; z-index: 4; }
+  #ws-editor .wse-tctl button { position: absolute; right: 3px; top: 3px; font-size: 11px; padding: 1px 6px; border: 1px solid #E2B4AE; color: #B3372B; border-radius: 4px; background: #FFF; cursor: pointer; opacity: 0; transition: opacity .12s; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+  #ws-editor .wse-tctl:hover button, #ws-editor .wse-tctl:has(+ .tablewrap:hover) button, #ws-editor .wse-tctl:has(+ table:hover) button { opacity: 1; }
+  @media print { .wse-tctl { display: none !important; } }
+  /* 배지(핵심 개념·정리·기출) 옆에 바로 제목·내용 */
+  #ws-root .ws-concept .ws-hk > h2, #ws-root .ws-summary .ws-hk > h2, #ws-root .ws-exam .ws-hk > h2,
+  #ws-root .ws-concept > h2, #ws-root .ws-summary > h2, #ws-root .ws-exam > h2 { float: left; margin: 0 6px 0 0 !important; }
+  #ws-root .ws-box .ws-subt { border-bottom: 0 !important; margin-top: 0 !important; padding-top: 1px; }
+  #ws-root .ws-box table, #ws-root .ws-box .tablewrap, #ws-root .ws-box .bogi, #ws-root .ws-box ol, #ws-root .ws-box .ws-sub + .ws-sub { clear: left; }
 </style>
 </head>
 <body>
@@ -1889,7 +1900,7 @@ function __boot() {
     try { repairTables(document.getElementById('slide')); dropEmpty(document.getElementById('slide')); } catch (e) {}
     try { if (window.__renumber) window.__renumber(); lessonNums().forEach(syncLessonTitle); if (window.__refreshLessonBtns) window.__refreshLessonBtns(); } catch (e) {}
 
-    var allowed = location.protocol === 'file:' || location.hostname.slice(-9) !== 'github.io' || new URLSearchParams(location.search).has('edit');
+    var allowed = true;
     if (allowed) toggle.hidden = false;
     setTimeout(function () { markDirty(); showRecovery(); progRender(); }, 300);
 
@@ -2328,7 +2339,7 @@ function __boot() {
       var NL = String.fromCharCode(10);
       var bk = document.getElementById('book').cloneNode(true); bk.querySelectorAll('.current').forEach(function (e) { e.classList.remove('current'); e.removeAttribute('aria-current'); }); bk.querySelectorAll('.course-switch, .les-chk, .book-edit, .prog-sum, .prog-chips').forEach(function (e) { e.remove(); });
       var pk = document.getElementById('pick').innerHTML;
-      var extra = '<template id="course-book">' + bk.innerHTML + '</template>' + NL + '<template id="course-pick">' + pk + '</template>' + NL + '<script type="application/json" id="course-progress">' + JSON.stringify(window.__getProgress ? window.__getProgress() : { classes: [], done: {} }).split('<').join('') + '</scr' + 'ipt>' + NL;
+      var extra = '<template id="course-book">' + bk.innerHTML + '</template>' + NL + '<template id="course-pick">' + pk + '</template>' + NL + '<script type="application/json" id="course-progress">' + JSON.stringify(window.__getProgress ? window.__getProgress() : { classes: [], done: {} }).split('<').join('') + '</scr' + 'ipt>' + NL + '<script type="text/plain" id="course-worksheets">' + btoa(unescape(encodeURIComponent(JSON.stringify(window.__wsAll ? window.__wsAll() : {})))) + '</scr' + 'ipt>' + NL;
       return '<!DOCTYPE html>' + NL + '<html lang="ko"><head><meta charset="UTF-8"><meta name="content-rev" content="' + rev + '"><meta name="course-title" content="' + document.title.split('"').join('') + '"><title>수업 내용</title></head><body>' + NL + extra +
         '<!-- 이 파일은 수업 페이지의 "내용"입니다. 틀(index.html)이 이 파일을 불러와 보여 줍니다. -->' + NL + html + NL + '</body></html>';
     }
@@ -3315,6 +3326,18 @@ function __boot() {
       e.preventDefault(); if (!confirmTwice(d, '한 번 더 누르면 삭제')) return;
       var w = d.closest('.video-wrap'), sec = w.closest('section.stage'); w.remove(); storeLesson(+sec.dataset.l); state.textContent = '동영상을 지웠어요';
     });
+    // ===== 학습지 수정본: 내용 파일에 함께 저장 (모든 컴퓨터에서 같게) =====
+    var WS_KEY = PFX + 'worksheets';
+    var WSD = (function () { var base = window.__wsBase || {}; var loc = {}; try { loc = JSON.parse(localStorage.getItem(WS_KEY) || '{}'); } catch (e) {} var o = {}; Object.keys(base).forEach(function (k) { o[k] = base[k]; }); Object.keys(loc).forEach(function (k) { if (loc[k] === null) delete o[k]; else o[k] = loc[k]; }); return { all: o, local: loc }; })();
+    window.__wsGet = function (key) { return WSD.all[key] || null; };
+    window.__wsAll = function () { return WSD.all; };
+    var wsT = null;
+    window.__wsSave = function (key, html) {
+      if (html == null) { delete WSD.all[key]; WSD.local[key] = null; } else { WSD.all[key] = html; WSD.local[key] = html; }
+      try { localStorage.setItem(WS_KEY, JSON.stringify(WSD.local)); localStorage.setItem(DIRTY, '1'); } catch (e) {}
+      markDirty();
+      clearTimeout(wsT); wsT = setTimeout(function () { if (!editing && ghGet()) publish(); }, 3000);
+    };
     bar.addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });
     bar.addEventListener('change', function (e) {
       var sel = e.target.closest('select'); if (!sel || !sel.value) return;
@@ -4342,23 +4365,30 @@ function __boot() {
     setTimeout(function () { window.print(); setTimeout(function () { if (!window.matchMedia('print').matches) {} }, 0); }, 60);
   }
   // ===== 학습지 미리보기·수정 창 =====
-  function wseKey(withAns, land) { return 'ws-edit:' + (window.__course || '') + ':' + L + ':' + (withAns ? 'a' : 's') + ':' + (land ? 'l' : 'p'); }
+  function wseKey(withAns, land) { return 'L' + L + ':' + (withAns ? 'a' : 's') + ':' + (land ? 'l' : 'p'); }
   function wseControls(root) {
     root.querySelectorAll('.wse-ctl').forEach(function (x) { x.remove(); });
+    root.querySelectorAll('.wse-tctl').forEach(function (x) { x.remove(); });
+    root.querySelectorAll('.ws-box table').forEach(function (tb) {
+      var host = tb.closest('.tablewrap') || tb;
+      var c = document.createElement('div'); c.className = 'wse-tctl'; c.setAttribute('contenteditable', 'false');
+      c.innerHTML = '<button type="button" data-wse="tdel" title="이 표 빼기">✕ 표 빼기</button>';
+      host.parentNode.insertBefore(c, host);
+    });
     root.querySelectorAll('.ws-box').forEach(function (bx) {
       var c = document.createElement('div'); c.className = 'wse-ctl'; c.setAttribute('contenteditable', 'false');
       c.innerHTML = (bx.querySelector('.ws-line') ? '<button type="button" data-wse="line+" title="문항마다 쓰는 줄 1개 더">줄＋</button><button type="button" data-wse="line-" title="문항마다 쓰는 줄 1개 빼기">줄－</button>' : '') + '<button type="button" data-wse="del" title="이 칸 빼기">✕ 빼기</button>';
       bx.insertBefore(c, bx.firstChild);
     });
   }
-  function wseHtml(root) { var c = root.cloneNode(true); c.querySelectorAll('.wse-ctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
+  function wseHtml(root) { var c = root.cloneNode(true); c.querySelectorAll('.wse-ctl, .wse-tctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
   function openWsEditor(withAns, land) {
     closeWsEditor();
-    var key = wseKey(withAns, land), stored = null; try { stored = localStorage.getItem(key); } catch (e) {}
+    var key = wseKey(withAns, land), stored = window.__wsGet ? window.__wsGet(key) : null;
     var ps = document.createElement('style'); ps.id = 'ws-page-style'; ps.textContent = '@media print { @page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 7mm; } }'; document.head.appendChild(ps);
     var ov = document.createElement('div'); ov.id = 'ws-editor';
     var title = (secTitle() || '') + ' · ' + (withAns ? '정답지' : '학생용') + ' · A4 ' + (land ? '가로' : '세로');
-    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-sp"></span><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 고친 내용은 이 컴퓨터에 차시별로 저장돼요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
+    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-sp"></span><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
     ov.querySelector('.wse-t').textContent = title;
     document.body.appendChild(ov); document.body.classList.add('ws-editing');
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land';
@@ -4367,13 +4397,13 @@ function __boot() {
     else { root.innerHTML = buildWorksheet(withAns); fitOnePage(root, 2); }
     root.setAttribute('contenteditable', 'true'); wseControls(root);
     var t = null;
-    var save = function () { clearTimeout(t); t = setTimeout(function () { try { localStorage.setItem(key, wseHtml(root)); ov.querySelector('.wse-note').textContent = '수정본 저장됨'; } catch (e) { ov.querySelector('.wse-note').textContent = '저장 실패(용량)'; } }, 400); };
+    var save = function () { clearTimeout(t); t = setTimeout(function () { if (window.__wsSave) window.__wsSave(key, wseHtml(root)); ov.querySelector('.wse-note').textContent = '수정본 저장됨 (잠시 뒤 사이트에 반영)'; }, 500); };
     root.addEventListener('input', save);
     ov.addEventListener('click', function (e) {
       var bt = e.target.closest('button[data-wse]'); if (!bt) return;
       e.preventDefault(); var a = bt.dataset.wse;
       if (a === 'close') { closeWsEditor(); return; }
-      if (a === 'reset') { try { localStorage.removeItem(key); } catch (er) {} openWsEditor(withAns, land); return; }
+      if (a === 'reset') { if (window.__wsSave) window.__wsSave(key, null); openWsEditor(withAns, land); return; }
       if (a === 'print') {
         document.body.appendChild(root); root.removeAttribute('contenteditable'); document.body.classList.add('ws-print');
         var back = function () { document.body.classList.remove('ws-print'); var pp = document.querySelector('#ws-editor .wse-paper'); if (pp) { pp.appendChild(root); root.setAttribute('contenteditable', 'true'); } window.removeEventListener('afterprint', back); };
@@ -4381,6 +4411,7 @@ function __boot() {
         setTimeout(function () { window.print(); }, 60);
         return;
       }
+      if (a === 'tdel') { var tc = bt.closest('.wse-tctl'), nx = tc && tc.nextElementSibling; if (nx) nx.remove(); if (tc) tc.remove(); save(); return; }
       var bx = bt.closest('.ws-box'); if (!bx) return;
       if (a === 'del') { bx.remove(); save(); return; }
       if (a === 'line+' || a === 'line-') {
@@ -4478,6 +4509,7 @@ function __boot() {
     var bk = d && d.querySelector('template#course-book'); if (bk) document.getElementById('book').innerHTML = bk.innerHTML;
     var pk = d && d.querySelector('template#course-pick'); if (pk) document.getElementById('pick').innerHTML = pk.innerHTML;
     var pg0 = d && d.querySelector('script#course-progress'); if (pg0) { try { window.__progressBase = JSON.parse(pg0.textContent); } catch (e) {} }
+    var wsd = d && d.querySelector('script#course-worksheets'); if (wsd) { try { window.__wsBase = JSON.parse(decodeURIComponent(escape(atob(wsd.textContent.trim())))); } catch (e) {} }
     var bt = document.querySelector('#book .book-title'); if (bt && !bk) bt.textContent = title;
   }
   function start() { var ld = document.getElementById('loading'); if (ld) ld.remove(); window.__course = cid; __boot(); }
