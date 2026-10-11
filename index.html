@@ -1215,6 +1215,18 @@
 
   #ws-root td.ws-al-center, #ws-root th.ws-al-center { text-align: center !important; }
   #ws-root td.ws-al-right, #ws-root th.ws-al-right { text-align: right !important; }
+
+  /* 학습지 쓰는 칸 넉넉하게, 가로는 2단 */
+  #ws-root .ws-line { height: 2em !important; }
+  #ws-root .ws-inline-line { height: 1.3em !important; }
+  #ws-root.ws-tight .ws-line { height: 1.45em !important; }
+  #ws-root.ws-land .ws-cols { column-count: 2 !important; column-gap: 8mm !important; }
+
+  #ws-root .ws-cols2 { display: flex; gap: 8mm; align-items: flex-start; }
+  #ws-root .ws-cols2 > .ws-c { flex: 1 1 0; min-width: 0; }
+  #ws-root .ws-cols2 .ws-box { break-inside: avoid; margin: 0 0 2mm !important; }
+
+  #ws-root .ws-cols { column-fill: balance !important; }
 </style>
 </head>
 <body>
@@ -4176,7 +4188,7 @@ function __boot() {
         else if (/b-news/.test(cls)) {
           wsBlankify(blk, withAns);
           var hl = blk.querySelector('.headline'), ft = blk.querySelector('.fact'), sides = blk.querySelectorAll('.side');
-          html = '<div class="ws-box ws-news"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.innerHTML.trim() + '</p>' : '') +
+          html = '<div class="ws-box ws-news"><h2>시사</h2>' +
             '<ul class="ws-sides">' + [].map.call(sides, function (sd) { var bd = sd.querySelector('.badge'), pp = sd.querySelector('p'); return '<li><b>' + (bd ? bd.textContent.trim() : '') + '</b>: ' + (pp ? pp.innerHTML.trim() : '') + '</li>'; }).join('') + '</ul>' +
             '<p>나의 입장: A □ / B □ &nbsp; 이유: <span class="ws-inline-line"></span></p></div>';
         }
@@ -4247,6 +4259,7 @@ function __boot() {
     var over = function () { return body.scrollWidth > body.clientWidth + 2; };
     var steps = [
       function () { root.querySelectorAll('.ws-link').forEach(function (x) { x.remove(); }); },
+      function () { root.classList.add('ws-tight'); },
       function () { root.querySelectorAll('.ws-news .ws-hl + p').forEach(function (x) { x.remove(); }); },
       function () { root.querySelectorAll('.ws-summary').forEach(function (bx) { var ps = bx.querySelectorAll('p'); if (ps.length > 1) { var pq = ps[0], ln = pq.nextElementSibling; if (ln && ln.classList.contains('ws-line')) ln.remove(); pq.remove(); } }); },
       function () { root.querySelectorAll('.ws-news').forEach(function (x) { x.remove(); }); }
