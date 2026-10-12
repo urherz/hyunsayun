@@ -1287,6 +1287,13 @@
   #ws-editor .wse-bctl[hidden] { display: none; }
   #ws-editor .wse-bctl button { font-size: 12px; padding: 2px 8px; border: 1px solid #BBB; border-radius: 4px; background: #FFF; cursor: pointer; font-family: var(--sans); }
   @media print { .wse-bctl { display: none !important; } .wse-bsel { background: none !important; outline: none !important; } }
+
+  #ws-root .ws-paren { white-space: nowrap; }
+  #ws-editor #ws-root td.wse-colhot, #ws-editor #ws-root th.wse-colhot { cursor: col-resize; box-shadow: inset -3px 0 0 #1F5A96; }
+  #ws-root table[style*="fixed"] { table-layout: fixed !important; }
+
+  #ws-root td .ws-paren, #ws-root th .ws-paren { white-space: normal; }
+  #ws-root td .ws-blank, #ws-root th .ws-blank { max-width: calc(100% - 1.6em) !important; }
 </style>
 </head>
 <body>
@@ -4227,6 +4234,15 @@ function __boot() {
       var b = document.createElement('span');
       if (withAns) { b.className = 'ws-ans'; b.textContent = txt; }
       else { b.className = 'ws-blank'; b.style.width = Math.max(3, Math.min(14, txt.length * 1.05)) + 'em'; b.innerHTML = '&nbsp;'; }
+      if (!withAns) {
+        var pv = s.previousSibling, nx = s.nextSibling;
+        var hasOpen = pv && pv.nodeType === 3 && /[(（]\s*$/.test(pv.nodeValue), hasClose = nx && nx.nodeType === 3 && /^\s*[)）]/.test(nx.nodeValue);
+        if (!hasOpen && !hasClose) {
+          var w = document.createElement('span'); w.className = 'ws-paren';
+          w.appendChild(document.createTextNode('( ')); w.appendChild(b); w.appendChild(document.createTextNode(' )'));
+          s.replaceWith(w); return;
+        }
+      }
       s.replaceWith(b);
     });
   }
@@ -4393,7 +4409,7 @@ function __boot() {
       bx.insertBefore(c, bx.firstChild);
     });
   }
-  function wseHtml(root) { var c = root.cloneNode(true); c.querySelectorAll('.wse-bsel').forEach(function (x) { x.classList.remove('wse-bsel'); }); c.querySelectorAll('.wse-ctl, .wse-tctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
+  function wseHtml(root) { var c = root.cloneNode(true); c.querySelectorAll('.wse-bsel').forEach(function (x) { x.classList.remove('wse-bsel'); }); c.querySelectorAll('.wse-colhot').forEach(function (x) { x.classList.remove('wse-colhot'); }); c.querySelectorAll('.ws-blank, .ws-pl, .ws-inline-line').forEach(function (x) { x.removeAttribute('contenteditable'); }); c.querySelectorAll('.wse-ctl, .wse-tctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
   function openWsEditor(withAns, land) {
     closeWsEditor();
     var key = wseKey(withAns, land), stored = window.__wsGet ? window.__wsGet(key) : null;
@@ -4408,9 +4424,45 @@ function __boot() {
     if (stored) { root.innerHTML = stored; ov.querySelector('.wse-note').textContent = '저장된 수정본'; }
     else { root.innerHTML = buildWorksheet(withAns); fitOnePage(root, 2); }
     root.setAttribute('contenteditable', 'true'); wseControls(root);
+    // 빈칸은 한 덩어리로 묶고, 바로 뒤에 커서가 들어갈 자리를 마련
+    root.querySelectorAll('.ws-blank, .ws-pl, .ws-inline-line').forEach(function (bl) {
+      bl.setAttribute('contenteditable', 'false');
+      var nx = bl.nextSibling;
+      if (!nx || nx.nodeType !== 3 || !nx.nodeValue.length) bl.parentNode.insertBefore(document.createTextNode(String.fromCharCode(8203)), bl.nextSibling);
+      var pv = bl.previousSibling;
+      if (!pv || pv.nodeType !== 3 || !pv.nodeValue.length) bl.parentNode.insertBefore(document.createTextNode(String.fromCharCode(8203)), bl);
+    });
     var t = null;
     var save = function () { clearTimeout(t); t = setTimeout(function () { if (window.__wsSave) window.__wsSave(key, wseHtml(root)); ov.querySelector('.wse-note').textContent = '수정본 저장됨 (잠시 뒤 사이트에 반영)'; }, 500); };
     root.addEventListener('input', save);
+    // 표 칸 너비: 칸 오른쪽 경계를 끌어서 조절
+    var edgeCell = function (e) {
+      var c = e.target.closest && e.target.closest('#ws-root td, #ws-root th'); if (!c) return null;
+      var r = c.getBoundingClientRect(); if (r.right - e.clientX > 7 || r.right - e.clientX < -3) return null;
+      var tr = c.parentNode; if (c === tr.cells[tr.cells.length - 1]) return null;
+      return c;
+    };
+    root.addEventListener('mousemove', function (e) {
+      if (root.__colDrag) return;
+      root.querySelectorAll('.wse-colhot').forEach(function (x) { x.classList.remove('wse-colhot'); });
+      var c = edgeCell(e); if (c) c.classList.add('wse-colhot');
+    });
+    root.addEventListener('mousedown', function (e) {
+      var c = edgeCell(e); if (!c) return;
+      e.preventDefault(); e.stopPropagation();
+      var t = c.closest('table'), ref = [].slice.call(t.rows).reduce(function (a, r) { return r.cells.length > a.cells.length ? r : a; }, t.rows[0]);
+      var n = ref.cells.length, widths = [].map.call(ref.cells, function (x) { return x.getBoundingClientRect().width; });
+      var idx = 0, x = 0, cx = c.getBoundingClientRect().right;
+      for (var k = 0; k < n; k++) { x += widths[k]; if (Math.abs(x - (cx - t.getBoundingClientRect().left)) < 8) { idx = k; break; } idx = k; }
+      var cg = t.querySelector('colgroup'); if (!cg) { cg = document.createElement('colgroup'); t.insertBefore(cg, t.firstChild); }
+      cg.innerHTML = widths.map(function () { return '<col>'; }).join('');
+      var tw = t.getBoundingClientRect().width, cols = cg.children;
+      var apply = function () { for (var k = 0; k < n; k++) cols[k].style.width = (widths[k] / tw * 100).toFixed(2) + '%'; t.style.tableLayout = 'fixed'; };
+      apply(); root.__colDrag = true; var sx = e.clientX, w0 = widths[idx], w1 = widths[idx + 1];
+      var mv = function (ev) { var d = ev.clientX - sx; var a = Math.max(20, Math.min(w0 + w1 - 20, w0 + d)); widths[idx] = a; widths[idx + 1] = w0 + w1 - a; apply(); };
+      var up = function () { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); root.__colDrag = false; save(); };
+      document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+    }, true);
     var bctl = document.createElement('div'); bctl.className = 'wse-bctl'; bctl.setAttribute('contenteditable', 'false'); bctl.hidden = true;
     bctl.innerHTML = '<button type="button" data-b="-">－ 짧게</button><button type="button" data-b="+">＋ 길게</button>';
     ov.querySelector('.wse-paper').appendChild(bctl);
