@@ -1377,6 +1377,21 @@
   #ws-root.ws-land .ws-cols2 { grid-template-columns: var(--ws-lr, 1.2fr 0.8fr); }
 
   #ws-root.ws-land .ws-acts { column-count: 3 !important; column-gap: 5mm !important; }
+
+  /* 제목 오른쪽에 부제목(탐구 질문) */
+  #ws-root .ws-head { display: grid !important; grid-template-columns: auto 1fr auto !important; align-items: end !important; column-gap: 3mm !important; }
+  #ws-root .ws-head .ws-meta { grid-column: 1 / -1 !important; grid-row: 1 !important; }
+  #ws-root .ws-head h1 { grid-column: 1 !important; grid-row: 2 !important; }
+  #ws-root .ws-head .ws-q { grid-column: 2 !important; grid-row: 2 !important; margin: 0 0 1px !important; align-self: end; }
+  #ws-root .ws-head .ws-name { grid-column: 3 !important; grid-row: 2 !important; }
+  /* 개념 사이 점선 없애기 */
+  #ws-root .ws-sub + .ws-sub { border-top: 0 !important; padding-top: 0 !important; margin-top: 2mm !important; }
+  /* 상자 아래 여백 최소화 */
+  #ws-root .ws-box { padding-bottom: 1.4mm !important; }
+  #ws-root .ws-box > :last-child, #ws-root .ws-box .ws-sub:last-child > :last-child, #ws-root .ws-box li:last-child, #ws-root .ws-box ul:last-child, #ws-root .ws-box ol:last-child, #ws-root .ws-box .tablewrap:last-child, #ws-root .ws-box table:last-child { margin-bottom: 0 !important; }
+  #ws-root .ws-box .ws-sub:last-child { margin-bottom: 0 !important; }
+  /* 빈칸 밑줄 더 연하게 */
+  #ws-root .ws-blank, #ws-root .ws-pl { border-bottom-color: #E3E3E3 !important; }
 </style>
 </head>
 <body>
@@ -4484,7 +4499,7 @@ function __boot() {
     var limit = pg.getBoundingClientRect().height * (pages > 1 ? pages * 0.96 : 1); pg.remove();
     root.style.cssText = 'display:block !important;position:absolute;left:-10000px;top:0;width:' + (land ? 283 : 196) + 'mm;';
     var hd = root.querySelector('.ws-head'), nt = root.querySelector('.ws-news-top'), colsH = limit - (hd ? hd.getBoundingClientRect().height + 8 : 0) - (nt ? nt.getBoundingClientRect().height + 8 : 0);
-    var over = function () { return body.getBoundingClientRect().height > colsH * (land ? 1.1 : 0.9); };
+    var over = function () { return body.getBoundingClientRect().height > colsH * (land ? 1.04 : 0.9); };
 
     var steps = [
       function () { root.classList.add('ws-tight'); },
