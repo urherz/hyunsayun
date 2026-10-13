@@ -1432,6 +1432,10 @@
   #ws-root .choice-cards { display: grid; gap: 2mm; margin: 1mm 0; }
   #ws-root .choice-cards > .cc { border: 1px solid #B4B4B4 !important; background: none !important; border-radius: 3px; padding: 1mm 2mm; }
   #ws-root .choice-cards .cc-b { color: #111 !important; background: #EEE !important; font-size: 10pt !important; padding: 0 4px; }
+
+  /* 페이지 사진 더 크게 */
+  .slide figure.page-photo img { max-height: 640px !important; }
+  .slide figure.page-photo[data-w="100"] img, .slide figure.page-photo[data-w="90"] img { max-height: 700px !important; }
 </style>
 </head>
 <body>
@@ -1959,11 +1963,24 @@ function __boot() {
     sec.style.fontSize = '';
     var ts = sec.querySelectorAll('.block, header.lesson');
     ts.forEach(function (t) { t.style.fontSize = ''; });
-    if (sec.dataset.fs) { ts.forEach(function (t) { t.style.fontSize = sec.dataset.fs + 'px'; }); return; }
+    var imgs = sec.querySelectorAll('figure.page-photo img');
+    imgs.forEach(function (im) { im.style.removeProperty('max-height'); });
+    var over = function () { return sec.scrollHeight > sec.clientHeight + 1; };
+    var shrinkPhotos = function (minH) {
+      var g = 0;
+      while (over() && g++ < 40) {
+        var any = false;
+        imgs.forEach(function (im) { var hh = im.offsetHeight; if (hh > minH) { im.style.setProperty('max-height', Math.max(minH, hh - 20) + 'px', 'important'); any = true; } });
+        if (!any) break;
+      }
+    };
+    if (sec.dataset.fs) { ts.forEach(function (t) { t.style.fontSize = sec.dataset.fs + 'px'; }); if (imgs.length && wide.matches) shrinkPhotos(160); return; }
     if (!wide.matches) return;
     sec.classList.add('measuring');
     var fs = 36;
-    while (sec.scrollHeight > sec.clientHeight + 1 && fs > 24) { fs -= 1; ts.forEach(function (t) { t.style.fontSize = fs + 'px'; }); }
+    var down = function (to) { while (over() && fs > to) { fs -= 1; ts.forEach(function (t) { t.style.fontSize = fs + 'px'; }); } };
+    if (!imgs.length) down(24);
+    else { down(33); shrinkPhotos(430); down(29); shrinkPhotos(260); down(24); shrinkPhotos(140); }
     sec.classList.remove('measuring');
   }
   window.__autofitForce = function () { var ed = document.body.classList.contains('editing'); if (ed) document.body.classList.remove('editing'); if (pages[P]) autofit(pages[P]); if (ed) document.body.classList.add('editing'); };
@@ -3471,7 +3488,7 @@ function __boot() {
         shrinkImage(f, function (src) {
           if (!src) { state.textContent = '사진을 읽지 못했어요'; return; }
           if (keep) { var sl = window.getSelection(); sl.removeAllRanges(); sl.addRange(keep); savedRange = keep; }
-          var fig = document.createElement('figure'); fig.className = 'page-photo'; fig.setAttribute('contenteditable', 'false'); fig.dataset.w = '60'; fig.style.width = '60%';
+          var fig = document.createElement('figure'); fig.className = 'page-photo'; fig.setAttribute('contenteditable', 'false'); fig.dataset.w = '80'; fig.style.width = '80%';
           var img = document.createElement('img'); img.src = src; img.alt = ''; fig.appendChild(img);
           placeTable(fig); pagePhotoTools(true); state.textContent = '사진을 넣었어요';
         });
@@ -3483,7 +3500,7 @@ function __boot() {
       state.textContent = '사진 넣는 중…';
       shrinkImage(f, function (src) {
         if (!src) { state.textContent = '사진을 읽지 못했어요'; return; }
-        var fig = document.createElement('figure'); fig.className = 'page-photo'; fig.setAttribute('contenteditable', 'false'); fig.dataset.w = '60'; fig.style.width = '60%';
+        var fig = document.createElement('figure'); fig.className = 'page-photo'; fig.setAttribute('contenteditable', 'false'); fig.dataset.w = '80'; fig.style.width = '80%';
         var img = document.createElement('img'); img.src = src; img.alt = ''; fig.appendChild(img);
         placeTable(fig); pagePhotoTools(true); state.textContent = '사진을 넣었어요';
       });
