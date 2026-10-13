@@ -1412,6 +1412,26 @@
   .slide figure.page-photo img { max-height: 9.5em !important; width: 100% !important; object-fit: contain; }
   .slide figure.page-photo[data-al="left"] { float: left !important; margin: .15em .8em .3em 0 !important; }
   .slide figure.page-photo[data-al="right"] { float: right !important; margin: .15em 0 .3em .8em !important; }
+
+  /* 선택 카드 */
+  .choice-cards { position: relative; display: grid; grid-template-columns: repeat(var(--cc-n, 2), 1fr); gap: .6em; margin: .4em 0; }
+  .choice-cards[data-n="3"] { --cc-n: 3; } .choice-cards[data-n="4"] { --cc-n: 4; }
+  .choice-cards > .cc { border: 2px solid var(--cc-line); background: var(--cc-bg); border-radius: 12px; padding: .5em .7em .6em; transition: transform .12s, box-shadow .12s; }
+  .choice-cards > .cc > p { margin: .25em 0 0; font-weight: 600; line-height: 1.4; }
+  .choice-cards .cc-b { display: inline-block; font-family: var(--serif); font-weight: 700; font-size: .62em; color: #FFFFFF; background: var(--cc-line); padding: .12em .6em; border-radius: 6px; }
+  .choice-cards > .cc-0 { --cc-bg: #E7ECF3; --cc-line: #5B7896; }
+  .choice-cards > .cc-1 { --cc-bg: #F7E6DA; --cc-line: #B0643B; }
+  .choice-cards > .cc-2 { --cc-bg: #E6EFE0; --cc-line: #5E7F4E; }
+  .choice-cards > .cc-3 { --cc-bg: #EFE6F2; --cc-line: #82609A; }
+  body:not(.editing) .choice-cards > .cc { cursor: pointer; }
+  .choice-cards > .cc.picked { box-shadow: 0 0 0 4px #E8B931; transform: translateY(-2px); }
+  .cc-tools { position: absolute; right: 0; top: -1.9em; display: flex; gap: 4px; z-index: 5; }
+  .cc-tools button { font-family: var(--serif); font-weight: 700; font-size: 15px; padding: 2px 10px; border: 1.5px solid var(--edge); border-radius: 6px; background: #FFFFFF; cursor: pointer; }
+  .cc-tools .cc-del { color: #B3372B; border-color: #E2B4AE; }
+  /* 학습지 */
+  #ws-root .choice-cards { display: grid; gap: 2mm; margin: 1mm 0; }
+  #ws-root .choice-cards > .cc { border: 1px solid #B4B4B4 !important; background: none !important; border-radius: 3px; padding: 1mm 2mm; }
+  #ws-root .choice-cards .cc-b { color: #111 !important; background: #EEE !important; font-size: 10pt !important; padding: 0 4px; }
 </style>
 </head>
 <body>
@@ -1810,7 +1830,7 @@
     <div class="grp"><button type="button" data-cmd="undoall" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-cmd="redoall" title="다시 실행 (Ctrl+Y)">↷ 다시</button></div>
     <div class="grp"><span class="glab">페이지</span><select data-sel="page" aria-label="페이지 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select><button type="button" data-cmd="left" title="앞으로 옮기기">◀</button><button type="button" data-cmd="right" title="뒤로 옮기기">▶</button><button type="button" data-cmd="delpage" title="지금 보고 있는 페이지를 통째로 지워요 (두 번 눌러야 지워져요)">✕ 페이지 삭제</button></div>
     <div class="grp"><span class="glab">차시</span><button type="button" data-cmd="addlesson" title="지금 차시 바로 뒤(같은 소단원)에 새 차시(표지 + 개념 1쪽)를 만들어요">＋ 차시</button><button type="button" data-cmd="dellesson" title="지금 차시를 통째로 지워요">차시 삭제</button></div>
-    <div class="grp"><select data-sel="tool" aria-label="수업 도구 넣기" title="커서가 있는 자리에 넣어요. 선 잇기·벤다이어그램은 커서가 있는 목록을 바꿔요"><option value="">＋ 수업 도구</option><option value="table">표</option><option value="match">선 잇기</option><option value="venn">벤다이어그램</option><option value="video">동영상 (유튜브)</option><option value="photo">사진</option></select></div>
+    <div class="grp"><select data-sel="tool" aria-label="수업 도구 넣기" title="커서가 있는 자리에 넣어요. 선 잇기·벤다이어그램은 커서가 있는 목록을 바꿔요"><option value="">＋ 수업 도구</option><option value="table">표</option><option value="match">선 잇기</option><option value="venn">벤다이어그램</option><option value="video">동영상 (유튜브)</option><option value="photo">사진</option><option value="choice">선택 카드 (A·B)</option></select></div>
     <span class="grp-sep"></span>
     <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="bd" class="t-bd" title="굵게 (Ctrl+B). 굵은 글자를 선택하고 다시 누르면 해제">굵게</button><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><button type="button" data-cmd="cloze" title="선택한 글자를 ( ) 빈칸으로. 수업 중 누르면 열려요">( ) 빈칸</button><button type="button" data-cmd="clozecho" title="선택한 글자를 초성 힌트가 있는 빈칸으로">초성 빈칸</button><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button><select data-sel="badge" aria-label="배지 넣기" title="커서 자리에 배지를 넣어요"><option value="">＋ 배지</option><option value="짝 질문">짝 질문</option><option value="질문">질문</option><option value="미션">미션</option><option value="핵심 명제">핵심 명제</option><option value="정리">정리</option><option value="예시">예시</option><option value="주의">주의</option><option value="__custom">직접 입력…</option></select><input id="badge-text" class="badge-text" type="text" placeholder="배지 글자 입력 후 Enter" hidden></div>
     <div class="grp"><span class="glab">줄</span><button type="button" data-cmd="outdent" title="내어쓰기 (Shift+Tab)">← 내어쓰기</button><button type="button" data-cmd="indent" title="들여쓰기 (Tab)">들여쓰기 →</button><select data-sel="bullet" aria-label="머리 기호" title="목록 줄 앞 기호 바꾸기"><option value="">머리 기호</option><option value="auto">기본</option><option value="dot">• 점</option><option value="dash">– 줄표</option><option value="arrow">→ 화살표</option><option value="check">✓ 체크</option><option value="none">없음</option></select></div>
@@ -1883,6 +1903,7 @@ function __boot() {
       if (+s.dataset.l !== l) return;
       s.querySelectorAll('details.reveal').forEach(function (d) { d.open = true; d.classList.add('concealed'); });
       s.querySelectorAll('.cloze.open').forEach(function (z) { z.classList.remove('open'); });
+      s.querySelectorAll('.choice-cards .cc.picked').forEach(function (z) { z.classList.remove('picked'); });
       s.querySelectorAll('.match').forEach(function (m) { m.removeAttribute('data-lines'); var sv = m.querySelector('svg.m-lines'); if (sv) sv.innerHTML = ''; m.querySelectorAll('.m-dot').forEach(function (d) { d.classList.remove('on', 'armed'); }); });
       s.querySelectorAll('.venn').forEach(function (v) { v.removeAttribute('data-pos'); var dr = v.querySelector('.v-drop'); if (dr) dr.innerHTML = ''; v.querySelectorAll('.v-tok').forEach(function (t) { t.classList.remove('placed', 'armed'); }); });
       s.querySelectorAll('.photo-win').forEach(function (w) { w.remove(); });
@@ -1891,6 +1912,11 @@ function __boot() {
     if (window.__notes) try { window.__notes.close(); } catch (e) {}
   }
   window.__resetLessonState = resetLessonState;
+  document.getElementById('slide').addEventListener('click', function (e) {
+    if (document.body.classList.contains('editing')) return;
+    var c = e.target.closest && e.target.closest('.choice-cards > .cc'); if (!c) return;
+    e.stopPropagation(); c.classList.toggle('picked');
+  }, true);
   function setLesson(l) {
     if (l !== L) resetLessonState(l);
     L = l;
@@ -1993,7 +2019,7 @@ function __boot() {
       var c = s.cloneNode(true);
       c.classList.remove('active', 'scrolly', 'measuring'); c.style.fontSize = ''; if (!c.getAttribute('style')) c.removeAttribute('style');
       c.querySelectorAll('.block, header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -2120,7 +2146,7 @@ function __boot() {
         });
       });
       photoTools(on); blockTools(on); gripTools(on); noteTools(on); widgetTools(on); if (!on) clearTableBar();
-      bookEditTools(on); videoTools(on); pagePhotoTools(on); try { progRender(); } catch (e) {}
+      bookEditTools(on); videoTools(on); pagePhotoTools(on); choiceTools(on); try { progRender(); } catch (e) {}
       if (window.__reveal) window.__reveal.wrap();
     }
     // ===== 반영 안 된 수정 알림 · 되살리기 · 자동 반영 =====
@@ -2455,7 +2481,7 @@ function __boot() {
       c.querySelectorAll('section.stage').forEach(function (s) { s.classList.remove('active'); s.style.fontSize = ''; if (!s.getAttribute('style')) s.removeAttribute('style'); });
       c.querySelectorAll('section.stage .block, section.stage header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
       c.querySelectorAll('.current').forEach(function (e) { e.classList.remove('current'); e.removeAttribute('aria-current'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, input[type=file]').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, input[type=file]').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -3481,6 +3507,37 @@ function __boot() {
       if (r) { var sl = window.getSelection(); sl.removeAllRanges(); sl.addRange(r); savedRange = r.cloneRange(); }
       insertPhotoFile(f);
     });
+    // ===== 선택 카드 (A·B·C… 나란히) =====
+    var CC_L = ['A', 'B', 'C', 'D'];
+    function ccCard(i) { return '<div class="cc cc-' + i + '"><span class="cc-b">' + CC_L[i] + '안</span><p>내용을 적어 주세요</p></div>'; }
+    function makeChoice() {
+      var w = document.createElement('div'); w.className = 'choice-cards'; w.dataset.n = '2';
+      w.innerHTML = ccCard(0) + ccCard(1);
+      placeTable(w); choiceTools(true); state.textContent = '선택 카드를 넣었어요. 카드 글자를 눌러 고치세요';
+    }
+    function choiceTools(on) {
+      document.querySelectorAll('.cc-tools').forEach(function (x) { x.remove(); });
+      document.querySelectorAll('section.stage .choice-cards').forEach(function (w) {
+        if (on) {
+          w.setAttribute('contenteditable', 'false');
+          w.querySelectorAll('.cc-b, .cc > p').forEach(function (x) { x.setAttribute('contenteditable', 'true'); });
+          var t = document.createElement('div'); t.className = 'cc-tools'; t.setAttribute('contenteditable', 'false');
+          t.innerHTML = '<button type="button" data-cc="+">＋ 카드</button><button type="button" data-cc="-">－ 카드</button><button type="button" data-cc="del" class="cc-del">삭제</button>';
+          w.appendChild(t);
+        } else {
+          w.removeAttribute('contenteditable'); w.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); });
+        }
+      });
+    }
+    document.getElementById('slide').addEventListener('click', function (e) {
+      var b = e.target.closest('.cc-tools button'); if (!b || !editing) return;
+      e.preventDefault(); var w = b.closest('.choice-cards'), sec = w.closest('section.stage'), cards = w.querySelectorAll(':scope > .cc');
+      if (b.dataset.cc === 'del') { if (!confirmTwice(b, '한 번 더 누르면 삭제')) return; w.remove(); storeLesson(+sec.dataset.l); state.textContent = '선택 카드를 지웠어요'; return; }
+      if (b.dataset.cc === '+') { if (cards.length >= 4) { state.textContent = '카드는 4개까지예요'; return; } var d = document.createElement('div'); d.innerHTML = ccCard(cards.length); w.insertBefore(d.firstChild, w.querySelector('.cc-tools')); }
+      else { if (cards.length <= 2) { state.textContent = '카드는 2개 이상이어야 해요'; return; } cards[cards.length - 1].remove(); }
+      w.dataset.n = String(w.querySelectorAll(':scope > .cc').length); choiceTools(true); storeLesson(+sec.dataset.l);
+      if (window.__autofitForce) window.__autofitForce();
+    });
     function pagePhotoTools(on) {
       document.querySelectorAll('.pp-tools').forEach(function (x) { x.remove(); });
       if (!on) return;
@@ -3577,6 +3634,7 @@ function __boot() {
         else if (sel.value === 'match') { makeMatch(); widgetTools(true); }
         else if (sel.value === 'venn') makeVenn();
         else if (sel.value === 'video') addVideo();
+        else if (sel.value === 'choice') makeChoice();
         else if (sel.value === 'photo') addPhoto();
       }
       else if (sel.dataset.sel === 'badge') {
