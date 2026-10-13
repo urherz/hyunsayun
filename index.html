@@ -1294,6 +1294,21 @@
 
   #ws-root td .ws-paren, #ws-root th .ws-paren { white-space: normal; }
   #ws-root td .ws-blank, #ws-root th .ws-blank { max-width: calc(100% - 1.6em) !important; }
+
+  /* 학습지: 칸 테두리는 연하게, 표 선이 돋보이게 */
+  #ws-root .ws-box, #ws-root .ws-concept, #ws-root .ws-activity, #ws-root .ws-exam, #ws-root .ws-summary, #ws-root .ws-news, #ws-root .ws-link, #ws-root .ws-news-top { border-color: #DEDEDE !important; border-width: 1px !important; }
+  #ws-root .ws-sub + .ws-sub { border-top-color: #E4E4E4 !important; }
+
+  /* 학습지: 들여쓰기·머리 기호 반영, 글머리 기호 작게 */
+  #ws-root li.lv1 { margin-left: 1.4em !important; }
+  #ws-root li.lv2 { margin-left: 2.8em !important; }
+  #ws-root ul > li::marker { font-size: .55em; }
+  #ws-root li.lv1::marker, #ws-root li.lv2::marker { content: "–  "; font-size: .9em; color: #555; }
+  #ws-root li.bul-dot::marker { content: "•  "; font-size: .9em; }
+  #ws-root li.bul-dash::marker { content: "–  "; font-size: .9em; }
+  #ws-root li.bul-arrow::marker { content: "→  "; font-size: .9em; }
+  #ws-root li.bul-check::marker { content: "✓  "; font-size: .9em; }
+  #ws-root li.bul-none::marker { content: ""; }
 </style>
 </head>
 <body>
@@ -1971,8 +1986,16 @@ function __boot() {
       try { syncLessonTitle(l); syncHints(); } catch (e) {}
       var data;
       try { data = JSON.stringify(lessonSecs(l).map(clean)); if (!restoring) pushHist(l, data); } catch (e) {}
-      try { localStorage.setItem(KEY() + 'L' + l, data || JSON.stringify(lessonSecs(l).map(clean))); localStorage.setItem(KEY() + 'T' + l, String(Date.now())); localStorage.setItem(DIRTY, '1'); markDirty(); state.textContent = '수정 버전 저장됨 (아직 사이트에 안 올림)'; }
+      try { localStorage.setItem(KEY() + 'L' + l, data || JSON.stringify(lessonSecs(l).map(clean))); localStorage.setItem(KEY() + 'T' + l, String(Date.now())); localStorage.setItem(DIRTY, '1'); markDirty(); state.textContent = ghGet() ? '수정 저장됨 · 잠시 뒤 자동으로 사이트에 반영' : '수정 버전 저장됨 (아직 사이트에 안 올림)'; }
       catch (e) { state.textContent = '저장 실패(용량 초과)'; }
+      if (busy) editedDuring[l] = 1;
+      scheduleAutoPublish();
+    }
+    var autoT = null, editedDuring = {};
+    function scheduleAutoPublish() {
+      clearTimeout(autoT);
+      if (!ghGet()) return;
+      autoT = setTimeout(function () { if (busy) { scheduleAutoPublish(); return; } publish(); }, 15000);
     }
     function roots(s) { return s.querySelectorAll('.block, header.lesson, .stage-head'); }
     function applyEdit(on) {
@@ -2433,7 +2456,9 @@ function __boot() {
           revMeta.content = rev;
           try { localStorage.removeItem(DIRTY); } catch (err) {}
           markDirty();
-          state.textContent = '반영 완료! 1~2분 뒤 학생 화면에 보여요';
+          state.textContent = '사이트에 반영 완료 (' + new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) + ')';
+          var again = Object.keys(editedDuring); editedDuring = {};
+          if (again.length) { busy = false; again.forEach(function (x) { storeLesson(+x); }); }
         })
         .catch(function (r) {
           var code = r && r.status;
@@ -4601,8 +4626,16 @@ function __boot() {
   if (!cid || !COURSES[cid]) { landing(cid ? '없는 과목 주소예요. 아래에서 골라 주세요.' : ''); return; }
   if (location.protocol === 'file:') { if (cid === 'hyunsayun') { applyCourse(null); start(); } else landing('이 과목은 사이트 주소로 열어야 보여요.'); return; }
   var base = location.pathname.replace(/[^/]*$/, '');
-  fetch(base + COURSES[cid].file + '?t=' + Date.now(), { cache: 'no-store' })
-    .then(function (r) { if (!r.ok) throw r; return r.text(); })
+  var pagesFetch = function () { return fetch(base + COURSES[cid].file + '?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw r; return r.text(); }); };
+  var gh = null; try { gh = JSON.parse(localStorage.getItem('gh-publish') || 'null'); } catch (e) {}
+  var latestFetch = function () {
+    if (!gh || !gh.token || !gh.repo) return pagesFetch();
+    var dir = (gh.path || 'index.html').replace(/[^/]*$/, ''), path = (dir + COURSES[cid].file).split('/').map(encodeURIComponent).join('/');
+    return fetch('https://api.github.com/repos/' + gh.repo + '/contents/' + path + '?ref=' + encodeURIComponent(gh.branch || 'main') + '&t=' + Date.now(), { headers: { 'Authorization': 'Bearer ' + gh.token, 'Accept': 'application/vnd.github.raw' }, cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw r; return r.text(); })
+      .catch(function () { return pagesFetch(); });
+  };
+  latestFetch()
     .then(function (t) {
       var d = new DOMParser().parseFromString(t, 'text/html'), secs = d.querySelectorAll('section.stage');
       if (!secs.length) throw new Error('empty');
