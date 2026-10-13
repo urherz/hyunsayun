@@ -1360,6 +1360,23 @@
   #ws-root .ws-box span.ws-paren, #ws-root .ws-box span.ws-pick, #ws-root .ws-box span.ws-paren > span, #ws-root .ws-box span.ws-pick > span { font-size: 13pt !important; }
   #ws-root .ws-blank, #ws-root .ws-pl { border-bottom-color: #B8B8B8 !important; height: 1.05em; }
   #ws-root .ws-box td span.ws-paren, #ws-root .ws-box th span.ws-paren { font-size: 13pt !important; }
+
+  /* 왼쪽 핵심 개념 / 오른쪽 정리·활동·기출 */
+  #ws-root .ws-cols2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 6mm; align-items: start; }
+  #ws-root .ws-cols2 > div { min-width: 0; }
+  #ws-root .ws-cols2 .ws-box { width: 100%; box-sizing: border-box; margin: 0 0 3mm !important; }
+  #ws-root .ws-cols2 .ws-activity, #ws-root .ws-cols2 .ws-exam { break-inside: avoid; }
+  /* 빈칸 밑줄 더 연하게 */
+  #ws-root .ws-blank, #ws-root .ws-pl { border-bottom-color: #D8D8D8 !important; }
+
+  #ws-root .ws-acts { column-count: 2; column-gap: 6mm; column-fill: balance; }
+  #ws-root .ws-acts > .ws-box { display: inline-block; width: 100%; box-sizing: border-box; break-inside: avoid; margin: 0 0 3mm !important; }
+
+  #ws-root.ws-allowbreak .ws-acts > .ws-box, #ws-root.ws-allowbreak .ws-cols2 .ws-activity, #ws-root.ws-allowbreak .ws-cols2 .ws-exam { break-inside: auto !important; display: block; }
+
+  #ws-root.ws-land .ws-cols2 { grid-template-columns: var(--ws-lr, 1.2fr 0.8fr); }
+
+  #ws-root.ws-land .ws-acts { column-count: 3 !important; column-gap: 5mm !important; }
 </style>
 </head>
 <body>
@@ -4337,12 +4354,19 @@ function __boot() {
   // 사이트에서 두 페이지로 나뉜 같은 표(머리줄이 같은 표)를 학습지에서는 하나로 합치기
   function wsGroupSummary(html) {
     var d = document.createElement('div'); d.innerHTML = html;
-    [].slice.call(d.querySelectorAll('.ws-summary')).forEach(function (sm) {
-      var pv = sm.previousElementSibling; if (!pv || !pv.classList.contains('ws-concept')) return;
-      var sub = document.createElement('div'); sub.className = 'ws-sub ws-sum-sub';
-      [].slice.call(sm.childNodes).forEach(function (n) { if (!(n.nodeType === 1 && n.tagName === 'H2')) sub.appendChild(n); });
-      pv.appendChild(sub); sm.remove();
-    });
+    var mergeAll = function (cls, label) {
+      var boxes = [].slice.call(d.querySelectorAll(':scope > .' + cls)); if (boxes.length < 2 && cls !== 'ws-summary') return;
+      if (!boxes.length) return;
+      var first = boxes[0];
+      if (cls === 'ws-summary') {
+        var nb = document.createElement('div'); nb.className = 'ws-box ws-summary'; nb.innerHTML = '<h2>' + label + '</h2>';
+        boxes.forEach(function (bx) { var sub = document.createElement('div'); sub.className = 'ws-sub'; [].slice.call(bx.childNodes).forEach(function (n) { if (!(n.nodeType === 1 && n.tagName === 'H2')) sub.appendChild(n); }); nb.appendChild(sub); bx.remove(); });
+        d.appendChild(nb); return;
+      }
+      boxes.slice(1).forEach(function (bx) { [].slice.call(bx.querySelectorAll(':scope > .ws-sub')).forEach(function (sb) { first.appendChild(sb); }); bx.remove(); });
+    };
+    mergeAll('ws-concept', '핵심 개념');
+    mergeAll('ws-summary', '정리');
     return d.innerHTML;
   }
   function wsMergeTables(html) {
@@ -4444,6 +4468,15 @@ function __boot() {
     while (head && head.nextSibling) body.appendChild(head.nextSibling);
     root.appendChild(body);
     var newsTop = body.querySelector('.ws-news-top'); if (newsTop) root.insertBefore(newsTop, body);
+    var colL = document.createElement('div'), colR = document.createElement('div'); colL.className = 'ws-colL'; colR.className = 'ws-colR';
+    var kids = [].slice.call(body.children);
+    kids.forEach(function (k) { if (k.classList.contains('ws-concept') || k.classList.contains('ws-link')) colL.appendChild(k); });
+    kids.forEach(function (k) { if (k.classList.contains('ws-summary')) colR.appendChild(k); });
+    var acts = document.createElement('div'); acts.className = 'ws-acts';
+    kids.forEach(function (k) { if (k.classList.contains('ws-activity')) acts.appendChild(k); });
+    kids.forEach(function (k) { if (k.parentNode === body) colR.appendChild(k); });
+    var grid = document.createElement('div'); grid.className = 'ws-cols2'; grid.appendChild(colL); grid.appendChild(colR);
+    body.className = 'ws-body'; body.appendChild(grid); if (acts.children.length) body.appendChild(acts);
     root.querySelectorAll('.ws-box > h2').forEach(function (h) { var nx = h.nextElementSibling; if (!nx) return; var w = document.createElement('div'); w.className = 'ws-hk'; h.parentNode.insertBefore(w, h); w.appendChild(h); w.appendChild(nx); });
     root.style.zoom = ''; root.style.width = ''; root.dataset.zoom = 1;
     // 글씨는 그대로 두고, 넘치면 덜 중요한 부분부터 덜어 내기
@@ -4451,18 +4484,19 @@ function __boot() {
     var limit = pg.getBoundingClientRect().height * (pages > 1 ? pages * 0.96 : 1); pg.remove();
     root.style.cssText = 'display:block !important;position:absolute;left:-10000px;top:0;width:' + (land ? 283 : 196) + 'mm;';
     var hd = root.querySelector('.ws-head'), nt = root.querySelector('.ws-news-top'), colsH = limit - (hd ? hd.getBoundingClientRect().height + 8 : 0) - (nt ? nt.getBoundingClientRect().height + 8 : 0);
-    body.style.height = colsH + 'px'; body.style.columnFill = 'auto';
-    var over = function () { return body.scrollWidth > body.clientWidth + 2; };
+    var over = function () { return body.getBoundingClientRect().height > colsH * (land ? 1.1 : 0.9); };
+
     var steps = [
-      function () { root.querySelectorAll('.ws-link').forEach(function (x) { x.remove(); }); },
       function () { root.classList.add('ws-tight'); },
+      function () { root.querySelectorAll('.ws-link').forEach(function (x) { x.remove(); }); },
       function () { root.querySelectorAll('.ws-news .ws-hl + p').forEach(function (x) { x.remove(); }); },
       function () { root.querySelectorAll('.ws-summary').forEach(function (bx) { var ps = bx.querySelectorAll('p'); if (ps.length > 1) { var pq = ps[0], ln = pq.nextElementSibling; if (ln && ln.classList.contains('ws-line')) ln.remove(); pq.remove(); } }); },
       function () { root.querySelectorAll('.ws-news').forEach(function (x) { x.remove(); }); }
     ];
     var trimmed = 0;
     for (var i = 0; i < steps.length && over(); i++) { steps[i](); trimmed++; }
-    root.style.cssText = ''; body.style.height = ''; body.style.columnFill = '';
+    if (body.getBoundingClientRect().height > colsH * 0.7) root.classList.add('ws-allowbreak');
+    root.style.cssText = '';
     root.dataset.trimmed = trimmed;
     return 1;
   }
@@ -4507,7 +4541,7 @@ function __boot() {
     document.body.appendChild(ov); document.body.classList.add('ws-editing');
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land';
     ov.querySelector('.wse-paper').appendChild(root);
-    if (stored) { root.innerHTML = stored; ov.querySelector('.wse-note').textContent = '저장된 수정본'; }
+    if (stored) { root.innerHTML = stored; ov.querySelector('.wse-note').textContent = root.querySelector('.ws-cols2') ? '저장된 수정본' : '예전 배치로 저장된 수정본 · 새 배치로 바꾸려면 원래대로'; }
     else { root.innerHTML = buildWorksheet(withAns); fitOnePage(root, 2); }
     root.setAttribute('contenteditable', 'true'); wseControls(root);
     // 빈칸은 한 덩어리로 묶고, 바로 뒤에 커서가 들어갈 자리를 마련
