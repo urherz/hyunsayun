@@ -1309,6 +1309,60 @@
   #ws-root li.bul-arrow::marker { content: "→  "; font-size: .9em; }
   #ws-root li.bul-check::marker { content: "✓  "; font-size: .9em; }
   #ws-root li.bul-none::marker { content: ""; }
+
+  /* ===== 학습지 디자인 정리 (반복 배지 없애고 색으로 구분) ===== */
+  #ws-root .ws-box > h2, #ws-root .ws-hk > h2 { display: none !important; }
+  #ws-root .ws-hk { display: contents; }
+  /* 노랑: 단원 제목·핵심 주제 */
+  #ws-root .ws-head h1 { background: #FFE58A !important; }
+  #ws-root .ws-news-top .ws-hl { display: table; background: #FFE58A; padding: 0 5px; border-radius: 2px; font-weight: 800; margin: 0 0 1.2mm !important; }
+  /* 파랑: 개념 설명 제목 */
+  #ws-root .ws-subt { display: table; font-size: 12.5pt !important; font-weight: 800 !important; background: #CFE0F2; padding: 0 5px !important; border-radius: 2px; margin: 0 0 1.5mm !important; border: 0 !important; }
+  /* 초록: 정리·핵심 질문 */
+  #ws-root .ws-summary p > b:first-child { background: #DCE8C8; padding: 0 4px; border-radius: 2px; }
+  /* 주황: 활동·적용 */
+  #ws-root .ws-atitle { display: table; font-size: 12pt !important; font-weight: 800 !important; background: #F9D9B0; padding: 0 5px; border-radius: 2px; margin: 0 0 1.2mm !important; }
+  /* 분홍: 기출·평가 */
+  #ws-root .ws-exam .stem { display: table; background: #F6CFCB; padding: 0 5px; border-radius: 2px; font-weight: 700; margin: 0 0 1.2mm !important; }
+  /* 본문: 11pt 통일, 문단 간격 조금 넓게 */
+  #ws-root .ws-box p, #ws-root .ws-box li, #ws-root .ws-box td, #ws-root .ws-box th { font-size: 11pt !important; }
+  #ws-root .ws-box p { margin: 0 0 1.4mm !important; }
+  #ws-root .ws-box li { margin: 0 0 1.1mm !important; }
+  /* 글머리표·하위 항목 들여쓰기 통일 */
+  #ws-root .ws-box ul, #ws-root .ws-box ol { margin: 0 0 1.4mm 1.25em !important; padding: 0 !important; }
+  #ws-root .ws-box li.lv1 { margin-left: 1.25em !important; }
+  #ws-root .ws-box li.lv2 { margin-left: 2.5em !important; }
+  /* 영역 안쪽 여백 통일 */
+  #ws-root .ws-box { padding: 2.2mm 3mm !important; }
+  #ws-root .ws-news-top { padding: 2.2mm 3mm !important; }
+  #ws-root .ws-sub + .ws-sub { margin-top: 2.5mm !important; padding-top: 2.2mm !important; }
+
+  #ws-root .ws-box p.ws-hl, #ws-root .ws-news-top p.ws-hl { background: #FFE58A !important; }
+  #ws-root .ws-box p.ws-atitle { background: #F9D9B0 !important; }
+  #ws-root .ws-exam p.stem, #ws-root .ws-exam .stem { background: #F6CFCB !important; }
+  #ws-root ul > li::marker { font-size: .7em; }
+
+  /* ===== 학습지 레이아웃 통일 ===== */
+  /* 단답형 빈칸 길이 통일 */
+  #ws-root .ws-blank { width: 6em; }
+  /* 이유 쓰는 칸: 두 줄 이상 */
+  #ws-root .ws-line { height: 1.75em !important; }
+  /* 선택형 답 칸: 항목 오른쪽 위에 같은 자리 */
+  #ws-root li:has(> .ws-pick), #ws-root .ws-exam .stem { position: relative; padding-right: 5.6em !important; }
+  #ws-root li > .ws-pick, #ws-root .ws-exam .stem > .ws-pick { position: absolute; right: 0; top: 0; float: none !important; margin: 0 !important; white-space: nowrap; font-weight: 400; }
+  #ws-root .ws-pick .ws-pl { width: 2.8em !important; }
+  /* 좌우 열 시작선·간격 */
+  #ws-root .ws-cols { column-gap: 6mm !important; }
+  #ws-root .ws-cols .ws-box, #ws-root .ws-news-top { width: 100%; box-sizing: border-box; margin: 0 0 3mm !important; }
+  /* 상자 제목 위치·높이 통일 */
+  #ws-root .ws-subt, #ws-root .ws-atitle, #ws-root .ws-exam .stem, #ws-root .ws-news-top .ws-hl { font-size: 12pt !important; font-weight: 800 !important; line-height: 1.45 !important; margin: 0 0 1.6mm !important; padding: .3mm 5px !important; }
+  #ws-root .ws-summary > p:first-of-type, #ws-root .ws-sum-sub > p:first-of-type { margin-top: 0 !important; }
+  #ws-root .ws-sum-sub { border-top: 1px dashed #DDD; }
+
+  #ws-root .ws-sum-sub p > b:first-child, #ws-root .ws-summary p > b:first-child { background: #DCE8C8; padding: 0 4px; border-radius: 2px; }
+  #ws-root .ws-exam .stem { padding-right: 5.6em !important; }
+  #ws-root .ws-exam .stem > .ws-pick { top: .3mm; }
+  #ws-root .ws-cols > .ws-activity, #ws-root .ws-cols > .ws-exam, #ws-root .ws-cols > .ws-summary { break-inside: avoid !important; }
 </style>
 </head>
 <body>
@@ -4258,7 +4312,7 @@ function __boot() {
       var txt = (s.querySelector('.cz-a') || s).textContent.trim(); if (!txt) return;
       var b = document.createElement('span');
       if (withAns) { b.className = 'ws-ans'; b.textContent = txt; }
-      else { b.className = 'ws-blank'; b.style.width = Math.max(3, Math.min(14, txt.length * 1.05)) + 'em'; b.innerHTML = '&nbsp;'; }
+      else { b.className = 'ws-blank'; b.style.width = '6em'; b.innerHTML = '&nbsp;'; }
       if (!withAns) {
         var pv = s.previousSibling, nx = s.nextSibling;
         var hasOpen = pv && pv.nodeType === 3 && /[(（]\s*$/.test(pv.nodeValue), hasClose = nx && nx.nodeType === 3 && /^\s*[)）]/.test(nx.nodeValue);
@@ -4284,6 +4338,16 @@ function __boot() {
   }
   function wsLines(n) { var s = ''; for (var i = 0; i < n; i++) s += '<div class="ws-line"></div>'; return s; }
   // 사이트에서 두 페이지로 나뉜 같은 표(머리줄이 같은 표)를 학습지에서는 하나로 합치기
+  function wsGroupSummary(html) {
+    var d = document.createElement('div'); d.innerHTML = html;
+    [].slice.call(d.querySelectorAll('.ws-summary')).forEach(function (sm) {
+      var pv = sm.previousElementSibling; if (!pv || !pv.classList.contains('ws-concept')) return;
+      var sub = document.createElement('div'); sub.className = 'ws-sub ws-sum-sub';
+      [].slice.call(sm.childNodes).forEach(function (n) { if (!(n.nodeType === 1 && n.tagName === 'H2')) sub.appendChild(n); });
+      pv.appendChild(sub); sm.remove();
+    });
+    return d.innerHTML;
+  }
   function wsMergeTables(html) {
     var d = document.createElement('div'); d.innerHTML = html;
     var headKey = function (t) { var h = t.querySelector('thead tr') || t.rows[0]; return h ? [].map.call(h.cells, function (c) { return c.textContent.replace(/[ ]+/g, ' ').trim(); }).join('|') : ''; };
@@ -4325,12 +4389,12 @@ function __boot() {
           var hl = blk.querySelector('.headline'), ft = blk.querySelector('.fact'), sides = blk.querySelectorAll('.side');
           html = '<div class="ws-box ws-news ws-news-top"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.innerHTML.trim() + '</p>' : '') +
             '<ul class="ws-sides">' + [].map.call(sides, function (sd) { var bd = sd.querySelector('.badge'), pp = sd.querySelector('p'); return '<li><b>' + (bd ? bd.textContent.trim() : '') + '</b>: ' + (pp ? pp.innerHTML.trim() : '') + '</li>'; }).join('') + '</ul>' +
-            '<p>나의 입장: A □ / B □ &nbsp; 이유: <span class="ws-inline-line"></span></p></div>';
+            '<p>나의 입장: A □ / B □ &nbsp; 이유:</p>' + wsLines(2) + '</div>';
         }
         else if (/b-concept/.test(cls)) { wsBlankify(blk, withAns); var h3c = blk.querySelector('h3'); html = '[[CONCEPT]]' + (h3c && h3c.textContent.trim() ? '<h3 class="ws-subt">' + h3c.innerHTML + '</h3>' : ''); h3c && h3c.remove(); html += blk.innerHTML; }
         else if (/b-summary/.test(cls)) {
           var pq = blk.querySelector('.pairq'), prop = blk.querySelector('details.reveal');
-          html = '<div class="ws-box ws-summary"><h2>정리</h2>' + (pq ? '<p><b>짝 질문</b> ' + pq.textContent.trim() + '</p>' + wsLines(1) : '');
+          html = '<div class="ws-box ws-summary"><h2>정리</h2>' + (pq ? '<p><b>짝 질문</b> ' + pq.textContent.trim() + '</p>' + wsLines(2) : '');
           if (prop) { var body = prop.querySelector('.rv-body') || prop; var c = body.cloneNode(true); c.querySelectorAll('summary').forEach(function (x) { x.remove(); }); wsBlankify(c, withAns); html += '<p class="ws-prop"><b>핵심 명제</b> ' + c.innerHTML.split('<p>').join(' ').split('</p>').join(' ') + '</p>'; }
           html += '</div>';
         }
@@ -4353,7 +4417,7 @@ function __boot() {
           var lis = blk.querySelectorAll('ol.steps-list > li, ul.concepts > li');
           var itxt = intro ? intro.textContent : '';
           var choice = /손가락|투표|판정/.test(itxt) || /[0-9]번 *[/]/.test(itxt);
-          var steps = [].map.call(lis, function (li) { return '<li>' + li.innerHTML + (choice ? ' <span class="ws-pick">( <span class="ws-pl"></span> )</span>' : wsLines(1)) + '</li>'; }).join('');
+          var steps = [].map.call(lis, function (li) { return '<li>' + li.innerHTML + (choice ? ' <span class="ws-pick">( <span class="ws-pl"></span> )</span>' : wsLines(2)) + '</li>'; }).join('');
           lis.forEach(function (li) { li.remove(); });
           blk.querySelectorAll('ol.steps-list, ul.concepts').forEach(function (x) { x.remove(); });
           blk.querySelectorAll('td').forEach(function (td) { if (!td.textContent.trim()) td.innerHTML = '<div class="ws-cell"></div>'; });
@@ -4376,7 +4440,7 @@ function __boot() {
         out += '<div class="ws-box ws-concept"><h2>핵심 개념</h2>' + grp.join('') + '</div>';
       } else { out += parts[i]; i++; }
     }
-    return wsMergeTables(out);
+    return wsGroupSummary(wsMergeTables(out));
   }
   function fitOnePage(root, pages) {
     var head = root.querySelector('.ws-head'), body = document.createElement('div'); body.className = 'ws-cols';
