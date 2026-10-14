@@ -1521,6 +1521,9 @@
   #ws-editor .wse-ctl { top: 0 !important; right: 6px !important; transform: translateY(-55%); background: transparent; }
   #ws-editor .wse-ctl button, #ws-editor .wse-ctl .wse-drag { box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   #ws-editor #ws-root .ws-box { margin-top: 2.6mm !important; }
+
+  /* 줄맞춤(내어쓰기): 안쪽 상자들은 들여쓰기 영향 받지 않게 */
+  [data-hang] * { text-indent: 0; }
 </style>
 </head>
 <body>
@@ -2000,6 +2003,32 @@ function __boot() {
     });
     if (window.__notes) try { window.__notes.close(); } catch (e) {}
   }
+  // ===== 줄맞춤 (한글의 Shift+Tab 내어쓰기처럼): 커서 위치에 둘째 줄부터 맞추기 =====
+  window.__hangAtCaret = function (scope) {
+    var sel = window.getSelection(); if (!sel.rangeCount || !sel.isCollapsed) return false;
+    var r = sel.getRangeAt(0), n = r.startContainer; if (n.nodeType === 3) n = n.parentNode;
+    var blk = n.closest && n.closest('li, p, td, th, h3, dd, .ws-subt, .ws-atitle'); if (!blk || (scope && !scope.contains(blk))) return false;
+    var pre = document.createRange(); pre.setStart(blk, 0); pre.setEnd(r.startContainer, r.startOffset);
+    var atStart = !pre.toString().replace(String.fromCharCode(8203), '').trim();
+    if (atStart) {
+      if (!blk.dataset.hang) return false;
+      delete blk.dataset.hang; blk.style.removeProperty('padding-left'); blk.style.removeProperty('text-indent'); if (!blk.getAttribute('style')) blk.removeAttribute('style');
+      return 'off';
+    }
+    if (blk.dataset.hang) { delete blk.dataset.hang; blk.style.removeProperty('padding-left'); blk.style.removeProperty('text-indent'); }
+    var mk = document.createElement('span'); mk.textContent = String.fromCharCode(8203);
+    var rr = r.cloneRange(); rr.insertNode(mk);
+    var x = mk.getBoundingClientRect().left; mk.parentNode.removeChild(mk);
+    blk.normalize && blk.normalize();
+    var br = blk.getBoundingClientRect(), cs = getComputedStyle(blk), scale = blk.offsetWidth ? br.width / blk.offsetWidth : 1;
+    var base = br.left + (parseFloat(cs.borderLeftWidth) || 0) * scale + (parseFloat(cs.paddingLeft) || 0) * scale;
+    var em = ((x - base) / scale) / (parseFloat(cs.fontSize) || 16);
+    if (em <= 0.05) return false;
+    em = Math.round(em * 100) / 100;
+    blk.dataset.hang = em; blk.style.paddingLeft = em + 'em'; blk.style.textIndent = '-' + em + 'em';
+    var nr = document.createRange(); nr.setStart(r.startContainer, Math.min(r.startOffset, (r.startContainer.length || r.startContainer.childNodes.length))); nr.collapse(true); sel.removeAllRanges(); sel.addRange(nr);
+    return 'on';
+  };
   window.__resetLessonState = resetLessonState;
   document.getElementById('slide').addEventListener('click', function (e) {
     if (document.body.classList.contains('editing')) return;
@@ -3544,6 +3573,10 @@ function __boot() {
     document.addEventListener('keydown', function (e) {
       if (!editing || e.key !== 'Tab') return;
       var t = e.target; if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
+      if (e.shiftKey && window.__hangAtCaret) {
+        var hr = window.__hangAtCaret(document.getElementById('slide'));
+        if (hr) { e.preventDefault(); var hs = document.querySelector('section.stage.active'); if (hs) storeLesson(+hs.dataset.l); state.textContent = hr === 'on' ? '줄맞춤: 둘째 줄부터 이 위치에 맞췄어요 (맨 앞에서 다시 Shift+Tab 하면 해제)' : '줄맞춤을 풀었어요'; return; }
+      }
       if (!curLi()) return;
       e.preventDefault(); indentLi(e.shiftKey ? -1 : 1);
     }, true);
@@ -4667,6 +4700,7 @@ function __boot() {
     el.querySelectorAll('span[style], font[color]').forEach(function (x) { var c = (x.style && x.style.color) || x.getAttribute('color') || ''; if (c && !/^(rgb\(0, 0, 0\)|#000|#000000|black|inherit)$/i.test(c.trim())) x.classList.add('ws-colored'); });
     el.querySelectorAll('td[style], th[style]').forEach(function (x) { var ta = x.style.textAlign; if (ta === 'center' || ta === 'right') x.classList.add('ws-al-' + ta); });
     el.querySelectorAll('[style]').forEach(function (x) { x.removeAttribute('style'); });
+    el.querySelectorAll('[data-hang]').forEach(function (x) { x.style.paddingLeft = x.dataset.hang + 'em'; x.style.textIndent = '-' + x.dataset.hang + 'em'; });
     el.querySelectorAll('colgroup').forEach(function (x) { x.remove(); });
     return el;
   }
@@ -5008,6 +5042,11 @@ function __boot() {
     window.__wseGoHist = goHist;
     setTimeout(updUndo, 0);
     root.addEventListener('input', save);
+    root.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab') return;
+      e.preventDefault();
+      if (e.shiftKey && window.__hangAtCaret) { var hr = window.__hangAtCaret(root); if (hr) { save(); ov.querySelector('.wse-note').textContent = hr === 'on' ? '줄맞춤 했어요' : '줄맞춤을 풀었어요'; } }
+    });
     // 표 칸 너비: 칸 오른쪽 경계를 끌어서 조절
     var edgeCell = function (e) {
       var c = e.target.closest && e.target.closest('#ws-root td, #ws-root th'); if (!c) return null;
