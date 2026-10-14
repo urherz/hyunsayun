@@ -1513,6 +1513,14 @@
   #ws-editor .ws-colM { min-height: 60px; }
   #ws-editor .wse-cols { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--ink-soft); margin-right: 8px; }
   #ws-editor .wse-cols select { font-size: 13px; padding: 2px 4px; border: 1.5px solid var(--edge); border-radius: 5px; background: #FFF; }
+
+  #ws-editor .wse-bar button[data-wse=undo], #ws-editor .wse-bar button[data-wse=redo] { font-size: 13px; padding: 5px 10px; }
+  #ws-editor .wse-bar button:disabled { opacity: .4; cursor: default; }
+
+  /* 칸 버튼은 상자 윗선 위에 걸쳐서 글을 가리지 않게 */
+  #ws-editor .wse-ctl { top: 0 !important; right: 6px !important; transform: translateY(-55%); background: transparent; }
+  #ws-editor .wse-ctl button, #ws-editor .wse-ctl .wse-drag { box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  #ws-editor #ws-root .ws-box { margin-top: 2.6mm !important; }
 </style>
 </head>
 <body>
@@ -4864,7 +4872,7 @@ function __boot() {
     var ps = document.createElement('style'); ps.id = 'ws-page-style'; ps.textContent = '@media print { @page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 7mm; } }'; document.head.appendChild(ps);
     var ov = document.createElement('div'); ov.id = 'ws-editor';
     var title = (secTitle() || '') + ' · ' + (withAns ? '정답지' : '학생용') + ' · A4 ' + (land ? '가로' : '세로') + (compact ? ' 한 장 압축' : '');
-    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><label class="wse-cols" title="본문 단 수">단 <select><option value="2">2단</option><option value="3">3단</option></select></label><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
+    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><button type="button" data-wse="undo" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-wse="redo" title="다시 (Ctrl+Y)">↷ 다시</button><label class="wse-cols" title="본문 단 수">단 <select><option value="2">2단</option><option value="3">3단</option></select></label><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
     ov.querySelector('.wse-t').textContent = title;
     document.body.appendChild(ov); document.body.classList.add('ws-editing');
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; if (compact) root.classList.add('ws-compact');
@@ -4967,7 +4975,24 @@ function __boot() {
       if (!pv || pv.nodeType !== 3 || !pv.nodeValue.length) bl.parentNode.insertBefore(document.createTextNode(String.fromCharCode(8203)), bl);
     });
     var t = null;
-    var save = function () { clearTimeout(t); t = setTimeout(function () { if (window.__wsSave) window.__wsSave(key, wseHtml(root)); ov.querySelector('.wse-note').textContent = '수정본 저장됨 (잠시 뒤 사이트에 반영)'; }, 500); };
+    window.__wseHist = window.__wseHist || {};
+    var H = window.__wseHist[key];
+    var curHtml = wseHtml(root);
+    if (!H) H = window.__wseHist[key] = { hist: [curHtml], hi: 0 };
+    else if (H.hist[H.hi] !== curHtml) { H.hist = H.hist.slice(0, H.hi + 1); H.hist.push(curHtml); H.hi = H.hist.length - 1; }
+    var pushHist = function (html) { if (H.hist[H.hi] === html) return; H.hist = H.hist.slice(0, H.hi + 1); H.hist.push(html); if (H.hist.length > 80) H.hist.shift(); H.hi = H.hist.length - 1; };
+    var updUndo = function () { var u = ov.querySelector('button[data-wse=undo]'), r = ov.querySelector('button[data-wse=redo]'); if (u) u.disabled = H.hi <= 0; if (r) r.disabled = H.hi >= H.hist.length - 1; };
+    var save = function () { clearTimeout(t); t = setTimeout(function () { var html = wseHtml(root); pushHist(html); updUndo(); if (window.__wsSave) window.__wsSave(key, html); ov.querySelector('.wse-note').textContent = '수정본 저장됨 (잠시 뒤 사이트에 반영)'; }, 500); };
+    var goHist = function (d) {
+      clearTimeout(t); var html = wseHtml(root); pushHist(html);
+      var ni = H.hi + d; if (ni < 0 || ni >= H.hist.length) return;
+      H.hi = ni; if (window.__wsSave) window.__wsSave(key, H.hist[ni]);
+      var sc = ov.querySelector('.wse-scroll'), st = sc ? sc.scrollTop : 0;
+      openWsEditor(withAns, land, compact);
+      var ov2 = document.getElementById('ws-editor'); if (ov2) { var sc2 = ov2.querySelector('.wse-scroll'); if (sc2) sc2.scrollTop = st; ov2.querySelector('.wse-note').textContent = d < 0 ? '되돌렸어요' : '다시 했어요'; }
+    };
+    window.__wseGoHist = goHist;
+    setTimeout(updUndo, 0);
     root.addEventListener('input', save);
     // 표 칸 너비: 칸 오른쪽 경계를 끌어서 조절
     var edgeCell = function (e) {
@@ -5022,6 +5047,8 @@ function __boot() {
       var bt = e.target.closest('button[data-wse]'); if (!bt) return;
       e.preventDefault(); var a = bt.dataset.wse;
       if (a === 'close') { closeWsEditor(); return; }
+      if (a === 'undo') { goHist(-1); return; }
+      if (a === 'redo') { goHist(1); return; }
       if (a === 'reset') { if (window.__wsSave) window.__wsSave(key, null); openWsEditor(withAns, land, compact); return; }
       if (a === 'print') {
         document.body.appendChild(root); root.removeAttribute('contenteditable'); document.body.classList.add('ws-print');
@@ -5064,7 +5091,15 @@ function __boot() {
     });
     document.addEventListener('keydown', wseEsc, true);
   }
-  function wseEsc(e) { if (e.key === 'Escape' && document.getElementById('ws-editor')) { e.stopPropagation(); closeWsEditor(); } }
+  function wseEsc(e) {
+    if (!document.getElementById('ws-editor')) return;
+    if (e.key === 'Escape') { e.stopPropagation(); closeWsEditor(); return; }
+    var k = (e.key || '').toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && (k === 'z' || k === 'y')) {
+      e.preventDefault(); e.stopPropagation();
+      if (window.__wseGoHist) window.__wseGoHist(k === 'y' || e.shiftKey ? 1 : -1);
+    }
+  }
   function closeWsEditor() {
     var ov = document.getElementById('ws-editor'); if (ov) ov.remove();
     var r = document.getElementById('ws-root'); if (r) r.remove();
