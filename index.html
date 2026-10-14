@@ -4880,6 +4880,20 @@ function __boot() {
     if (stored) { root.innerHTML = stored; ov.querySelector('.wse-note').textContent = root.querySelector('.ws-cols2') ? '저장된 수정본' : '예전 배치로 저장된 수정본 · 새 배치로 바꾸려면 원래대로'; }
     else { root.innerHTML = buildWorksheet(withAns); fitOnePage(root, compact ? 1 : 2); }
     root.setAttribute('contenteditable', 'true'); wseControls(root);
+    // 한 장 압축: 고칠 때마다 다시 한 장에 맞추기 (글씨 10pt → 9.5pt, 줄·간격 순서로만 조임)
+    var refitCompact = function () {
+      if (!compact) return;
+      var steps = ['ws-c-tight', 'ws-c95', 'ws-c-tighter'];
+      steps.forEach(function (c) { root.classList.remove(c); });
+      var paper = ov.querySelector('.wse-paper');
+      var rl = document.createElement('div'); rl.style.cssText = 'position:absolute;visibility:hidden;height:' + (land ? 196 : 283) + 'mm;width:1px;'; paper.appendChild(rl);
+      var lim = rl.getBoundingClientRect().height; rl.remove();
+      for (var i = 0; i < steps.length && root.offsetHeight > lim; i++) root.classList.add(steps[i]);
+      root.dataset.over = root.offsetHeight > lim ? '1' : '';
+      var note = ov.querySelector('.wse-note');
+      if (root.dataset.over && note) note.textContent = '9.5pt로도 한 장을 넘어요 · 칸이나 줄을 줄여 주세요';
+    };
+    refitCompact();
     // A4 쪽 경계선 표시
     (function () {
       var paper = ov.querySelector('.wse-paper'), contentMM = land ? 196 : 283;
@@ -4982,7 +4996,7 @@ function __boot() {
     else if (H.hist[H.hi] !== curHtml) { H.hist = H.hist.slice(0, H.hi + 1); H.hist.push(curHtml); H.hi = H.hist.length - 1; }
     var pushHist = function (html) { if (H.hist[H.hi] === html) return; H.hist = H.hist.slice(0, H.hi + 1); H.hist.push(html); if (H.hist.length > 80) H.hist.shift(); H.hi = H.hist.length - 1; };
     var updUndo = function () { var u = ov.querySelector('button[data-wse=undo]'), r = ov.querySelector('button[data-wse=redo]'); if (u) u.disabled = H.hi <= 0; if (r) r.disabled = H.hi >= H.hist.length - 1; };
-    var save = function () { clearTimeout(t); t = setTimeout(function () { var html = wseHtml(root); pushHist(html); updUndo(); if (window.__wsSave) window.__wsSave(key, html); ov.querySelector('.wse-note').textContent = '수정본 저장됨 (잠시 뒤 사이트에 반영)'; }, 500); };
+    var save = function () { clearTimeout(t); t = setTimeout(function () { if (typeof refitCompact === 'function') refitCompact(); var html = wseHtml(root); pushHist(html); updUndo(); if (window.__wsSave) window.__wsSave(key, html); ov.querySelector('.wse-note').textContent = (compact && root.dataset.over) ? '저장됨 · 9.5pt로도 한 장을 넘어요, 칸이나 줄을 줄여 주세요' : '수정본 저장됨 (잠시 뒤 사이트에 반영)'; }, 500); };
     var goHist = function (d) {
       clearTimeout(t); var html = wseHtml(root); pushHist(html);
       var ni = H.hi + d; if (ni < 0 || ni >= H.hist.length) return;
