@@ -1488,6 +1488,15 @@
   #ws-editor .wse-split button:hover { opacity: 1; border-style: solid; }
   #ws-editor .wse-ctl button[data-wse="merge"] { color: #4E5C42; border-color: #B9C4AC; }
   @media print { .wse-split { display: none !important; } }
+
+  /* 메모: 내용이 길면 메모 안에서 스크롤, 버튼은 항상 보이게 */
+  .fn-note.open { display: flex !important; flex-direction: column; }
+  .fn-note .fn-body { flex: 1 1 auto; min-height: 0; overflow: auto; }
+  .fn-note .fn-grip, .fn-note .fn-tools { flex: none; }
+  .fn-note .fn-tools { position: relative; z-index: 2; background: #FFFFFF; padding-top: 6px; }
+  .fn-note .fn-body img { max-height: 60vh; object-fit: contain; }
+
+  .slide .fn-note { max-height: 860px; }
 </style>
 </head>
 <body>
@@ -4256,17 +4265,62 @@ function __boot() {
     var hx = (hr.left - sr.left) / s, hy = (hr.top - sr.top) / s;
     var minX = (vr.left - sr.left) / s + 6, maxX = (vr.right - sr.left) / s - nt.offsetWidth - 6;
     var minY = (vr.top - sr.top) / s + 14, maxY = (vr.bottom - sr.top) / s - nt.offsetHeight - 6;
+    var vh = (vr.height / s) - 26;
+    nt.style.maxHeight = Math.max(160, vh) + 'px';
+    if (nt.dataset.h && !nt.style.height) nt.style.height = Math.min(+nt.dataset.h, vh) + 'px';
+    maxY = (vr.bottom - sr.top) / s - Math.min(nt.offsetHeight, vh) - 6;
     var l = parseFloat(nt.style.left) || 0, t = parseFloat(nt.style.top) || 0;
     var ax = Math.max(minX, Math.min(l + hx, maxX)), ay = Math.max(minY, Math.min(t + hy, Math.max(minY, maxY)));
     nt.style.left = (ax - hx) + 'px'; nt.style.top = (ay - hy) + 'px';
   }
   // 쪽지 끌어서 옮기기 / 크기 조절
+  document.addEventListener('load', function (e) {
+    var im = e.target; if (!im || im.tagName !== 'IMG') return;
+    var nt = im.closest && im.closest('.fn-note.open'); if (nt) { clampNote(nt); drawThreads(nt.closest('section.stage')); }
+  }, true);
+  new MutationObserver(function (ms) {
+    ms.forEach(function (m) { var nt = m.target.closest && m.target.closest('.fn-note.open'); if (nt) clampNote(nt); });
+  }).observe(document.getElementById('slide'), { childList: true, subtree: true });
+  document.getElementById('slide').addEventListener('pointermove', function (e) {
+    if (e.buttons) return;
+    var nt = e.target.closest && e.target.closest('.fn-note.open'); if (!nt) return;
+    var r = nt.getBoundingClientRect(), mg = 12;
+    var d = e.target.closest('button, .fn-tools') ? '' : ((e.clientY < r.top + mg ? 'n' : e.clientY > r.bottom - mg ? 's' : '') + (e.clientX < r.left + mg ? 'w' : e.clientX > r.right - mg ? 'e' : ''));
+    if (d === 'n' && e.target.closest('.fn-pin')) d = '';
+    nt.style.cursor = d ? ({ n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize', ne: 'nesw-resize', sw: 'nesw-resize', nw: 'nwse-resize', se: 'nwse-resize' })[d] : '';
+  });
   document.getElementById('slide').addEventListener('pointerdown', function (e) {
     var nt = e.target.closest('.fn-note.open'); if (!nt) return;
     var sec = nt.closest('section.stage'), s = slideScale(), sx = e.clientX, sy = e.clientY;
     window.__dragMoved = false;
     var sec = sec;
     function save() { if (window.__saveLesson && !document.getElementById('edit-toggle').hidden) window.__saveLesson(+sec.dataset.l); }
+    var er = nt.getBoundingClientRect(), mg = 12;
+    var edir = e.target.closest('button, .fn-tools, .fn-body img') ? '' : ((e.clientY < er.top + mg ? 'n' : e.clientY > er.bottom - mg ? 's' : '') + (e.clientX < er.left + mg ? 'w' : e.clientX > er.right - mg ? 'e' : ''));
+    if (e.target.closest('.fn-resize')) edir = 'se';
+    if (edir && edir !== 'n' || (edir === 'n' && !e.target.closest('.fn-pin'))) {
+      e.preventDefault(); e.stopPropagation();
+      var W0 = nt.offsetWidth, H0 = nt.offsetHeight, L0 = parseFloat(nt.style.left) || 0, T0 = parseFloat(nt.style.top) || 0;
+      nt.classList.add('dragging');
+      var mvE = function (ev) {
+        var dx = (ev.clientX - sx) / s, dy = (ev.clientY - sy) / s;
+        if (edir.indexOf('e') > -1) nt.style.width = Math.max(260, Math.min(1500, W0 + dx)) + 'px';
+        if (edir.indexOf('w') > -1) { var w2 = Math.max(260, Math.min(1500, W0 - dx)); nt.style.width = w2 + 'px'; nt.style.left = (L0 + (W0 - w2)) + 'px'; }
+        if (edir.indexOf('s') > -1) nt.style.height = Math.max(140, H0 + dy) + 'px';
+        if (edir.indexOf('n') > -1) { var h2 = Math.max(140, H0 - dy); nt.style.height = h2 + 'px'; nt.style.top = (T0 + (H0 - h2)) + 'px'; }
+        drawThreads(sec);
+      };
+      var upE = function () {
+        document.removeEventListener('pointermove', mvE); document.removeEventListener('pointerup', upE); nt.classList.remove('dragging');
+        clampNote(nt);
+        nt.dataset.w = Math.round(nt.offsetWidth); if (nt.style.height) nt.dataset.h = Math.round(nt.offsetHeight);
+        var oo = hostOffset(nt); nt.dataset.x = Math.round((parseFloat(nt.style.left) || 0) + oo.x); nt.dataset.y = Math.round((parseFloat(nt.style.top) || 0) + oo.y);
+        if (nt.__orig) { nt.__orig.dataset.w = nt.dataset.w; if (nt.dataset.h) nt.__orig.dataset.h = nt.dataset.h; nt.__orig.dataset.x = nt.dataset.x; nt.__orig.dataset.y = nt.dataset.y; sec = nt.__orig.closest('section.stage'); }
+        save();
+      };
+      document.addEventListener('pointermove', mvE); document.addEventListener('pointerup', upE);
+      return;
+    }
     if (e.target.closest('.fn-resize')) {
       e.preventDefault(); e.stopPropagation();
       var w0 = nt.offsetWidth;
