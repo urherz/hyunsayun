@@ -1477,6 +1477,9 @@
   #ws-editor .wse-drop-in { outline: 2px dashed #1F5A96; outline-offset: 2px; min-height: 40px; }
   #ws-editor .ws-colL, #ws-editor .ws-colR { min-height: 60px; }
   @media print { .wse-drag { display: none !important; } }
+
+  #ws-editor .wse-ctl button[data-wse="up"], #ws-editor .wse-ctl button[data-wse="down"] { color: #3E5875; border-color: #A9B8C8; padding: 1px 5px; }
+  #ws-root .ws-body > .ws-box { margin-top: 2mm !important; }
 </style>
 </head>
 <body>
@@ -4761,7 +4764,7 @@ function __boot() {
     });
     root.querySelectorAll('.ws-box').forEach(function (bx) {
       var c = document.createElement('div'); c.className = 'wse-ctl'; c.setAttribute('contenteditable', 'false');
-      c.innerHTML = '<span class="wse-drag" draggable="true" title="끌어서 이 칸 옮기기">⠿ 옮기기</span>' + (bx.querySelector('.ws-line') ? '<button type="button" data-wse="line+" title="문항마다 쓰는 줄 1개 더">줄＋</button><button type="button" data-wse="line-" title="문항마다 쓰는 줄 1개 빼기">줄－</button>' : '') + '<button type="button" data-wse="del" title="이 칸 빼기">✕ 빼기</button>';
+      c.innerHTML = '<button type="button" data-wse="up" title="한 칸 앞으로(위로)">▲</button><button type="button" data-wse="down" title="한 칸 뒤로(아래로)">▼</button><span class="wse-drag" draggable="true" title="끌어서 이 칸 옮기기">⠿ 옮기기</span>' + (bx.querySelector('.ws-line') ? '<button type="button" data-wse="line+" title="문항마다 쓰는 줄 1개 더">줄＋</button><button type="button" data-wse="line-" title="문항마다 쓰는 줄 1개 빼기">줄－</button>' : '') + '<button type="button" data-wse="del" title="이 칸 빼기">✕ 빼기</button>';
       bx.insertBefore(c, bx.firstChild);
     });
   }
@@ -4772,7 +4775,7 @@ function __boot() {
     var ps = document.createElement('style'); ps.id = 'ws-page-style'; ps.textContent = '@media print { @page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 7mm; } }'; document.head.appendChild(ps);
     var ov = document.createElement('div'); ov.id = 'ws-editor';
     var title = (secTitle() || '') + ' · ' + (withAns ? '정답지' : '학생용') + ' · A4 ' + (land ? '가로' : '세로') + (compact ? ' 한 장 압축' : '');
-    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-sp"></span><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ⠿ 옮기기를 끌어 칸 위치를 바꾸고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
+    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-sp"></span><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
     ov.querySelector('.wse-t').textContent = title;
     document.body.appendChild(ov); document.body.classList.add('ws-editing');
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; if (compact) root.classList.add('ws-compact');
@@ -4800,13 +4803,15 @@ function __boot() {
       });
       root.addEventListener('dragover', function (e) {
         if (!dragBox) return; e.preventDefault();
+        var sc = ov.querySelector('.wse-scroll'), sr = sc.getBoundingClientRect();
+        if (e.clientY < sr.top + 70) sc.scrollTop -= 18; else if (e.clientY > sr.bottom - 70) sc.scrollTop += 18;
         clearMark();
         var tb = e.target.closest && e.target.closest('.ws-box');
         if (tb && tb !== dragBox && !dragBox.contains(tb)) {
           var r = tb.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
           tb.classList.add(after ? 'wse-drop-after' : 'wse-drop-before'); mark = { el: tb, after: after };
         } else {
-          var col = e.target.closest && e.target.closest('.ws-colL, .ws-colR, .ws-acts, .ws-cols, .ws-body');
+          var col = e.target.closest && e.target.closest('.ws-colL, .ws-colR, .ws-acts');
           if (col && !(tb && tb === dragBox)) { col.classList.add('wse-drop-in'); mark = { col: col }; }
         }
       });
@@ -4892,6 +4897,12 @@ function __boot() {
       }
       if (a === 'tdel') { var tc = bt.closest('.wse-tctl'), nx = tc && tc.nextElementSibling; if (nx) nx.remove(); if (tc) tc.remove(); save(); return; }
       var bx = bt.closest('.ws-box'); if (!bx) return;
+      if (a === 'up' || a === 'down') {
+        var list = [].slice.call(root.querySelectorAll('.ws-box')), ix = list.indexOf(bx), tg = list[ix + (a === 'up' ? -1 : 1)];
+        if (!tg) { ov.querySelector('.wse-note').textContent = a === 'up' ? '이미 맨 앞이에요' : '이미 맨 뒤예요'; return; }
+        if (a === 'up') tg.parentNode.insertBefore(bx, tg); else tg.parentNode.insertBefore(bx, tg.nextSibling);
+        bx.scrollIntoView({ block: 'nearest' }); save(); return;
+      }
       if (a === 'del') { bx.remove(); save(); return; }
       if (a === 'line+' || a === 'line-') {
         var lines = [].slice.call(bx.querySelectorAll('.ws-line'));
