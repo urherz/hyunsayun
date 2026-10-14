@@ -1497,6 +1497,14 @@
   .fn-note .fn-body img { max-height: 60vh; object-fit: contain; }
 
   .slide .fn-note { max-height: 860px; }
+
+  /* 학습지 수정 창: A4 쪽 경계선 */
+  #ws-editor .wse-pb { position: absolute; left: 0; right: 0; height: 0; border-top: 2px dashed #D0342C; pointer-events: none; z-index: 6; }
+  #ws-editor .wse-pb span { position: absolute; right: 6px; top: -1.1em; font-size: 11px; font-weight: 700; color: #D0342C; background: #FFFFFF; padding: 0 5px; border-radius: 3px; }
+  #ws-editor .wse-pb.last { border-top-color: #9A9A9A; }
+  #ws-editor .wse-pb.last span { color: #777; }
+  #ws-editor .wse-pages { font-size: 13px; font-weight: 700; color: #B3372B; margin-left: 8px; }
+  #ws-editor .wse-paper { box-sizing: border-box; }
 </style>
 </head>
 <body>
@@ -4848,7 +4856,7 @@ function __boot() {
     var ps = document.createElement('style'); ps.id = 'ws-page-style'; ps.textContent = '@media print { @page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 7mm; } }'; document.head.appendChild(ps);
     var ov = document.createElement('div'); ov.id = 'ws-editor';
     var title = (secTitle() || '') + ' · ' + (withAns ? '정답지' : '학생용') + ' · A4 ' + (land ? '가로' : '세로') + (compact ? ' 한 장 압축' : '');
-    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-sp"></span><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
+    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
     ov.querySelector('.wse-t').textContent = title;
     document.body.appendChild(ov); document.body.classList.add('ws-editing');
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; if (compact) root.classList.add('ws-compact');
@@ -4856,6 +4864,27 @@ function __boot() {
     if (stored) { root.innerHTML = stored; ov.querySelector('.wse-note').textContent = root.querySelector('.ws-cols2') ? '저장된 수정본' : '예전 배치로 저장된 수정본 · 새 배치로 바꾸려면 원래대로'; }
     else { root.innerHTML = buildWorksheet(withAns); fitOnePage(root, compact ? 1 : 2); }
     root.setAttribute('contenteditable', 'true'); wseControls(root);
+    // A4 쪽 경계선 표시
+    (function () {
+      var paper = ov.querySelector('.wse-paper'), contentMM = land ? 196 : 283;
+      paper.classList.toggle('land', !!land);
+      var ruler = document.createElement('div'); ruler.style.cssText = 'position:absolute;visibility:hidden;height:' + contentMM + 'mm;width:1px;'; paper.appendChild(ruler);
+      var pagePx = ruler.getBoundingClientRect().height; ruler.remove();
+      var draw = function () {
+        paper.querySelectorAll('.wse-pb').forEach(function (x) { x.remove(); });
+        var n = Math.max(1, Math.ceil((root.offsetHeight + 4) / pagePx));
+        paper.style.minHeight = 'calc(' + n + ' * ' + contentMM + 'mm + 14mm)';
+        for (var k = 1; k <= n; k++) {
+          var d = document.createElement('div'); d.className = 'wse-pb' + (k === n ? ' last' : '');
+          d.style.top = 'calc(7mm + ' + k + ' * ' + contentMM + 'mm)';
+          d.innerHTML = '<span>' + k + '쪽 끝' + (k === n && n > 1 ? '' : '') + '</span>';
+          paper.appendChild(d);
+        }
+        var note = ov.querySelector('.wse-pages'); if (note) note.textContent = '현재 약 ' + n + '쪽';
+      };
+      draw();
+      if (window.ResizeObserver) new ResizeObserver(function () { draw(); }).observe(root);
+    })();
     // 단 비율
     (function () {
       var rg = ov.querySelector('.wse-ratio input'), rv = ov.querySelector('.wse-rv'), grid = root.querySelector('.ws-cols2');
