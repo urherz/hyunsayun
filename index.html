@@ -1505,6 +1505,14 @@
   #ws-editor .wse-pb.last span { color: #777; }
   #ws-editor .wse-pages { font-size: 13px; font-weight: 700; color: #B3372B; margin-left: 8px; }
   #ws-editor .wse-paper { box-sizing: border-box; }
+
+  /* 학습지 3단 */
+  #ws-root .ws-cols2.ws-three { grid-template-columns: 34fr 33fr 33fr; column-gap: 4mm; }
+  #ws-root .ws-cols2 > .ws-colM { min-width: 0; }
+  #ws-root .ws-acts.ws-three { column-count: 3 !important; column-gap: 4mm !important; }
+  #ws-editor .ws-colM { min-height: 60px; }
+  #ws-editor .wse-cols { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--ink-soft); margin-right: 8px; }
+  #ws-editor .wse-cols select { font-size: 13px; padding: 2px 4px; border: 1.5px solid var(--edge); border-radius: 5px; background: #FFF; }
 </style>
 </head>
 <body>
@@ -4856,7 +4864,7 @@ function __boot() {
     var ps = document.createElement('style'); ps.id = 'ws-page-style'; ps.textContent = '@media print { @page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 7mm; } }'; document.head.appendChild(ps);
     var ov = document.createElement('div'); ov.id = 'ws-editor';
     var title = (secTitle() || '') + ' · ' + (withAns ? '정답지' : '학생용') + ' · A4 ' + (land ? '가로' : '세로') + (compact ? ' 한 장 압축' : '');
-    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
+    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><label class="wse-cols" title="본문 단 수">단 <select><option value="2">2단</option><option value="3">3단</option></select></label><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
     ov.querySelector('.wse-t').textContent = title;
     document.body.appendChild(ov); document.body.classList.add('ws-editing');
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; if (compact) root.classList.add('ws-compact');
@@ -4892,7 +4900,32 @@ function __boot() {
       var cur = (grid.style.gridTemplateColumns || '').match(/([0-9.]+)fr/);
       var v = cur ? Math.round(parseFloat(cur[1]) / (parseFloat(cur[1]) + parseFloat((grid.style.gridTemplateColumns.match(/fr ([0-9.]+)fr/) || [0, 1])[1])) * 100) : (land ? 60 : 50);
       rg.value = v; rv.textContent = v + ' : ' + (100 - v);
-      rg.addEventListener('input', function () { var x = +rg.value; grid.style.gridTemplateColumns = x + 'fr ' + (100 - x) + 'fr'; rv.textContent = x + ' : ' + (100 - x); save(); });
+      var three = function () { return grid.classList.contains('ws-three'); };
+      var applyRatio = function () {
+        var x = +rg.value;
+        if (three()) { var r2 = Math.round((100 - x) / 2); grid.style.gridTemplateColumns = x + 'fr ' + r2 + 'fr ' + (100 - x - r2) + 'fr'; rv.textContent = x + ' : ' + r2 + ' : ' + (100 - x - r2); }
+        else { grid.style.gridTemplateColumns = x + 'fr ' + (100 - x) + 'fr'; rv.textContent = x + ' : ' + (100 - x); }
+      };
+      if (three()) { var m3 = (grid.style.gridTemplateColumns || '').match(/([0-9.]+)fr/); rg.value = m3 ? Math.round(+m3[1]) : 34; applyRatio(); }
+      rg.addEventListener('input', function () { applyRatio(); save(); });
+      // 2단 / 3단
+      var cs = ov.querySelector('.wse-cols select'); cs.value = three() ? '3' : '2';
+      cs.addEventListener('change', function () {
+        var colL = grid.querySelector(':scope > .ws-colL'), colR = grid.querySelector(':scope > .ws-colR'), colM = grid.querySelector(':scope > .ws-colM'), acts = root.querySelector('.ws-acts');
+        if (cs.value === '3' && !colM) {
+          colM = document.createElement('div'); colM.className = 'ws-colM'; grid.insertBefore(colM, colR);
+          [].slice.call(colR.querySelectorAll(':scope > .ws-summary')).forEach(function (b) { colM.appendChild(b); });
+          if (!colM.children.length && colL.children.length > 1) colM.appendChild(colL.lastElementChild);
+          grid.classList.add('ws-three'); if (acts) acts.classList.add('ws-three');
+          rg.min = 25; rg.max = 60; rg.value = 34;
+        } else if (cs.value === '2' && colM) {
+          [].slice.call(colM.children).reverse().forEach(function (b) { colR.insertBefore(b, colR.firstChild); });
+          colM.remove(); grid.classList.remove('ws-three'); if (acts) acts.classList.remove('ws-three');
+          rg.min = 35; rg.max = 75; rg.value = land ? 60 : 50;
+        }
+        applyRatio(); wseControls(root); save();
+      });
+      if (three()) { rg.min = 25; rg.max = 60; }
     })();
     // 칸 끌어 옮기기
     (function () {
@@ -4913,7 +4946,7 @@ function __boot() {
           var r = tb.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
           tb.classList.add(after ? 'wse-drop-after' : 'wse-drop-before'); mark = { el: tb, after: after };
         } else {
-          var col = e.target.closest && e.target.closest('.ws-colL, .ws-colR, .ws-acts');
+          var col = e.target.closest && e.target.closest('.ws-colL, .ws-colM, .ws-colR, .ws-acts');
           if (col && !(tb && tb === dragBox)) { col.classList.add('wse-drop-in'); mark = { col: col }; }
         }
       });
