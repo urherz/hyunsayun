@@ -1524,6 +1524,17 @@
 
   /* 줄맞춤(내어쓰기): 안쪽 상자들은 들여쓰기 영향 받지 않게 */
   [data-hang] * { text-indent: 0; }
+
+  /* 학습지: 글머리 기호 없애기 */
+  #ws-root:has(.ws-head[data-nobullet="1"]) ul > li:not(.lv1):not(.lv2)::marker { content: "" !important; }
+  #ws-root:has(.ws-head[data-nobullet="1"]) .ws-box ul { margin-left: .2em !important; }
+  #ws-root:has(.ws-head[data-nobullet="1"]) .ws-box li.lv1 { margin-left: 1.05em !important; }
+  #ws-root:has(.ws-head[data-nobullet="1"]) .ws-box li.lv2 { margin-left: 2.1em !important; }
+  #ws-editor .wse-nobul { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--ink-soft); margin-right: 8px; cursor: pointer; }
+
+  /* 특정 줄 기호 끄기: 꺼진 줄은 여백도 맞춰 붙임 */
+  #ws-root ul > li.bul-none::marker { content: "" !important; }
+  #ws-editor #ws-root ul > li { cursor: text; }
 </style>
 </head>
 <body>
@@ -4906,7 +4917,7 @@ function __boot() {
     var ps = document.createElement('style'); ps.id = 'ws-page-style'; ps.textContent = '@media print { @page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 7mm; } }'; document.head.appendChild(ps);
     var ov = document.createElement('div'); ov.id = 'ws-editor';
     var title = (secTitle() || '') + ' · ' + (withAns ? '정답지' : '학생용') + ' · A4 ' + (land ? '가로' : '세로') + (compact ? ' 한 장 압축' : '');
-    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><button type="button" data-wse="undo" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-wse="redo" title="다시 (Ctrl+Y)">↷ 다시</button><label class="wse-cols" title="본문 단 수">단 <select><option value="2">2단</option><option value="3">3단</option></select></label><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
+    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><button type="button" data-wse="undo" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-wse="redo" title="다시 (Ctrl+Y)">↷ 다시</button><button type="button" data-wse="bul" title="커서가 있는 줄(또는 선택한 줄들)의 앞 기호를 없애거나 되살려요. 줄 앞 기호를 직접 클릭해도 돼요">● 이 줄 기호 끄기/켜기</button><label class="wse-nobul" title="목록 앞 ● 기호 모두 없애기"><input type="checkbox"> 기호 모두 없애기</label><label class="wse-cols" title="본문 단 수">단 <select><option value="2">2단</option><option value="3">3단</option></select></label><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
     ov.querySelector('.wse-t').textContent = title;
     document.body.appendChild(ov); document.body.classList.add('ws-editing');
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; if (compact) root.classList.add('ws-compact');
@@ -4928,6 +4939,32 @@ function __boot() {
       if (root.dataset.over && note) note.textContent = '9.5pt로도 한 장을 넘어요 · 칸이나 줄을 줄여 주세요';
     };
     refitCompact();
+    // 특정 줄의 기호만 끄기/켜기: 줄 앞 기호를 클릭하거나, 커서를 두고 버튼
+    var toggleBul = function (lis) {
+      if (!lis.length) { ov.querySelector('.wse-note').textContent = '기호를 끌 줄에 커서를 두세요'; return; }
+      var turnOff = !lis[0].classList.contains('bul-none');
+      lis.forEach(function (li) { li.classList.toggle('bul-none', turnOff); if (!turnOff && li.classList.contains('bul-on')) {} });
+      save(); ov.querySelector('.wse-note').textContent = turnOff ? '이 줄 기호를 껐어요' : '이 줄 기호를 다시 켰어요';
+    };
+    root.addEventListener('mousedown', function (e) {
+      if (e.target.closest && e.target.closest('button, .wse-ctl, .wse-tctl, .wse-split, .ws-blank, .ws-pl')) return;
+      var bx = e.target.closest && e.target.closest('.ws-box'); if (!bx) return;
+      var hit = [].filter.call(bx.querySelectorAll('ul > li'), function (li) { var r = li.getBoundingClientRect(), lh = parseFloat(getComputedStyle(li).lineHeight) || 20; return e.clientY >= r.top && e.clientY <= r.top + lh && e.clientX < r.left + 1 && e.clientX > r.left - 24; })[0];
+      if (hit) { e.preventDefault(); toggleBul([hit]); }
+    }, true);
+    ov.querySelector('button[data-wse=bul]').addEventListener('click', function () {
+      var sel = window.getSelection(); if (!sel.rangeCount) return toggleBul([]);
+      var rg = sel.getRangeAt(0), lis = [].filter.call(root.querySelectorAll('ul > li'), function (li) { return rg.intersectsNode(li); });
+      if (!lis.length) { var n = rg.startContainer; if (n.nodeType === 3) n = n.parentNode; var one = n.closest && n.closest('#ws-root ul > li'); if (one) lis = [one]; }
+      toggleBul(lis);
+    });
+    ov.querySelector('button[data-wse=bul]').addEventListener('mousedown', function (e) { e.preventDefault(); });
+    // 글머리 기호(●) 없애기
+    (function () {
+      var cb = ov.querySelector('.wse-nobul input'), hd = root.querySelector('.ws-head'); if (!cb || !hd) return;
+      cb.checked = hd.dataset.nobullet === '1';
+      cb.addEventListener('change', function () { if (cb.checked) hd.dataset.nobullet = '1'; else delete hd.dataset.nobullet; save(); });
+    })();
     // A4 쪽 경계선 표시
     (function () {
       var paper = ov.querySelector('.wse-paper'), contentMM = land ? 196 : 283;
