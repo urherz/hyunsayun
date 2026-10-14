@@ -1480,6 +1480,14 @@
 
   #ws-editor .wse-ctl button[data-wse="up"], #ws-editor .wse-ctl button[data-wse="down"] { color: #3E5875; border-color: #A9B8C8; padding: 1px 5px; }
   #ws-root .ws-body > .ws-box { margin-top: 2mm !important; }
+
+  /* 학습지 수정 창: 칸 나누기 */
+  #ws-editor .wse-split { position: relative; height: 0; z-index: 4; }
+  #ws-editor .wse-split button { position: absolute; left: 50%; top: -1px; transform: translate(-50%, -50%); font-size: 11px; padding: 0 8px; border: 1px dashed #8C9BB0; color: #3E5875; background: #FFF; border-radius: 10px; cursor: pointer; opacity: 0; transition: opacity .12s; white-space: nowrap; }
+  #ws-editor .ws-box:hover .wse-split button { opacity: .85; }
+  #ws-editor .wse-split button:hover { opacity: 1; border-style: solid; }
+  #ws-editor .wse-ctl button[data-wse="merge"] { color: #4E5C42; border-color: #B9C4AC; }
+  @media print { .wse-split { display: none !important; } }
 </style>
 </head>
 <body>
@@ -4762,13 +4770,24 @@ function __boot() {
       c.innerHTML = '<button type="button" data-wse="tdel" title="이 표 빼기">✕ 표 빼기</button>';
       host.parentNode.insertBefore(c, host);
     });
+    root.querySelectorAll('.wse-split').forEach(function (x) { x.remove(); });
+    root.querySelectorAll('.ws-box').forEach(function (bx) {
+      [].slice.call(bx.querySelectorAll(':scope > .ws-sub')).slice(1).forEach(function (sb) {
+        var s = document.createElement('div'); s.className = 'wse-split'; s.setAttribute('contenteditable', 'false');
+        s.innerHTML = '<button type="button" data-wse="split" title="여기서 칸을 둘로 나누기">✂ 여기서 나누기</button>';
+        bx.insertBefore(s, sb);
+      });
+    });
+    var wseType = function (b) { return (b.className.match(/ws-(concept|summary|activity|exam|news)/) || [])[0] || ''; };
     root.querySelectorAll('.ws-box').forEach(function (bx) {
       var c = document.createElement('div'); c.className = 'wse-ctl'; c.setAttribute('contenteditable', 'false');
-      c.innerHTML = '<button type="button" data-wse="up" title="한 칸 앞으로(위로)">▲</button><button type="button" data-wse="down" title="한 칸 뒤로(아래로)">▼</button><span class="wse-drag" draggable="true" title="끌어서 이 칸 옮기기">⠿ 옮기기</span>' + (bx.querySelector('.ws-line') ? '<button type="button" data-wse="line+" title="문항마다 쓰는 줄 1개 더">줄＋</button><button type="button" data-wse="line-" title="문항마다 쓰는 줄 1개 빼기">줄－</button>' : '') + '<button type="button" data-wse="del" title="이 칸 빼기">✕ 빼기</button>';
+      var nx = bx.nextElementSibling; while (nx && !nx.classList.contains('ws-box')) nx = nx.nextElementSibling;
+      var canMerge = nx && wseType(nx) && wseType(nx) === wseType(bx) && (wseType(bx) === 'ws-concept' || wseType(bx) === 'ws-summary');
+      c.innerHTML = '<button type="button" data-wse="up" title="한 칸 앞으로(위로)">▲</button><button type="button" data-wse="down" title="한 칸 뒤로(아래로)">▼</button><span class="wse-drag" draggable="true" title="끌어서 이 칸 옮기기">⠿ 옮기기</span>' + (bx.querySelector('.ws-line') ? '<button type="button" data-wse="line+" title="문항마다 쓰는 줄 1개 더">줄＋</button><button type="button" data-wse="line-" title="문항마다 쓰는 줄 1개 빼기">줄－</button>' : '') + (canMerge ? '<button type="button" data-wse="merge" title="바로 아래 같은 종류 칸과 합치기">⤓ 합치기</button>' : '') + '<button type="button" data-wse="del" title="이 칸 빼기">✕ 빼기</button>';
       bx.insertBefore(c, bx.firstChild);
     });
   }
-  function wseHtml(root) { var c = root.cloneNode(true); c.querySelectorAll('.wse-dragging, .wse-drop-before, .wse-drop-after, .wse-drop-in').forEach(function (x) { x.classList.remove('wse-dragging', 'wse-drop-before', 'wse-drop-after', 'wse-drop-in'); }); c.querySelectorAll('.wse-bsel').forEach(function (x) { x.classList.remove('wse-bsel'); }); c.querySelectorAll('.wse-colhot').forEach(function (x) { x.classList.remove('wse-colhot'); }); c.querySelectorAll('.ws-blank, .ws-pl, .ws-inline-line').forEach(function (x) { x.removeAttribute('contenteditable'); }); c.querySelectorAll('.wse-ctl, .wse-tctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
+  function wseHtml(root) { var c = root.cloneNode(true); c.querySelectorAll('.wse-split').forEach(function (x) { x.remove(); }); c.querySelectorAll('.wse-dragging, .wse-drop-before, .wse-drop-after, .wse-drop-in').forEach(function (x) { x.classList.remove('wse-dragging', 'wse-drop-before', 'wse-drop-after', 'wse-drop-in'); }); c.querySelectorAll('.wse-bsel').forEach(function (x) { x.classList.remove('wse-bsel'); }); c.querySelectorAll('.wse-colhot').forEach(function (x) { x.classList.remove('wse-colhot'); }); c.querySelectorAll('.ws-blank, .ws-pl, .ws-inline-line').forEach(function (x) { x.removeAttribute('contenteditable'); }); c.querySelectorAll('.wse-ctl, .wse-tctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
   function openWsEditor(withAns, land, compact) {
     closeWsEditor();
     var key = wseKey(withAns, land, compact), stored = window.__wsGet ? window.__wsGet(key) : null;
@@ -4897,6 +4916,20 @@ function __boot() {
       }
       if (a === 'tdel') { var tc = bt.closest('.wse-tctl'), nx = tc && tc.nextElementSibling; if (nx) nx.remove(); if (tc) tc.remove(); save(); return; }
       var bx = bt.closest('.ws-box'); if (!bx) return;
+      if (a === 'split') {
+        var sp = bt.closest('.wse-split'), first = sp.nextElementSibling;
+        var nb = document.createElement('div'); nb.className = bx.className;
+        var h2 = bx.querySelector(':scope > h2'); if (h2) nb.appendChild(h2.cloneNode(true));
+        var n = first; while (n) { var nx2 = n.nextSibling; if (!(n.nodeType === 1 && n.classList.contains('wse-split'))) nb.appendChild(n); else n.remove(); n = nx2; }
+        sp.remove(); bx.parentNode.insertBefore(nb, bx.nextSibling);
+        wseControls(root); save(); ov.querySelector('.wse-note').textContent = '칸을 나눴어요. ▲▼나 ⠿로 옮길 수 있어요'; return;
+      }
+      if (a === 'merge') {
+        var nx3 = bx.nextElementSibling; while (nx3 && !nx3.classList.contains('ws-box')) nx3 = nx3.nextElementSibling;
+        if (!nx3) return;
+        [].slice.call(nx3.childNodes).forEach(function (n) { if (n.nodeType === 1 && (n.tagName === 'H2' || n.classList.contains('wse-ctl') || n.classList.contains('wse-split'))) return; bx.appendChild(n); });
+        nx3.remove(); wseControls(root); save(); ov.querySelector('.wse-note').textContent = '아래 칸과 합쳤어요'; return;
+      }
       if (a === 'up' || a === 'down') {
         var list = [].slice.call(root.querySelectorAll('.ws-box')), ix = list.indexOf(bx), tg = list[ix + (a === 'up' ? -1 : 1)];
         if (!tg) { ov.querySelector('.wse-note').textContent = a === 'up' ? '이미 맨 앞이에요' : '이미 맨 뒤예요'; return; }
