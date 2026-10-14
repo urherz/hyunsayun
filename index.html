@@ -1535,6 +1535,12 @@
   /* 특정 줄 기호 끄기: 꺼진 줄은 여백도 맞춰 붙임 */
   #ws-root ul > li.bul-none::marker { content: "" !important; }
   #ws-editor #ws-root ul > li { cursor: text; }
+
+  /* 기호를 끈 줄은 기호 자리 여백도 없애기 */
+  #ws-root .ws-box ul > li.bul-none:not(.lv1):not(.lv2) { margin-left: -1.25em !important; }
+  #ws-root .ws-box ul > li.lv1.bul-none { margin-left: 0 !important; }
+  #ws-root .ws-box ul > li.lv2.bul-none { margin-left: 1.25em !important; }
+  #ws-root:has(.ws-head[data-nobullet="1"]) .ws-box ul > li:not(.lv1):not(.lv2) { margin-left: -.2em !important; }
 </style>
 </head>
 <body>
