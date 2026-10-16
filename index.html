@@ -1541,6 +1541,29 @@
   #ws-root .ws-box ul > li.lv1.bul-none { margin-left: 0 !important; }
   #ws-root .ws-box ul > li.lv2.bul-none { margin-left: 1.25em !important; }
   #ws-root:has(.ws-head[data-nobullet="1"]) .ws-box ul > li:not(.lv1):not(.lv2) { margin-left: -.2em !important; }
+
+  /* 수업 타이머 */
+  body:not(.editing) .slide .stage-head .time { cursor: pointer; transition: background .12s, color .12s; }
+  body:not(.editing) .slide .stage-head .time:hover { background: #4E5C42; color: #FFFFFF; border-color: #4E5C42; }
+  #ctimer { position: fixed; right: 18px; bottom: 18px; z-index: 300; min-width: 230px; background: #FFFDF8; border: 2px solid #4E5C42; border-radius: 14px; box-shadow: 0 10px 30px rgba(40,30,20,.25); padding: 10px 14px 12px; font-family: var(--serif); color: var(--ink); user-select: none; }
+  #ctimer[hidden] { display: none; }
+  body.editing #ctimer { bottom: 110px; }
+  #ctimer .ct-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); }
+  #ctimer .ct-mute { font-size: 12px; border: 0; background: none; cursor: pointer; color: var(--ink-soft); padding: 0; }
+  #ctimer .ct-time { font-size: 54px; font-weight: 700; text-align: center; line-height: 1.1; margin: 2px 0 8px; font-variant-numeric: tabular-nums; }
+  #ctimer .ct-btns { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
+  #ctimer .ct-btns button { font-family: var(--serif); font-weight: 700; font-size: 13px; padding: 4px 9px; border: 1.5px solid var(--edge); border-radius: 7px; background: #FFFFFF; cursor: pointer; }
+  #ctimer .ct-btns .ct-done { color: #FFFFFF; background: #4E5C42; border-color: #4E5C42; }
+  #ctimer.warn { border-color: #C98A1E; } #ctimer.warn .ct-time { color: #B87414; }
+  #ctimer.hurry { border-color: #D0342C; animation: ctPulse 1s infinite; } #ctimer.hurry .ct-time { color: #D0342C; }
+  #ctimer.end { border-color: #D0342C; } #ctimer.end .ct-time { color: #D0342C; }
+  #ctimer.paused .ct-time { opacity: .5; }
+  @keyframes ctPulse { 50% { box-shadow: 0 0 0 8px rgba(208,52,44,.18); } }
+  #ctimer.big { right: 50%; bottom: 50%; transform: translate(50%, 50%); min-width: 60vw; padding: 24px 30px 28px; border-width: 4px; cursor: zoom-out; }
+  #ctimer.big .ct-top { font-size: 26px; }
+  #ctimer.big .ct-time { font-size: 24vh; }
+  #ctimer.big .ct-btns button { font-size: 20px; padding: 8px 16px; }
+  @media print { #ctimer { display: none !important; } }
 </style>
 </head>
 <body>
@@ -2046,6 +2069,87 @@ function __boot() {
     var nr = document.createRange(); nr.setStart(r.startContainer, Math.min(r.startOffset, (r.startContainer.length || r.startContainer.childNodes.length))); nr.collapse(true); sel.removeAllRanges(); sel.addRange(nr);
     return 'on';
   };
+  // ===== 수업 타이머: 페이지의 시간 칩(예: 7분)을 누르면 시작 =====
+  (function () {
+    var T = { total: 0, left: 0, endAt: 0, run: false, iv: null, label: '' };
+    var MUTE_KEY = 'lesson-timer-mute';
+    var w = document.createElement('div'); w.id = 'ctimer'; w.hidden = true;
+    w.innerHTML = '<div class="ct-top"><span class="ct-lab"></span><button type="button" data-ct="mute" class="ct-mute" title="끝날 때 소리 켜기/끄기"></button></div>' +
+      '<div class="ct-time">0:00</div>' +
+      '<div class="ct-btns"><button type="button" data-ct="pause">⏸ 멈춤</button><button type="button" data-ct="plus">＋1분</button><button type="button" data-ct="done" class="ct-done">✓ 완료</button><button type="button" data-ct="big" title="학생들이 보도록 크게">⤢ 크게</button><button type="button" data-ct="close" title="타이머 끄기">✕</button></div>';
+    document.body.appendChild(w);
+    var tEl = w.querySelector('.ct-time'), labEl = w.querySelector('.ct-lab');
+    var muted = function () { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { return false; } };
+    var setMuteBtn = function () { w.querySelector('.ct-mute').textContent = muted() ? '🔕 소리 끔' : '🔔 소리 켬'; };
+    setMuteBtn();
+    var fmt = function (s) { s = Math.max(0, Math.ceil(s)); var m = Math.floor(s / 60), x = s % 60; return m + ':' + (x < 10 ? '0' : '') + x; };
+    var ctx = null;
+    var chime = function () {
+      if (muted()) return;
+      try {
+        ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+        var now = ctx.currentTime;
+        [[0, 1046.5], [0.28, 1318.5], [0.56, 1568], [1.3, 1046.5], [1.58, 1318.5], [1.86, 1568]].forEach(function (n) {
+          var o = ctx.createOscillator(), g = ctx.createGain();
+          o.type = 'sine'; o.frequency.value = n[1];
+          g.gain.setValueAtTime(0.0001, now + n[0]); g.gain.exponentialRampToValueAtTime(0.35, now + n[0] + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, now + n[0] + 1.1);
+          o.connect(g); g.connect(ctx.destination); o.start(now + n[0]); o.stop(now + n[0] + 1.2);
+        });
+      } catch (e) {}
+    };
+    var paint = function () {
+      var s = T.run ? (T.endAt - Date.now()) / 1000 : T.left;
+      tEl.textContent = fmt(s);
+      w.classList.toggle('warn', s <= 60 && s > 10);
+      w.classList.toggle('hurry', s <= 10 && s > 0);
+      if (T.run && s <= 0) { T.run = false; T.left = 0; clearInterval(T.iv); w.classList.remove('warn', 'hurry'); w.classList.add('end'); tEl.textContent = '끝!'; w.querySelector('[data-ct=pause]').textContent = '↺ 다시'; chime(); }
+    };
+    var start = function (min, label) {
+      if (ctx && ctx.state === 'suspended') ctx.resume();
+      if (!ctx && !muted()) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+      T.total = min * 60; T.left = T.total; T.endAt = Date.now() + T.total * 1000; T.run = true; T.label = label || '';
+      labEl.textContent = (label ? label + ' · ' : '') + min + '분';
+      w.hidden = false; w.classList.remove('end', 'warn', 'hurry', 'paused');
+      w.querySelector('[data-ct=pause]').textContent = '⏸ 멈춤';
+      clearInterval(T.iv); T.iv = setInterval(paint, 250); paint();
+    };
+    var stop = function () { clearInterval(T.iv); T.run = false; };
+    w.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var b = e.target.closest('button[data-ct]'); 
+      if (!b) { if (w.classList.contains('big')) w.classList.remove('big'); return; }
+      var a = b.dataset.ct;
+      if (a === 'pause') {
+        if (w.classList.contains('end')) { start(T.total / 60, T.label); return; }
+        if (T.run) { T.left = (T.endAt - Date.now()) / 1000; stop(); w.classList.add('paused'); b.textContent = '▶ 계속'; }
+        else { T.endAt = Date.now() + T.left * 1000; T.run = true; w.classList.remove('paused'); b.textContent = '⏸ 멈춤'; clearInterval(T.iv); T.iv = setInterval(paint, 250); }
+        paint();
+      } else if (a === 'plus') {
+        if (w.classList.contains('end')) { w.classList.remove('end'); T.left = 60; T.total += 0; T.endAt = Date.now() + 60000; T.run = true; clearInterval(T.iv); T.iv = setInterval(paint, 250); w.querySelector('[data-ct=pause]').textContent = '⏸ 멈춤'; }
+        else if (T.run) T.endAt += 60000; else T.left += 60;
+        T.total += 60; paint();
+      } else if (a === 'done') {
+        var used = T.total - (T.run ? (T.endAt - Date.now()) / 1000 : T.left);
+        stop(); w.classList.remove('warn', 'hurry', 'paused'); w.classList.add('end');
+        tEl.textContent = '완료'; labEl.textContent = (T.label ? T.label + ' · ' : '') + fmt(used) + ' 걸림';
+        w.querySelector('[data-ct=pause]').textContent = '↺ 다시';
+        setTimeout(function () { if (!T.run && w.classList.contains('end') && tEl.textContent === '완료') { w.hidden = true; w.classList.remove('big'); } }, 4000);
+      } else if (a === 'big') { w.classList.toggle('big'); }
+      else if (a === 'close') { stop(); w.hidden = true; w.classList.remove('big', 'end'); }
+      else if (a === 'mute') { try { localStorage.setItem(MUTE_KEY, muted() ? '0' : '1'); } catch (er) {} setMuteBtn(); }
+    });
+    // 시간 칩 누르면 시작 (수정 모드 아닐 때)
+    document.getElementById('slide').addEventListener('click', function (e) {
+      if (document.body.classList.contains('editing')) return;
+      var chip = e.target.closest && e.target.closest('.stage-head .time'); if (!chip) return;
+      var m = (chip.textContent || '').match(/([0-9]+)\s*분/); if (!m) return;
+      e.preventDefault(); e.stopPropagation();
+      var sec = chip.closest('section.stage'), lab = sec ? (sec.dataset.label || '') : '';
+      var h3 = sec && sec.querySelector('.block h3'); if (h3 && /활동/.test(lab)) lab = h3.childNodes[0] ? (h3.childNodes[0].textContent || '').trim() || lab : lab;
+      start(+m[1], lab);
+    }, true);
+    window.__lessonTimer = { start: start };
+  })();
   window.__resetLessonState = resetLessonState;
   document.getElementById('slide').addEventListener('click', function (e) {
     if (document.body.classList.contains('editing')) return;
