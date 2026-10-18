@@ -1633,6 +1633,31 @@
   #ctimer.big .ct-ring { width: 62vh; height: 62vh; }
   #ctimer.big .ct-ring .ct-time { font-size: 15vh; }
   #ctimer.big { min-width: 0; }
+
+  /* 타이머 단계 */
+  #ctimer .ct-step { text-align: center; font-size: 14px; font-weight: 700; color: #4E5C42; min-height: 0; margin: -2px 0 4px; }
+  #ctimer .ct-all { height: 5px; background: #E9E2D2; border-radius: 3px; margin: 0 4px 8px; overflow: hidden; display: none; }
+  #ctimer.multi .ct-all { display: block; }
+  #ctimer .ct-all i { display: block; height: 100%; width: 0; background: #4E5C42; transition: width .1s linear; }
+  #ctimer .ct-next { display: none; }
+  #ctimer.multi .ct-next { display: inline-block; }
+  #ctimer.big .ct-step { font-size: 4vh; }
+  #ctimer.big .ct-all { height: 10px; }
+  #ctsetup { position: fixed; inset: 0; z-index: 310; background: rgba(40,30,20,.28); display: flex; align-items: center; justify-content: center; }
+  #ctsetup[hidden] { display: none; }
+  #ctsetup .cs-box { width: min(560px, 92vw); background: #FFFDF8; border: 2px solid #4E5C42; border-radius: 14px; padding: 14px 18px 16px; box-shadow: 0 14px 40px rgba(0,0,0,.25); font-family: var(--serif); }
+  #ctsetup .cs-h { display: flex; justify-content: space-between; align-items: center; font-size: 17px; margin-bottom: 10px; }
+  #ctsetup button { font-family: var(--serif); font-weight: 700; cursor: pointer; border: 1.5px solid var(--edge); border-radius: 7px; background: #FFF; padding: 5px 12px; font-size: 14px; }
+  #ctsetup .cs-quick { width: 100%; padding: 10px; font-size: 17px; background: #4E5C42; color: #FFF; border-color: #4E5C42; }
+  #ctsetup .cs-sub { font-size: 12.5px; color: var(--ink-soft); margin: 12px 0 6px; }
+  #ctsetup .cs-row { display: flex; gap: 6px; align-items: center; margin-bottom: 5px; }
+  #ctsetup .cs-name { flex: 1; font-size: 14px; padding: 5px 8px; border: 1.5px solid var(--edge); border-radius: 6px; font-family: var(--sans); }
+  #ctsetup .cs-min { width: 64px; font-size: 14px; padding: 5px 6px; border: 1.5px solid var(--edge); border-radius: 6px; text-align: right; }
+  #ctsetup .cs-row button { padding: 3px 8px; color: #B3372B; }
+  #ctsetup .cs-foot { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  #ctsetup .cs-sum { flex: 1; font-size: 13px; color: var(--ink-soft); text-align: right; }
+  #ctsetup .cs-sum.diff { color: #B87414; }
+  #ctsetup .cs-go { background: #F1EEE6; }
 </style>
 </head>
 <body>
@@ -2140,14 +2165,14 @@ function __boot() {
   };
   // ===== 수업 타이머: 페이지의 시간 칩(예: 7분)을 누르면 시작 · 원형 · 5초 전 똑딱 · 싱잉볼 =====
   (function () {
-    var T = { total: 0, left: 0, endAt: 0, run: false, iv: null, label: '', lastTick: -1 };
+    var T = { total: 0, left: 0, endAt: 0, run: false, iv: null, label: '', lastTick: -1, segs: [], si: 0 };
     var MUTE_KEY = 'lesson-timer-mute', R = 54, C = 2 * Math.PI * R;
     var w = document.createElement('div'); w.id = 'ctimer'; w.hidden = true;
     w.innerHTML = '<div class="ct-top"><span class="ct-lab"></span><button type="button" data-ct="mute" class="ct-mute" title="소리 켜기/끄기"></button></div>' +
-      '<div class="ct-ring"><svg viewBox="0 0 120 120"><circle class="ct-bg" cx="60" cy="60" r="' + R + '"></circle><circle class="ct-fg" cx="60" cy="60" r="' + R + '" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="0"></circle></svg><div class="ct-time">0:00</div></div>' +
-      '<div class="ct-btns"><button type="button" data-ct="pause">⏸ 멈춤</button><button type="button" data-ct="plus">＋1분</button><button type="button" data-ct="done" class="ct-done">✓ 완료</button><button type="button" data-ct="big" title="학생들이 보도록 크게">⤢ 크게</button><button type="button" data-ct="close" title="타이머 끄기">✕</button></div>';
+      '<div class="ct-ring"><svg viewBox="0 0 120 120"><circle class="ct-bg" cx="60" cy="60" r="' + R + '"></circle><circle class="ct-fg" cx="60" cy="60" r="' + R + '" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="0"></circle></svg><div class="ct-time">0:00</div></div><div class="ct-step"></div><div class="ct-all"><i></i></div>' +
+      '<div class="ct-btns"><button type="button" data-ct="pause">⏸ 멈춤</button><button type="button" data-ct="plus">＋1분</button><button type="button" data-ct="next" class="ct-next">⏭ 다음 단계</button><button type="button" data-ct="done" class="ct-done">✓ 완료</button><button type="button" data-ct="big" title="학생들이 보도록 크게">⤢ 크게</button><button type="button" data-ct="close" title="타이머 끄기">✕</button></div>';
     document.body.appendChild(w);
-    var tEl = w.querySelector('.ct-time'), labEl = w.querySelector('.ct-lab'), fg = w.querySelector('.ct-fg');
+    var tEl = w.querySelector('.ct-time'), labEl = w.querySelector('.ct-lab'), fg = w.querySelector('.ct-fg'), stepEl = w.querySelector('.ct-step'), allBar = w.querySelector('.ct-all i');
     var muted = function () { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { return false; } };
     var setMuteBtn = function () { w.querySelector('.ct-mute').textContent = muted() ? '🔕 소리 끔' : '🔔 소리 켬'; };
     setMuteBtn();
@@ -2186,6 +2211,22 @@ function __boot() {
       hg.gain.setValueAtTime(0.12, now); hg.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
       hit.connect(hg); hg.connect(master); hit.start(now); hit.stop(now + 0.3);
     };
+    var softBowl = function () {
+      if (muted() || !ac()) return;
+      var now = ctx.currentTime, base = 392, m = ctx.createGain(); m.gain.value = 0.35; m.connect(ctx.destination);
+      [[1, 0.5, 2.6], [2.71, 0.2, 1.8], [5.12, 0.08, 1.1]].forEach(function (p) { var o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = base * p[0]; g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(p[1], now + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, now + p[2]); o.connect(g); g.connect(m); o.start(now); o.stop(now + p[2] + 0.05); });
+    };
+    var segTotal = function () { return T.segs.reduce(function (a, x) { return a + x.sec; }, 0); };
+    var showStep = function () {
+      var n = T.segs.length;
+      w.classList.toggle('multi', n > 1);
+      stepEl.textContent = n > 1 ? (T.si + 1) + '/' + n + ' 단계 · ' + (T.segs[T.si].name || '단계 ' + (T.si + 1)) : '';
+    };
+    var startSeg = function () {
+      var sg = T.segs[T.si]; T.total = sg.sec; T.left = sg.sec; T.endAt = Date.now() + sg.sec * 1000; T.run = true; T.lastTick = -1;
+      w.classList.remove('end', 'warn', 'hurry', 'paused'); w.querySelector('[data-ct=pause]').textContent = '⏸ 멈춤';
+      showStep(); run();
+    };
     var paint = function () {
       var s = T.run ? (T.endAt - Date.now()) / 1000 : T.left;
       tEl.textContent = fmt(s);
@@ -2193,17 +2234,18 @@ function __boot() {
       fg.setAttribute('stroke-dashoffset', (C * (1 - frac)).toFixed(2));
       w.classList.toggle('warn', s <= 60 && s > 10);
       w.classList.toggle('hurry', s <= 10 && s > 0);
-      if (T.run) { var whole = Math.ceil(s); if (whole <= 5 && whole >= 1 && whole !== T.lastTick) { T.lastTick = whole; tick(whole % 2 === 0); } }
+      if (T.run) { var whole = Math.ceil(s); if (whole <= 10 && whole >= 1 && whole !== T.lastTick) { T.lastTick = whole; tick(whole % 2 === 0); } }
+      if (T.segs.length) { var doneBefore = T.segs.slice(0, T.si).reduce(function (a, x) { return a + x.sec; }, 0), tot = segTotal(); allBar.style.width = (tot ? Math.min(100, (doneBefore + (T.total - Math.max(0, s))) / tot * 100) : 0) + '%'; }
+      if (T.run && s <= 0 && T.si < T.segs.length - 1) { T.si++; softBowl(); startSeg(); return; }
       if (T.run && s <= 0) { T.run = false; T.left = 0; clearInterval(T.iv); w.classList.remove('warn', 'hurry'); w.classList.add('end'); tEl.textContent = '끝!'; w.querySelector('[data-ct=pause]').textContent = '↺ 다시'; bowl(); }
     };
     var run = function () { clearInterval(T.iv); T.iv = setInterval(paint, 100); paint(); };
-    var start = function (min, label) {
+    var start = function (min, label, segs) {
       ac();
-      T.total = min * 60; T.left = T.total; T.endAt = Date.now() + T.total * 1000; T.run = true; T.label = label || ''; T.lastTick = -1;
-      labEl.textContent = (label ? label + ' · ' : '') + (min >= 1 ? Math.round(min) + '분' : Math.round(min * 60) + '초');
-      w.hidden = false; w.classList.remove('end', 'warn', 'hurry', 'paused');
-      w.querySelector('[data-ct=pause]').textContent = '⏸ 멈춤';
-      run();
+      T.segs = segs && segs.length ? segs : [{ name: '', sec: Math.round(min * 60) }]; T.si = 0; T.label = label || '';
+      var tm = segTotal() / 60;
+      labEl.textContent = (label ? label + ' · ' : '') + (tm >= 1 ? (Math.round(tm * 10) / 10) + '분' : Math.round(tm * 60) + '초');
+      w.hidden = false; startSeg();
     };
     var stop = function () { clearInterval(T.iv); T.run = false; };
     w.addEventListener('click', function (e) {
@@ -2212,14 +2254,16 @@ function __boot() {
       if (!b) { if (w.classList.contains('big')) w.classList.remove('big'); return; }
       var a = b.dataset.ct; ac();
       if (a === 'pause') {
-        if (w.classList.contains('end')) { start(T.total / 60, T.label); return; }
+        if (w.classList.contains('end')) { start(0, T.label, T.segs); return; }
         if (T.run) { T.left = (T.endAt - Date.now()) / 1000; stop(); w.classList.add('paused'); b.textContent = '▶ 계속'; paint(); }
         else { T.endAt = Date.now() + T.left * 1000; T.run = true; w.classList.remove('paused'); b.textContent = '⏸ 멈춤'; run(); }
       } else if (a === 'plus') {
         if (w.classList.contains('end')) { w.classList.remove('end'); T.left = 60; T.total = Math.max(T.total, 60); T.endAt = Date.now() + 60000; T.run = true; T.lastTick = -1; w.querySelector('[data-ct=pause]').textContent = '⏸ 멈춤'; run(); }
         else { if (T.run) T.endAt += 60000; else T.left += 60; T.total += 60; T.lastTick = -1; paint(); }
+      } else if (a === 'next') {
+        if (T.si < T.segs.length - 1) { T.si++; softBowl(); startSeg(); }
       } else if (a === 'done') {
-        var used = T.total - (T.run ? (T.endAt - Date.now()) / 1000 : T.left);
+        var used = T.segs.slice(0, T.si).reduce(function (a2, x) { return a2 + x.sec; }, 0) + T.total - (T.run ? (T.endAt - Date.now()) / 1000 : T.left);
         stop(); w.classList.remove('warn', 'hurry', 'paused'); w.classList.add('end');
         tEl.textContent = '완료'; labEl.textContent = (T.label ? T.label + ' · ' : '') + fmt(used) + ' 걸림';
         fg.setAttribute('stroke-dashoffset', C.toFixed(2));
@@ -2236,8 +2280,50 @@ function __boot() {
       e.preventDefault(); e.stopPropagation();
       var sec = chip.closest('section.stage'), lab = sec ? (sec.dataset.label || '') : '';
       var h3 = sec && sec.querySelector('.block h3'); if (h3 && /활동/.test(lab)) lab = h3.childNodes[0] ? (h3.childNodes[0].textContent || '').trim() || lab : lab;
-      start(+m[1], lab);
+      openSetup(+m[1], lab, sec);
     }, true);
+    // 단계 나누기 설정 창
+    var sp = document.createElement('div'); sp.id = 'ctsetup'; sp.hidden = true; document.body.appendChild(sp);
+    var segKey = function (sec) { return 'ctseg:' + (window.__course || '') + ':' + (sec ? sec.dataset.l + ':' + (sec.dataset.label || '') : ''); };
+    var parseSteps = function (sec) {
+      var out = [];
+      if (!sec) return out;
+      sec.querySelectorAll('.steps-list > li, ol > li').forEach(function (li) {
+        var t = (li.textContent || '').replace(/\s+/g, ' ').trim(), mm = t.match(/^(.*?)[(（]\s*([0-9.]+)\s*분\s*[)）]/);
+        if (mm) out.push({ name: mm[1].replace(/[:：\s]+$/, '').slice(0, 24), sec: Math.round(parseFloat(mm[2]) * 60) });
+      });
+      return out;
+    };
+    var openSetup = function (min, lab, sec) {
+      ac();
+      var saved = null; try { saved = JSON.parse(localStorage.getItem(segKey(sec)) || 'null'); } catch (er) {}
+      var segs = saved && saved.length ? saved : parseSteps(sec);
+      if (!segs.length) segs = [{ name: '', sec: min * 60 }];
+      var row = function (sg) { return '<div class="cs-row"><input class="cs-name" placeholder="단계 이름 (예: 개인 판정)" value="' + (sg.name || '').replace(/"/g, '&quot;') + '"><input class="cs-min" type="number" min="0.5" step="0.5" value="' + (Math.round(sg.sec / 30) / 2) + '"><span>분</span><button type="button" data-cs="del" title="이 단계 빼기">✕</button></div>'; };
+      sp.innerHTML = '<div class="cs-box"><div class="cs-h"><b>' + (lab || '타이머') + '</b><button type="button" data-cs="close">✕</button></div>' +
+        '<button type="button" class="cs-quick" data-cs="quick">▶ ' + min + '분 한 번에 시작</button>' +
+        '<div class="cs-sub">또는 단계로 나눠서 (단계가 끝나면 작은 종소리 후 다음 단계로 넘어가요)</div>' +
+        '<div class="cs-rows">' + segs.map(row).join('') + '</div>' +
+        '<div class="cs-foot"><button type="button" data-cs="add">＋ 단계 추가</button><span class="cs-sum"></span><button type="button" class="cs-go" data-cs="go">▶ 단계별로 시작</button></div></div>';
+      var sum = function () { var t = [].reduce.call(sp.querySelectorAll('.cs-min'), function (a, x) { return a + (parseFloat(x.value) || 0); }, 0); var el = sp.querySelector('.cs-sum'); el.textContent = '합계 ' + (Math.round(t * 10) / 10) + '분' + (Math.abs(t - min) > 0.01 ? ' (칩 ' + min + '분)' : ''); el.classList.toggle('diff', Math.abs(t - min) > 0.01); };
+      sum(); sp.hidden = false;
+      sp.oninput = sum;
+      sp.onclick = function (ev) {
+        ev.stopPropagation();
+        var b = ev.target.closest('button[data-cs]'); if (!b) { if (ev.target === sp) sp.hidden = true; return; }
+        var a = b.dataset.cs;
+        if (a === 'close') { sp.hidden = true; return; }
+        if (a === 'quick') { sp.hidden = true; start(min, lab); return; }
+        if (a === 'add') { var d = document.createElement('div'); d.innerHTML = row({ name: '', sec: 60 }); sp.querySelector('.cs-rows').appendChild(d.firstChild); sum(); return; }
+        if (a === 'del') { if (sp.querySelectorAll('.cs-row').length > 1) b.closest('.cs-row').remove(); sum(); return; }
+        if (a === 'go') {
+          var list = [].map.call(sp.querySelectorAll('.cs-row'), function (r) { return { name: r.querySelector('.cs-name').value.trim(), sec: Math.round((parseFloat(r.querySelector('.cs-min').value) || 0) * 60) }; }).filter(function (x) { return x.sec > 0; });
+          if (!list.length) return;
+          try { localStorage.setItem(segKey(sec), JSON.stringify(list)); } catch (er) {}
+          sp.hidden = true; start(0, lab, list);
+        }
+      };
+    };
     window.__lessonTimer = { start: start, bowl: bowl, tick: tick };
   })();
   window.__resetLessonState = resetLessonState;
