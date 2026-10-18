@@ -1564,6 +1564,75 @@
   #ctimer.big .ct-time { font-size: 24vh; }
   #ctimer.big .ct-btns button { font-size: 20px; padding: 8px 16px; }
   @media print { #ctimer { display: none !important; } }
+
+  /* 쓰는 줄(사이트·학습지 공통), 판정 척도 */
+  .wline { display: block; border-bottom: 1.5px dotted #A89880; height: 1.5em; margin: 0 0 .2em; }
+  .wfill { display: inline-block; min-width: 3em; border-bottom: 1.5px dotted #A89880; height: 1em; vertical-align: -2px; }
+  .scale5 td, .scale5 th { text-align: center; }
+  #ws-root .wline { border-bottom: 1px dotted #999; height: 1.75em; }
+  #ws-root .wfill { border-bottom: 1px dotted #999; }
+  .cc .cc-tag { font-size: .62em; color: var(--ink-soft); font-weight: 600; margin: .2em 0; }
+  .cc .cc-lead { font-weight: 700; margin: .1em 0 .2em; }
+  .cc ul { margin: 0 0 0 1.1em; padding: 0; font-size: .8em; font-weight: 500; line-height: 1.45; }
+  .cc ul li { margin: .1em 0; }
+
+  .slide .wline { height: .9em; margin-bottom: .1em; }
+  .slide .scale5 th, .slide .scale5 td { padding-top: .1em !important; padding-bottom: .1em !important; }
+  .slide .b-activity p { margin-top: .15em; margin-bottom: .15em; }
+
+  /* 학습지 구역: 구역마다 단 수 따로 */
+  #ws-root .ws-band { column-count: 2; column-gap: 6mm; column-fill: balance; margin-top: 1mm; }
+  #ws-root .ws-band > .ws-box { display: inline-block; width: 100%; box-sizing: border-box; break-inside: avoid; margin: 0 0 3mm !important; }
+  #ws-root .ws-band[data-cols="1"], #ws-root .ws-acts[data-cols="1"] { column-count: 1 !important; }
+  #ws-root .ws-band[data-cols="2"], #ws-root .ws-acts[data-cols="2"] { column-count: 2 !important; }
+  #ws-root .ws-band[data-cols="3"], #ws-root .ws-acts[data-cols="3"] { column-count: 3 !important; column-gap: 4mm !important; }
+  #ws-root .ws-band[data-pb="1"], #ws-root .ws-acts[data-pb="1"] { break-before: page; page-break-before: always; }
+  #ws-editor .ws-band { min-height: 50px; outline: 1.5px dashed #B7C3D0; outline-offset: 2px; }
+  #ws-editor .ws-band:empty::before { content: '여기로 칸을 끌어다 놓거나 ▲▼로 옮겨 넣으세요'; display: block; column-span: all; color: #8C9BB0; font-size: 12px; padding: 14px; text-align: center; }
+  #ws-editor .wse-bandctl { display: flex; align-items: center; gap: 4px; margin: 3mm 0 1mm; font-size: 12px; color: #3E5875; font-family: var(--sans); }
+  #ws-editor .wse-bandctl button { font-size: 12px; padding: 1px 8px; border: 1px solid #A9B8C8; border-radius: 4px; background: #FFF; cursor: pointer; }
+  #ws-editor .wse-bandctl button.on { background: #3E5875; color: #FFF; border-color: #3E5875; }
+  #ws-editor .wse-bandctl button.del { color: #B3372B; border-color: #E2B4AE; margin-left: 6px; }
+  #ws-editor .wse-bandctl label { margin-left: 8px; display: inline-flex; align-items: center; gap: 3px; cursor: pointer; }
+  #ws-editor .ws-acts[data-pb="1"], #ws-editor .ws-band[data-pb="1"] { border-top: 2px solid #3E5875; padding-top: 2mm; }
+  @media print { .wse-bandctl { display: none !important; } }
+
+  /* 학습지 구역별 단 설정 */
+  #ws-root .ws-cols2[data-n="1"] { grid-template-columns: 1fr; }
+  #ws-root .ws-newpage { break-before: page; page-break-before: always; }
+  #ws-root .ws-body > .ws-cols2 + .ws-cols2:not(.ws-newpage), #ws-root .ws-body > .ws-acts + .ws-cols2:not(.ws-newpage) { margin-top: 1mm; }
+  #ws-editor .wse-sctl { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin: 2px 0 4px; padding: 3px 6px; background: #F1EEE6; border: 1px dashed #B9B1A1; border-radius: 6px; font-family: var(--sans); font-size: 11px; color: #6B5F4D; }
+  #ws-editor .wse-sctl .wse-sl { font-weight: 700; margin-right: 4px; }
+  #ws-editor .wse-sctl button { font-size: 11px; padding: 1px 8px; border: 1px solid #C9BFAE; border-radius: 4px; background: #FFF; cursor: pointer; }
+  #ws-editor .wse-sctl button.on { background: #4E5C42; color: #FFF; border-color: #4E5C42; }
+  #ws-editor .wse-sctl .wse-sr { display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; }
+  #ws-editor .wse-sctl .wse-sr input { width: 90px; }
+  #ws-editor .wse-sctl .wse-snp { margin-left: auto; display: inline-flex; align-items: center; gap: 3px; cursor: pointer; }
+  #ws-editor .ws-cols2 > div { min-height: 40px; }
+  #ws-editor .wse-ratio, #ws-editor .wse-cols { display: none !important; }
+  @media print { .wse-sctl { display: none !important; } }
+
+  @media print { #ws-root .ws-newpage { margin-top: 0 !important; } }
+
+  /* 제목 줄: 부제목이 길면 다음 줄로 */
+  #ws-root .ws-head { display: flex !important; flex-wrap: wrap !important; align-items: flex-end !important; column-gap: 3mm !important; row-gap: .5mm !important; }
+  #ws-root .ws-head .ws-meta { flex: 0 0 100% !important; }
+  #ws-root .ws-head h1 { flex: 0 1 auto !important; }
+  #ws-root .ws-head .ws-q { flex: 1 1 16em !important; min-width: 16em; }
+  #ws-root .ws-head .ws-name { flex: 0 0 auto !important; margin-left: auto !important; }
+
+  /* 원형 타이머 */
+  #ctimer { min-width: 210px; padding: 10px 14px 12px; }
+  #ctimer .ct-ring { position: relative; width: 150px; height: 150px; margin: 4px auto 8px; }
+  #ctimer .ct-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  #ctimer .ct-bg { fill: none; stroke: #E9E2D2; stroke-width: 10; }
+  #ctimer .ct-fg { fill: none; stroke: #4E5C42; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset .1s linear, stroke .3s; }
+  #ctimer .ct-ring .ct-time { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; margin: 0; font-size: 36px; }
+  #ctimer.warn .ct-fg { stroke: #C98A1E; }
+  #ctimer.hurry .ct-fg, #ctimer.end .ct-fg { stroke: #D0342C; }
+  #ctimer.big .ct-ring { width: 62vh; height: 62vh; }
+  #ctimer.big .ct-ring .ct-time { font-size: 15vh; }
+  #ctimer.big { min-width: 0; }
 </style>
 </head>
 <body>
@@ -2069,76 +2138,97 @@ function __boot() {
     var nr = document.createRange(); nr.setStart(r.startContainer, Math.min(r.startOffset, (r.startContainer.length || r.startContainer.childNodes.length))); nr.collapse(true); sel.removeAllRanges(); sel.addRange(nr);
     return 'on';
   };
-  // ===== 수업 타이머: 페이지의 시간 칩(예: 7분)을 누르면 시작 =====
+  // ===== 수업 타이머: 페이지의 시간 칩(예: 7분)을 누르면 시작 · 원형 · 5초 전 똑딱 · 싱잉볼 =====
   (function () {
-    var T = { total: 0, left: 0, endAt: 0, run: false, iv: null, label: '' };
-    var MUTE_KEY = 'lesson-timer-mute';
+    var T = { total: 0, left: 0, endAt: 0, run: false, iv: null, label: '', lastTick: -1 };
+    var MUTE_KEY = 'lesson-timer-mute', R = 54, C = 2 * Math.PI * R;
     var w = document.createElement('div'); w.id = 'ctimer'; w.hidden = true;
-    w.innerHTML = '<div class="ct-top"><span class="ct-lab"></span><button type="button" data-ct="mute" class="ct-mute" title="끝날 때 소리 켜기/끄기"></button></div>' +
-      '<div class="ct-time">0:00</div>' +
+    w.innerHTML = '<div class="ct-top"><span class="ct-lab"></span><button type="button" data-ct="mute" class="ct-mute" title="소리 켜기/끄기"></button></div>' +
+      '<div class="ct-ring"><svg viewBox="0 0 120 120"><circle class="ct-bg" cx="60" cy="60" r="' + R + '"></circle><circle class="ct-fg" cx="60" cy="60" r="' + R + '" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="0"></circle></svg><div class="ct-time">0:00</div></div>' +
       '<div class="ct-btns"><button type="button" data-ct="pause">⏸ 멈춤</button><button type="button" data-ct="plus">＋1분</button><button type="button" data-ct="done" class="ct-done">✓ 완료</button><button type="button" data-ct="big" title="학생들이 보도록 크게">⤢ 크게</button><button type="button" data-ct="close" title="타이머 끄기">✕</button></div>';
     document.body.appendChild(w);
-    var tEl = w.querySelector('.ct-time'), labEl = w.querySelector('.ct-lab');
+    var tEl = w.querySelector('.ct-time'), labEl = w.querySelector('.ct-lab'), fg = w.querySelector('.ct-fg');
     var muted = function () { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { return false; } };
     var setMuteBtn = function () { w.querySelector('.ct-mute').textContent = muted() ? '🔕 소리 끔' : '🔔 소리 켬'; };
     setMuteBtn();
     var fmt = function (s) { s = Math.max(0, Math.ceil(s)); var m = Math.floor(s / 60), x = s % 60; return m + ':' + (x < 10 ? '0' : '') + x; };
     var ctx = null;
-    var chime = function () {
-      if (muted()) return;
-      try {
-        ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
-        var now = ctx.currentTime;
-        [[0, 1046.5], [0.28, 1318.5], [0.56, 1568], [1.3, 1046.5], [1.58, 1318.5], [1.86, 1568]].forEach(function (n) {
+    var ac = function () { try { ctx = ctx || new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === 'suspended') ctx.resume(); } catch (e) { ctx = null; } return ctx; };
+    // 똑딱: 짧은 나무 시계 소리 (똑/딱 번갈아)
+    var tick = function (hi) {
+      if (muted() || !ac()) return;
+      var now = ctx.currentTime, len = 0.05;
+      var buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * len), ctx.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 6);
+      var src = ctx.createBufferSource(); src.buffer = buf;
+      var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = hi ? 2600 : 1800; bp.Q.value = 6;
+      var g = ctx.createGain(); g.gain.value = 0.9;
+      var o = ctx.createOscillator(), og = ctx.createGain(); o.type = 'sine'; o.frequency.value = hi ? 1400 : 1000;
+      og.gain.setValueAtTime(0.25, now); og.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+      src.connect(bp); bp.connect(g); g.connect(ctx.destination); o.connect(og); og.connect(ctx.destination);
+      src.start(now); o.start(now); o.stop(now + 0.07);
+    };
+    // 뎅~ 싱잉볼: 비정수배 배음 + 살짝 어긋난 쌍으로 울림(맥놀이), 길게 사라짐
+    var bowl = function () {
+      if (muted() || !ac()) return;
+      var now = ctx.currentTime, base = 262;
+      var master = ctx.createGain(); master.gain.value = 0.55; master.connect(ctx.destination);
+      [[1, 0.6, 7.5], [2.71, 0.32, 5.5], [5.12, 0.16, 3.6], [8.2, 0.07, 2.2]].forEach(function (p) {
+        [0, 1.3].forEach(function (det) {
           var o = ctx.createOscillator(), g = ctx.createGain();
-          o.type = 'sine'; o.frequency.value = n[1];
-          g.gain.setValueAtTime(0.0001, now + n[0]); g.gain.exponentialRampToValueAtTime(0.35, now + n[0] + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, now + n[0] + 1.1);
-          o.connect(g); g.connect(ctx.destination); o.start(now + n[0]); o.stop(now + n[0] + 1.2);
+          o.type = 'sine'; o.frequency.value = base * p[0] + det;
+          g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(p[1], now + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, now + p[2]);
+          o.connect(g); g.connect(master); o.start(now); o.stop(now + p[2] + 0.1);
         });
-      } catch (e) {}
+      });
+      // 치는 순간의 작은 '딩' 소리
+      var hit = ctx.createOscillator(), hg = ctx.createGain(); hit.type = 'triangle'; hit.frequency.value = base * 6.4;
+      hg.gain.setValueAtTime(0.12, now); hg.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+      hit.connect(hg); hg.connect(master); hit.start(now); hit.stop(now + 0.3);
     };
     var paint = function () {
       var s = T.run ? (T.endAt - Date.now()) / 1000 : T.left;
       tEl.textContent = fmt(s);
+      var frac = T.total > 0 ? Math.max(0, Math.min(1, s / T.total)) : 0;
+      fg.setAttribute('stroke-dashoffset', (C * (1 - frac)).toFixed(2));
       w.classList.toggle('warn', s <= 60 && s > 10);
       w.classList.toggle('hurry', s <= 10 && s > 0);
-      if (T.run && s <= 0) { T.run = false; T.left = 0; clearInterval(T.iv); w.classList.remove('warn', 'hurry'); w.classList.add('end'); tEl.textContent = '끝!'; w.querySelector('[data-ct=pause]').textContent = '↺ 다시'; chime(); }
+      if (T.run) { var whole = Math.ceil(s); if (whole <= 5 && whole >= 1 && whole !== T.lastTick) { T.lastTick = whole; tick(whole % 2 === 0); } }
+      if (T.run && s <= 0) { T.run = false; T.left = 0; clearInterval(T.iv); w.classList.remove('warn', 'hurry'); w.classList.add('end'); tEl.textContent = '끝!'; w.querySelector('[data-ct=pause]').textContent = '↺ 다시'; bowl(); }
     };
+    var run = function () { clearInterval(T.iv); T.iv = setInterval(paint, 100); paint(); };
     var start = function (min, label) {
-      if (ctx && ctx.state === 'suspended') ctx.resume();
-      if (!ctx && !muted()) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
-      T.total = min * 60; T.left = T.total; T.endAt = Date.now() + T.total * 1000; T.run = true; T.label = label || '';
-      labEl.textContent = (label ? label + ' · ' : '') + min + '분';
+      ac();
+      T.total = min * 60; T.left = T.total; T.endAt = Date.now() + T.total * 1000; T.run = true; T.label = label || ''; T.lastTick = -1;
+      labEl.textContent = (label ? label + ' · ' : '') + (min >= 1 ? Math.round(min) + '분' : Math.round(min * 60) + '초');
       w.hidden = false; w.classList.remove('end', 'warn', 'hurry', 'paused');
       w.querySelector('[data-ct=pause]').textContent = '⏸ 멈춤';
-      clearInterval(T.iv); T.iv = setInterval(paint, 250); paint();
+      run();
     };
     var stop = function () { clearInterval(T.iv); T.run = false; };
     w.addEventListener('click', function (e) {
       e.stopPropagation();
-      var b = e.target.closest('button[data-ct]'); 
+      var b = e.target.closest('button[data-ct]');
       if (!b) { if (w.classList.contains('big')) w.classList.remove('big'); return; }
-      var a = b.dataset.ct;
+      var a = b.dataset.ct; ac();
       if (a === 'pause') {
         if (w.classList.contains('end')) { start(T.total / 60, T.label); return; }
-        if (T.run) { T.left = (T.endAt - Date.now()) / 1000; stop(); w.classList.add('paused'); b.textContent = '▶ 계속'; }
-        else { T.endAt = Date.now() + T.left * 1000; T.run = true; w.classList.remove('paused'); b.textContent = '⏸ 멈춤'; clearInterval(T.iv); T.iv = setInterval(paint, 250); }
-        paint();
+        if (T.run) { T.left = (T.endAt - Date.now()) / 1000; stop(); w.classList.add('paused'); b.textContent = '▶ 계속'; paint(); }
+        else { T.endAt = Date.now() + T.left * 1000; T.run = true; w.classList.remove('paused'); b.textContent = '⏸ 멈춤'; run(); }
       } else if (a === 'plus') {
-        if (w.classList.contains('end')) { w.classList.remove('end'); T.left = 60; T.total += 0; T.endAt = Date.now() + 60000; T.run = true; clearInterval(T.iv); T.iv = setInterval(paint, 250); w.querySelector('[data-ct=pause]').textContent = '⏸ 멈춤'; }
-        else if (T.run) T.endAt += 60000; else T.left += 60;
-        T.total += 60; paint();
+        if (w.classList.contains('end')) { w.classList.remove('end'); T.left = 60; T.total = Math.max(T.total, 60); T.endAt = Date.now() + 60000; T.run = true; T.lastTick = -1; w.querySelector('[data-ct=pause]').textContent = '⏸ 멈춤'; run(); }
+        else { if (T.run) T.endAt += 60000; else T.left += 60; T.total += 60; T.lastTick = -1; paint(); }
       } else if (a === 'done') {
         var used = T.total - (T.run ? (T.endAt - Date.now()) / 1000 : T.left);
         stop(); w.classList.remove('warn', 'hurry', 'paused'); w.classList.add('end');
         tEl.textContent = '완료'; labEl.textContent = (T.label ? T.label + ' · ' : '') + fmt(used) + ' 걸림';
-        w.querySelector('[data-ct=pause]').textContent = '↺ 다시';
-        setTimeout(function () { if (!T.run && w.classList.contains('end') && tEl.textContent === '완료') { w.hidden = true; w.classList.remove('big'); } }, 4000);
+        fg.setAttribute('stroke-dashoffset', C.toFixed(2));
+        w.querySelector('[data-ct=pause]').textContent = '↺ 다시'; bowl();
+        setTimeout(function () { if (!T.run && w.classList.contains('end') && tEl.textContent === '완료') { w.hidden = true; w.classList.remove('big'); } }, 6000);
       } else if (a === 'big') { w.classList.toggle('big'); }
       else if (a === 'close') { stop(); w.hidden = true; w.classList.remove('big', 'end'); }
       else if (a === 'mute') { try { localStorage.setItem(MUTE_KEY, muted() ? '0' : '1'); } catch (er) {} setMuteBtn(); }
     });
-    // 시간 칩 누르면 시작 (수정 모드 아닐 때)
     document.getElementById('slide').addEventListener('click', function (e) {
       if (document.body.classList.contains('editing')) return;
       var chip = e.target.closest && e.target.closest('.stage-head .time'); if (!chip) return;
@@ -2148,7 +2238,7 @@ function __boot() {
       var h3 = sec && sec.querySelector('.block h3'); if (h3 && /활동/.test(lab)) lab = h3.childNodes[0] ? (h3.childNodes[0].textContent || '').trim() || lab : lab;
       start(+m[1], lab);
     }, true);
-    window.__lessonTimer = { start: start };
+    window.__lessonTimer = { start: start, bowl: bowl, tick: tick };
   })();
   window.__resetLessonState = resetLessonState;
   document.getElementById('slide').addEventListener('click', function (e) {
@@ -4877,6 +4967,7 @@ function __boot() {
       var lab = s.dataset.label || '';
       if (/표지|성취기준|예고/.test(lab)) return;
       s.querySelectorAll('.block').forEach(function (blk0) {
+        if (blk0.hasAttribute('data-ws-skip')) return;
         var blk = wsClean(blk0.cloneNode(true)), cls = blk0.className;
         var html = '';
         if (/b-link/.test(cls)) { html = ''; }
@@ -4994,7 +5085,49 @@ function __boot() {
   }
   // ===== 학습지 미리보기·수정 창 =====
   function wseKey(withAns, land, compact) { return 'L' + L + ':' + (withAns ? 'a' : 's') + ':' + (land ? 'l' : 'p') + (compact ? 'c' : ''); }
+  // ===== 학습지 구역(단 설정 단위) =====
+  function wseColNames(n) { return n === 1 ? ['ws-colL'] : n === 2 ? ['ws-colL', 'ws-colR'] : ['ws-colL', 'ws-colM', 'ws-colR']; }
+  function wseGridN(g) { return g.classList.contains('ws-acts') ? (+g.dataset.n || (g.closest('#ws-root').classList.contains('ws-land') ? 3 : 2)) : g.querySelectorAll(':scope > div').length || 1; }
+  function wseEqualCols(g, n) {
+    var land = g.closest('#ws-root').classList.contains('ws-land');
+    g.style.gridTemplateColumns = n === 1 ? '1fr' : n === 2 ? (land ? '60fr 40fr' : '50fr 50fr') : '34fr 33fr 33fr';
+    g.classList.toggle('ws-three', n === 3); g.dataset.n = String(n);
+  }
+  function wseSetCols(g, n) {
+    if (g.classList.contains('ws-acts')) { g.dataset.n = String(n); g.style.columnCount = String(n); return; }
+    var cols = [].slice.call(g.querySelectorAll(':scope > div'));
+    while (cols.length > n) { var last = cols.pop(), keep = cols[cols.length - 1]; [].slice.call(last.children).forEach(function (b) { keep.appendChild(b); }); last.remove(); }
+    while (cols.length < n) {
+      var src = cols[cols.length - 1], nc = document.createElement('div'); g.appendChild(nc);
+      if (src) {
+        var bx = [].slice.call(src.querySelectorAll(':scope > .ws-box')), tot = bx.reduce(function (a, b) { return a + b.offsetHeight; }, 0), acc = 0, mv = [];
+        for (var i = bx.length - 1; i > 0; i--) { if (acc + bx[i].offsetHeight > tot / 2 && mv.length) break; acc += bx[i].offsetHeight; mv.unshift(bx[i]); }
+        mv.forEach(function (b) { nc.appendChild(b); });
+      }
+      cols.push(nc);
+    }
+    var nm = wseColNames(n); cols.forEach(function (c, i) { c.className = nm[i]; });
+    wseEqualCols(g, n);
+  }
+  function wseSectBars(root) {
+    root.querySelectorAll('.wse-sctl').forEach(function (x) { x.remove(); });
+    root.querySelectorAll('.ws-cols2, .ws-acts').forEach(function (g, k) {
+      var n = wseGridN(g), isActs = g.classList.contains('ws-acts');
+      var b = document.createElement('div'); b.className = 'wse-sctl'; b.setAttribute('contenteditable', 'false');
+      var ratio = '';
+      if (!isActs && n > 1) {
+        var m = (g.style.gridTemplateColumns || '').match(/([0-9.]+)fr/g), v = 50;
+        if (m) { var nums = m.map(function (x) { return parseFloat(x); }), s = nums.reduce(function (a, c) { return a + c; }, 0); v = Math.round(nums[0] / s * 100); }
+        ratio = '<label class="wse-sr">왼쪽 폭 <input type="range" min="' + (n === 3 ? 25 : 30) + '" max="' + (n === 3 ? 60 : 75) + '" value="' + v + '" data-sr=""><b>' + v + '%</b></label>';
+      }
+      b.innerHTML = '<span class="wse-sl">' + (isActs ? '활동 구역' : '구역 ' + (k + 1)) + '</span>' +
+        [1, 2, 3].map(function (x) { return '<button type="button" data-wse="scol" data-n="' + x + '"' + (x === n ? ' class="on"' : '') + '>' + x + '단</button>'; }).join('') + ratio +
+        '<label class="wse-snp"><input type="checkbox" data-snp=""' + (g.classList.contains('ws-newpage') ? ' checked' : '') + '> 새 쪽에서 시작</label>';
+      g.parentNode.insertBefore(b, g);
+    });
+  }
   function wseControls(root) {
+    wseSectBars(root);
     root.querySelectorAll('.wse-ctl').forEach(function (x) { x.remove(); });
     root.querySelectorAll('.wse-tctl').forEach(function (x) { x.remove(); });
     root.querySelectorAll('.ws-box table').forEach(function (tb) {
@@ -5003,7 +5136,14 @@ function __boot() {
       c.innerHTML = '<button type="button" data-wse="tdel" title="이 표 빼기">✕ 표 빼기</button>';
       host.parentNode.insertBefore(c, host);
     });
-    root.querySelectorAll('.wse-split').forEach(function (x) { x.remove(); });
+    root.querySelectorAll('.wse-split, .wse-bandctl').forEach(function (x) { x.remove(); });
+    root.querySelectorAll('.ws-acts, .ws-band').forEach(function (bd) {
+      var n = bd.dataset.cols || (bd.classList.contains('ws-acts') ? (bd.classList.contains('ws-three') || root.classList.contains('ws-land') ? '3' : '2') : '2');
+      var c = document.createElement('div'); c.className = 'wse-bandctl'; c.setAttribute('contenteditable', 'false');
+      c.innerHTML = '<span>' + (bd.classList.contains('ws-acts') ? '활동 구역' : '추가 구역') + ' · 단</span>' + ['1', '2', '3'].map(function (k) { return '<button type="button" data-band="cols" data-n="' + k + '"' + (k === n ? ' class="on"' : '') + '>' + k + '</button>'; }).join('') +
+        '<label><input type="checkbox" data-band="pb"' + (bd.dataset.pb === '1' ? ' checked' : '') + '> 새 쪽에서 시작</label>' + (bd.classList.contains('ws-band') ? '<button type="button" data-band="del" class="del">구역 빼기</button>' : '');
+      bd.parentNode.insertBefore(c, bd);
+    });
     root.querySelectorAll('.ws-box').forEach(function (bx) {
       [].slice.call(bx.querySelectorAll(':scope > .ws-sub')).slice(1).forEach(function (sb) {
         var s = document.createElement('div'); s.className = 'wse-split'; s.setAttribute('contenteditable', 'false');
@@ -5016,18 +5156,18 @@ function __boot() {
       var c = document.createElement('div'); c.className = 'wse-ctl'; c.setAttribute('contenteditable', 'false');
       var nx = bx.nextElementSibling; while (nx && !nx.classList.contains('ws-box')) nx = nx.nextElementSibling;
       var canMerge = nx && wseType(nx) && wseType(nx) === wseType(bx) && (wseType(bx) === 'ws-concept' || wseType(bx) === 'ws-summary');
-      c.innerHTML = '<button type="button" data-wse="up" title="한 칸 앞으로(위로)">▲</button><button type="button" data-wse="down" title="한 칸 뒤로(아래로)">▼</button><span class="wse-drag" draggable="true" title="끌어서 이 칸 옮기기">⠿ 옮기기</span>' + (bx.querySelector('.ws-line') ? '<button type="button" data-wse="line+" title="문항마다 쓰는 줄 1개 더">줄＋</button><button type="button" data-wse="line-" title="문항마다 쓰는 줄 1개 빼기">줄－</button>' : '') + (canMerge ? '<button type="button" data-wse="merge" title="바로 아래 같은 종류 칸과 합치기">⤓ 합치기</button>' : '') + '<button type="button" data-wse="del" title="이 칸 빼기">✕ 빼기</button>';
+      c.innerHTML = '<button type="button" data-wse="up" title="한 칸 앞으로(위로)">▲</button><button type="button" data-wse="down" title="한 칸 뒤로(아래로)">▼</button><span class="wse-drag" draggable="true" title="끌어서 이 칸 옮기기">⠿ 옮기기</span>' + (bx.querySelector('.ws-line') ? '<button type="button" data-wse="line+" title="문항마다 쓰는 줄 1개 더">줄＋</button><button type="button" data-wse="line-" title="문항마다 쓰는 줄 1개 빼기">줄－</button>' : '') + (canMerge ? '<button type="button" data-wse="merge" title="바로 아래 같은 종류 칸과 합치기">⤓ 합치기</button>' : '') + (bx.closest('.ws-body') ? '<button type="button" data-wse="newsec" title="이 칸부터 새 구역(새 쪽)으로 보내고, 그 구역의 단 수를 따로 정해요">⤓ 새 쪽</button>' : '') + '<button type="button" data-wse="del" title="이 칸 빼기">✕ 빼기</button>';
       bx.insertBefore(c, bx.firstChild);
     });
   }
-  function wseHtml(root) { var c = root.cloneNode(true); c.querySelectorAll('.wse-split').forEach(function (x) { x.remove(); }); c.querySelectorAll('.wse-dragging, .wse-drop-before, .wse-drop-after, .wse-drop-in').forEach(function (x) { x.classList.remove('wse-dragging', 'wse-drop-before', 'wse-drop-after', 'wse-drop-in'); }); c.querySelectorAll('.wse-bsel').forEach(function (x) { x.classList.remove('wse-bsel'); }); c.querySelectorAll('.wse-colhot').forEach(function (x) { x.classList.remove('wse-colhot'); }); c.querySelectorAll('.ws-blank, .ws-pl, .ws-inline-line').forEach(function (x) { x.removeAttribute('contenteditable'); }); c.querySelectorAll('.wse-ctl, .wse-tctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
+  function wseHtml(root) { var c = root.cloneNode(true); c.querySelectorAll('.wse-sctl').forEach(function (x) { x.remove(); }); c.querySelectorAll('.ws-newpage').forEach(function (x) { x.style.removeProperty('margin-top'); }); c.querySelectorAll('.wse-split, .wse-bandctl').forEach(function (x) { x.remove(); }); c.querySelectorAll('.wse-dragging, .wse-drop-before, .wse-drop-after, .wse-drop-in').forEach(function (x) { x.classList.remove('wse-dragging', 'wse-drop-before', 'wse-drop-after', 'wse-drop-in'); }); c.querySelectorAll('.wse-bsel').forEach(function (x) { x.classList.remove('wse-bsel'); }); c.querySelectorAll('.wse-colhot').forEach(function (x) { x.classList.remove('wse-colhot'); }); c.querySelectorAll('.ws-blank, .ws-pl, .ws-inline-line').forEach(function (x) { x.removeAttribute('contenteditable'); }); c.querySelectorAll('.wse-ctl, .wse-tctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
   function openWsEditor(withAns, land, compact) {
     closeWsEditor();
     var key = wseKey(withAns, land, compact), stored = window.__wsGet ? window.__wsGet(key) : null;
     var ps = document.createElement('style'); ps.id = 'ws-page-style'; ps.textContent = '@media print { @page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 7mm; } }'; document.head.appendChild(ps);
     var ov = document.createElement('div'); ov.id = 'ws-editor';
     var title = (secTitle() || '') + ' · ' + (withAns ? '정답지' : '학생용') + ' · A4 ' + (land ? '가로' : '세로') + (compact ? ' 한 장 압축' : '');
-    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><button type="button" data-wse="undo" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-wse="redo" title="다시 (Ctrl+Y)">↷ 다시</button><button type="button" data-wse="bul" title="커서가 있는 줄(또는 선택한 줄들)의 앞 기호를 없애거나 되살려요. 줄 앞 기호를 직접 클릭해도 돼요">● 이 줄 기호 끄기/켜기</button><label class="wse-nobul" title="목록 앞 ● 기호 모두 없애기"><input type="checkbox"> 기호 모두 없애기</label><label class="wse-cols" title="본문 단 수">단 <select><option value="2">2단</option><option value="3">3단</option></select></label><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
+    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><button type="button" data-wse="undo" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-wse="redo" title="다시 (Ctrl+Y)">↷ 다시</button><button type="button" data-wse="bul" title="커서가 있는 줄(또는 선택한 줄들)의 앞 기호를 없애거나 되살려요. 줄 앞 기호를 직접 클릭해도 돼요">● 이 줄 기호 끄기/켜기</button><label class="wse-nobul" title="목록 앞 ● 기호 모두 없애기"><input type="checkbox"> 기호 모두 없애기</label><button type="button" data-wse="band" title="아래에 새 구역을 만들어 단 수를 따로 정해요">＋ 구역 추가</button><label class="wse-cols" title="본문 단 수">단 <select><option value="2">2단</option><option value="3">3단</option></select></label><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
     ov.querySelector('.wse-t').textContent = title;
     document.body.appendChild(ov); document.body.classList.add('ws-editing');
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; if (compact) root.classList.add('ws-compact');
@@ -5083,6 +5223,11 @@ function __boot() {
       var pagePx = ruler.getBoundingClientRect().height; ruler.remove();
       var draw = function () {
         paper.querySelectorAll('.wse-pb').forEach(function (x) { x.remove(); });
+        root.querySelectorAll('.ws-newpage').forEach(function (s) {
+          s.style.removeProperty('margin-top');
+          var top = s.getBoundingClientRect().top - root.getBoundingClientRect().top, nxt = Math.ceil((top - 1) / pagePx) * pagePx;
+          if (nxt - top > 1) s.style.marginTop = (nxt - top) + 'px';
+        });
         var n = Math.max(1, Math.ceil((root.offsetHeight + 4) / pagePx));
         paper.style.minHeight = 'calc(' + n + ' * ' + contentMM + 'mm + 14mm)';
         for (var k = 1; k <= n; k++) {
@@ -5130,6 +5275,24 @@ function __boot() {
       });
       if (three()) { rg.min = 25; rg.max = 60; }
     })();
+    // 구역별 단 수 / 새 쪽에서 시작 / 구역 빼기
+    ov.addEventListener('click', function (e) {
+      var b = e.target.closest('.wse-bandctl [data-band]'); if (!b || b.tagName === 'INPUT') return;
+      var bd = b.closest('.wse-bandctl').nextElementSibling; if (!bd) return;
+      if (b.dataset.band === 'cols') { bd.dataset.cols = b.dataset.n; bd.classList.remove('ws-three'); }
+      else if (b.dataset.band === 'del') {
+        var prev = bd.previousElementSibling; while (prev && !(prev.classList.contains('ws-band') || prev.classList.contains('ws-acts') || prev.classList.contains('ws-cols2'))) prev = prev.previousElementSibling;
+        var dest = prev ? (prev.classList.contains('ws-cols2') ? prev.querySelector('.ws-colR') || prev : prev) : (root.querySelector('.ws-body') || root);
+        [].slice.call(bd.querySelectorAll(':scope > .ws-box')).forEach(function (x) { dest.appendChild(x); });
+        bd.remove();
+      }
+      wseControls(root); save();
+    });
+    ov.addEventListener('change', function (e) {
+      var cb = e.target.closest('.wse-bandctl input[data-band=pb]'); if (!cb) return;
+      var bd = cb.closest('.wse-bandctl').nextElementSibling; if (!bd) return;
+      if (cb.checked) bd.dataset.pb = '1'; else delete bd.dataset.pb; save();
+    });
     // 칸 끌어 옮기기
     (function () {
       var dragBox = null, mark = null;
@@ -5149,7 +5312,7 @@ function __boot() {
           var r = tb.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
           tb.classList.add(after ? 'wse-drop-after' : 'wse-drop-before'); mark = { el: tb, after: after };
         } else {
-          var col = e.target.closest && e.target.closest('.ws-colL, .ws-colM, .ws-colR, .ws-acts');
+          var col = e.target.closest && e.target.closest('.ws-colL, .ws-colM, .ws-colR, .ws-acts, .ws-band');
           if (col && !(tb && tb === dragBox)) { col.classList.add('wse-drop-in'); mark = { col: col }; }
         }
       });
@@ -5188,6 +5351,15 @@ function __boot() {
     };
     window.__wseGoHist = goHist;
     setTimeout(updUndo, 0);
+    root.addEventListener('input', function (e) {
+      var sr = e.target.closest && e.target.closest('input[data-sr]');
+      if (sr) { var g = sr.closest('.wse-sctl').nextElementSibling, n = wseGridN(g), x = +sr.value; sr.nextElementSibling.textContent = x + '%';
+        if (n === 2) g.style.gridTemplateColumns = x + 'fr ' + (100 - x) + 'fr'; else if (n === 3) { var r2 = Math.round((100 - x) / 2); g.style.gridTemplateColumns = x + 'fr ' + r2 + 'fr ' + (100 - x - r2) + 'fr'; } }
+    }, true);
+    root.addEventListener('change', function (e) {
+      var np = e.target.closest && e.target.closest('input[data-snp]'); if (!np) return;
+      np.closest('.wse-sctl').nextElementSibling.classList.toggle('ws-newpage', np.checked); save();
+    });
     root.addEventListener('input', save);
     root.addEventListener('keydown', function (e) {
       if (e.key !== 'Tab') return;
@@ -5247,6 +5419,13 @@ function __boot() {
       var bt = e.target.closest('button[data-wse]'); if (!bt) return;
       e.preventDefault(); var a = bt.dataset.wse;
       if (a === 'close') { closeWsEditor(); return; }
+      if (a === 'band') {
+        var body = root.querySelector('.ws-body') || root;
+        var bd = document.createElement('div'); bd.className = 'ws-band'; bd.dataset.cols = '2';
+        body.appendChild(bd); wseControls(root); save(); bd.scrollIntoView({ block: 'center' });
+        ov.querySelector('.wse-note').textContent = '새 구역을 만들었어요. ▲▼나 ⠿로 칸을 옮겨 넣으세요';
+        return;
+      }
       if (a === 'undo') { goHist(-1); return; }
       if (a === 'redo') { goHist(1); return; }
       if (a === 'reset') { if (window.__wsSave) window.__wsSave(key, null); openWsEditor(withAns, land, compact); return; }
@@ -5258,7 +5437,17 @@ function __boot() {
         return;
       }
       if (a === 'tdel') { var tc = bt.closest('.wse-tctl'), nx = tc && tc.nextElementSibling; if (nx) nx.remove(); if (tc) tc.remove(); save(); return; }
+      if (a === 'scol') { var sg = bt.closest('.wse-sctl').nextElementSibling; wseSetCols(sg, +bt.dataset.n); wseControls(root); save(); return; }
       var bx = bt.closest('.ws-box'); if (!bx) return;
+      if (a === 'newsec') {
+        var bodyEl = root.querySelector('.ws-body'), all = [].slice.call(bodyEl.querySelectorAll('.ws-box')), from = all.indexOf(bx);
+        var g2 = document.createElement('div'); g2.className = 'ws-cols2 ws-newpage'; var cL = document.createElement('div'); g2.appendChild(cL);
+        bodyEl.appendChild(g2);
+        all.slice(from).forEach(function (b) { cL.appendChild(b); });
+        bodyEl.querySelectorAll('.ws-cols2 > div, .ws-acts').forEach(function (c) { if (c.closest('.ws-cols2') !== g2 && !c.querySelector('.ws-box')) { if (c.classList.contains('ws-acts')) c.remove(); } });
+        cL.className = 'ws-colL'; wseEqualCols(g2, 1); wseSetCols(g2, 2);
+        wseControls(root); save(); ov.querySelector('.wse-note').textContent = '새 쪽에서 시작하는 구역을 만들었어요. 구역 막대에서 단 수를 정하세요'; return;
+      }
       if (a === 'split') {
         var sp = bt.closest('.wse-split'), first = sp.nextElementSibling;
         var nb = document.createElement('div'); nb.className = bx.className;
