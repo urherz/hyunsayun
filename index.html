@@ -1747,6 +1747,13 @@
   body.editing .slide .choice-cards > .cc > p:empty::before { content: '여기에 적어 주세요'; color: #B9AE9C; font-weight: 500; }
   #ws-root .choice-cards.cc-short > .cc { display: flex; align-items: center; gap: 2mm; }
   #ws-root .choice-cards.cc-short > .cc > p { margin: 0; flex: 1; text-align: center; font-weight: 700; }
+
+  /* 위쪽 오른편 버튼: 항상 한 줄 */
+  .right-tools { flex-wrap: nowrap !important; white-space: nowrap; }
+  .right-tools > *, .right-tools .ws-wrap > button { flex: none; white-space: nowrap; }
+  @media (min-width: 761px) { .topbar { grid-template-columns: minmax(max-content, 1fr) minmax(0, auto) minmax(max-content, 1fr) !important; } }
+  .topbar nav.steps { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .topbar nav.steps::-webkit-scrollbar { display: none; }
 </style>
 </head>
 <body>
