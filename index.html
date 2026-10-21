@@ -4161,6 +4161,40 @@ function __boot() {
       });
       inp.click();
     }
+    // ===== 형식 칸의 글을 다 지우면 그 칸(틀)도 함께 지우기, 배지는 남김 =====
+    var PRUNE_IGNORE = '.mast, .badge, .lab, .tag, .kind, summary, .vs, .photo-tools, .block-tools, .col-grip, .cc-b, .cc-tools, .table-bar, .fn-mark, figure.photo.empty, .rv-close, .rv-open';
+    function isBlank(el) {
+      var c = el.cloneNode(true);
+      c.querySelectorAll(PRUNE_IGNORE).forEach(function (x) { x.remove(); });
+      if (c.querySelector('img, svg, video, iframe, table, .match, .venn, figure.page-photo, .cloze, input')) return false;
+      return !(c.textContent || '').replace(new RegExp(String.fromCharCode(8203) + '|' + String.fromCharCode(160), 'g'), '').trim();
+    }
+    function pruneBlock(blk) {
+      if (!blk || !blk.isConnected) return 0;
+      var removed = 0, rm = function (el) { el.remove(); removed++; };
+      var skip = function (el) { return el.closest('.match, .venn, table, .fn-note'); };
+      for (var pass = 0; pass < 3; pass++) {
+        blk.querySelectorAll('.clip').forEach(function (c) { if (isBlank(c)) rm(c); });
+        blk.querySelectorAll('.side, .mission-bar, .cc, details.reveal').forEach(function (c) { if (!skip(c) && isBlank(c)) rm(c); });
+        blk.querySelectorAll('.versus').forEach(function (v) { if (!v.querySelector('.side')) rm(v); });
+        blk.querySelectorAll('.choice-cards').forEach(function (v) { if (!v.querySelector('.cc')) rm(v); });
+        blk.querySelectorAll('h3, p, li').forEach(function (c) { if (!skip(c) && !c.closest('summary') && isBlank(c) && !c.closest('.side, .cc') ) rm(c); });
+        blk.querySelectorAll('ul, ol').forEach(function (c) { if (!skip(c) && !c.querySelector('li')) rm(c); });
+        blk.querySelectorAll('.news-v, .clip-text, .clip-body, .item').forEach(function (c) { if (isBlank(c)) rm(c); });
+      }
+      return removed;
+    }
+    var pruneT = null;
+    document.getElementById('slide').addEventListener('input', function () {
+      if (!editing) return;
+      var sel = window.getSelection(), n = sel && sel.anchorNode; if (!n) return;
+      var blk = (n.nodeType === 3 ? n.parentNode : n).closest && (n.nodeType === 3 ? n.parentNode : n).closest('.block'); if (!blk) return;
+      clearTimeout(pruneT);
+      pruneT = setTimeout(function () {
+        var sec = blk.closest('section.stage'), k = pruneBlock(blk);
+        if (k && sec) { storeLesson(+sec.dataset.l); state.textContent = '글을 지운 형식 칸을 정리했어요 (Ctrl+Z로 되돌리기)'; }
+      }, 900);
+    });
     // 사진 붙여넣기(Ctrl+V)·끌어다 놓기로도 넣기
     function insertPhotoFile(f) {
       state.textContent = '사진 넣는 중…';
