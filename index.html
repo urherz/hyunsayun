@@ -1674,6 +1674,14 @@
   #ws-root:not(.ws-compact) .ws-acts, #ws-root:not(.ws-compact) .ws-cols { column-gap: 7mm !important; }
 
   @media (max-width: 760px) { .slide .choice-cards { grid-template-columns: 1fr !important; } }
+
+  /* 보기 여러 개 고르기 */
+  body:not(.editing) .slide .b-exam .bogi > li { cursor: pointer; border-radius: 6px; transition: background .12s; }
+  body:not(.editing) .slide .b-exam .bogi > li:hover { background: rgba(232,185,49,.15); }
+  .slide .b-exam .bogi > li.sel { background: #FBE9A6; box-shadow: inset 4px 0 0 #E8B931; }
+  .slide .b-exam .bogi-picked { font-weight: 700; color: #8A5A0B; margin: .3em 0 0; min-height: 0; }
+  .slide .b-exam .bogi-picked:empty { display: none; }
+  #ws-root .bogi-picked { display: none !important; }
 </style>
 </head>
 <body>
@@ -2146,6 +2154,7 @@ function __boot() {
       s.querySelectorAll('details.reveal').forEach(function (d) { d.open = true; d.classList.add('concealed'); });
       s.querySelectorAll('.cloze.open').forEach(function (z) { z.classList.remove('open'); });
       s.querySelectorAll('.choice-cards .cc.picked').forEach(function (z) { z.classList.remove('picked'); });
+      s.querySelectorAll('.bogi > li.sel').forEach(function (z) { z.classList.remove('sel'); }); s.querySelectorAll('.bogi-picked').forEach(function (z) { z.remove(); });
       s.querySelectorAll('.match').forEach(function (m) { m.removeAttribute('data-lines'); var sv = m.querySelector('svg.m-lines'); if (sv) sv.innerHTML = ''; m.querySelectorAll('.m-dot').forEach(function (d) { d.classList.remove('on', 'armed'); }); });
       s.querySelectorAll('.venn').forEach(function (v) { v.removeAttribute('data-pos'); var dr = v.querySelector('.v-drop'); if (dr) dr.innerHTML = ''; v.querySelectorAll('.v-tok').forEach(function (t) { t.classList.remove('placed', 'armed'); }); });
       s.querySelectorAll('.photo-win').forEach(function (w) { w.remove(); });
@@ -2343,6 +2352,17 @@ function __boot() {
     window.__lessonTimer = { start: start, bowl: bowl, tick: tick };
   })();
   window.__resetLessonState = resetLessonState;
+  // 보기(ㄱㄴㄷㄹ) 여러 개 골라 표시하기: 수업 화면에서 누르면 켜고 끄기
+  document.getElementById('slide').addEventListener('click', function (e) {
+    if (document.body.classList.contains('editing')) return;
+    var li = e.target.closest && e.target.closest('.b-exam .bogi > li'); if (!li) return;
+    if (e.target.closest('.cloze')) return;
+    e.stopPropagation(); li.classList.toggle('sel');
+    var item = li.closest('.item'), picked = item ? [].map.call(item.querySelectorAll('.bogi > li.sel'), function (x) { return (x.textContent.trim().match(/^[ㄱ-ㅎ]/) || [''])[0]; }).filter(Boolean) : [];
+    var out = item && item.querySelector('.bogi-picked');
+    if (item && !out) { out = document.createElement('p'); out.className = 'bogi-picked'; var bg = item.querySelector('.bogi'); bg.parentNode.insertBefore(out, bg.nextSibling); }
+    if (out) out.textContent = picked.length ? '고른 것: ' + picked.join(', ') : '';
+  }, true);
   document.getElementById('slide').addEventListener('click', function (e) {
     if (document.body.classList.contains('editing')) return;
     var c = e.target.closest && e.target.closest('.choice-cards > .cc'); if (!c) return;
@@ -2463,7 +2483,7 @@ function __boot() {
       var c = s.cloneNode(true);
       c.classList.remove('active', 'scrolly', 'measuring'); c.style.fontSize = ''; if (!c.getAttribute('style')) c.removeAttribute('style');
       c.querySelectorAll('.block, header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .bogi-picked').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
