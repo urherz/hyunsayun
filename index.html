@@ -3060,13 +3060,31 @@ function __boot() {
         })
         .then(function () { busy = false; });
     }
-    // ===== 표 칸 너비 조절 =====
+    // ===== 표 칸 너비 조절 (합친 칸이 있어도 실제 세로줄 기준) =====
+    function tableGrid(table) {
+      var occ = [], info = [], n = 0;
+      [].forEach.call(table.rows, function (r, ri) {
+        occ[ri] = occ[ri] || []; var c = 0;
+        [].forEach.call(r.cells, function (cell) {
+          while (occ[ri][c]) c++;
+          var cs = cell.colSpan || 1, rs = cell.rowSpan || 1;
+          info.push({ cell: cell, col: c, span: cs });
+          for (var a = 0; a < rs; a++) { occ[ri + a] = occ[ri + a] || []; for (var b = 0; b < cs; b++) occ[ri + a][c + b] = 1; }
+          c += cs; if (c > n) n = c;
+        });
+      });
+      return { n: n, cells: info };
+    }
     function ensureCols(table) {
-      var n = table.rows[0].cells.length, cg = table.querySelector('colgroup');
+      var g = tableGrid(table), n = g.n, cg = table.querySelector('colgroup');
       if (!cg || cg.children.length !== n) {
         if (cg) cg.remove();
         cg = document.createElement('colgroup');
-        var ws = [].map.call(table.rows[0].cells, function (c) { return c.getBoundingClientRect().width; }), tot = ws.reduce(function (a, b) { return a + b; }, 0) || 1;
+        var ws = []; for (var j = 0; j < n; j++) ws[j] = 0;
+        g.cells.forEach(function (it) { if (it.span === 1 && !ws[it.col]) ws[it.col] = it.cell.getBoundingClientRect().width; });
+        g.cells.forEach(function (it) { if (it.span > 1) { var miss = []; for (var k = it.col; k < it.col + it.span; k++) if (!ws[k]) miss.push(k); if (miss.length) { var w = it.cell.getBoundingClientRect().width; for (var k2 = it.col; k2 < it.col + it.span; k2++) if (ws[k2]) w -= ws[k2]; miss.forEach(function (k3) { ws[k3] = Math.max(1, w / miss.length); }); } } });
+        for (var q = 0; q < n; q++) if (!ws[q]) ws[q] = 1;
+        var tot = ws.reduce(function (a, b) { return a + b; }, 0) || 1;
         ws.forEach(function (w) { var col = document.createElement('col'); col.style.width = (w / tot * 100).toFixed(2) + '%'; cg.appendChild(col); });
         var cap = table.querySelector('caption'); table.insertBefore(cg, cap ? cap.nextSibling : table.firstChild);
       }
@@ -3077,11 +3095,12 @@ function __boot() {
       document.querySelectorAll('.col-grip').forEach(function (g) { g.remove(); });
       if (!on) return;
       document.querySelectorAll('section.stage .block table').forEach(function (t) {
-        var r = t.rows[0]; if (!r) return;
-        [].forEach.call(r.cells, function (cell, i) {
-          if (i === r.cells.length - 1) return;
-          var g = document.createElement('span'); g.className = 'col-grip'; g.setAttribute('contenteditable', 'false'); g.dataset.i = i; g.title = '끌어서 칸 넓이 조절';
-          cell.appendChild(g);
+        if (!t.rows[0]) return;
+        var gd = tableGrid(t);
+        gd.cells.forEach(function (it) {
+          var edge = it.col + it.span - 1; if (edge >= gd.n - 1) return;
+          var g = document.createElement('span'); g.className = 'col-grip'; g.setAttribute('contenteditable', 'false'); g.dataset.i = edge; g.title = '끌어서 칸 넓이 조절';
+          it.cell.appendChild(g);
         });
       });
     }
@@ -3093,7 +3112,7 @@ function __boot() {
       var w1 = parseFloat(cols[i].style.width), w2 = parseFloat(cols[i + 1].style.width);
       g.classList.add('dragging');
       function mv(ev) {
-        var nw = Math.max(5, Math.min(w1 + w2 - 5, w1 + (ev.clientX - startX) / tw * 100));
+        var nw = Math.max(8, Math.min(w1 + w2 - 8, w1 + (ev.clientX - startX) / tw * 100));
         cols[i].style.width = nw.toFixed(2) + '%'; cols[i + 1].style.width = (w1 + w2 - nw).toFixed(2) + '%';
       }
       function up() {
