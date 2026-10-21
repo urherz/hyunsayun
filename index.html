@@ -5027,7 +5027,7 @@ function __boot() {
   function wsBlankify(root, withAns) {
     root.querySelectorAll('.imp, .kw, .cloze, .hl, .bd, .ws-colored').forEach(function (s) {
       if (s.parentNode && s.parentNode.closest && s.parentNode.closest('.imp, .kw, .cloze, .hl, .bd, .ws-colored') && s.parentNode.closest('#ws-root, .block, div')) { var outer = s.parentNode.closest('.imp, .kw, .cloze, .hl, .bd, .ws-colored'); if (outer !== s && outer.contains(s)) return; }
-      if (s.closest('.ws-keep') || s.closest('th')) return;
+      if (s.closest('.ws-keep') || s.closest('thead th')) return;
       var txt = (s.querySelector('.cz-a') || s).textContent.trim(); if (!txt) return;
       var b = document.createElement('span');
       if (withAns) { b.className = 'ws-ans'; b.textContent = txt; }
