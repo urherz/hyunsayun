@@ -1730,6 +1730,23 @@
   /* 교사용 칸: 수업 화면에서 숨김 */
   body:not(.editing) .slide details.reveal.teacher-only { display: none !important; }
   body.editing .slide details.reveal.teacher-only > summary::after { content: ' · 수업 화면에선 숨김'; font-size: .7em; color: #B87414; }
+
+  @media (max-width: 760px) { #check-btn { display: none !important; } }
+
+  /* 짧은 선택 카드: 이것 vs 저것 */
+  .slide .choice-cards.cc-short { gap: .5em 2.4em; margin: .35em 0; }
+  .slide .choice-cards.cc-short[data-n="2"]::before { content: 'VS'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-family: var(--serif); font-weight: 700; font-size: .75em; color: var(--ink-soft); pointer-events: none; }
+  .slide .choice-cards.cc-short > .cc { display: flex; align-items: center; gap: .5em; padding: .32em .7em; min-height: 0; border-radius: 10px; }
+  .slide .choice-cards.cc-short > .cc > .cc-b { flex: none; font-size: .5em; padding: .1em .5em; }
+  .slide .choice-cards.cc-short > .cc > p { flex: 1; margin: 0; font-size: 1.02em; font-weight: 700; text-align: center; }
+  .slide .choice-cards > .cc.picked { background: var(--cc-line) !important; box-shadow: 0 0 0 4px #E8B931; transform: translateY(-2px); }
+  .slide .choice-cards > .cc.picked > p, .slide .choice-cards > .cc.picked li { color: #FFFFFF; }
+  .slide .choice-cards > .cc.picked > .cc-b { background: #FFFFFF; color: var(--cc-line); }
+  .slide .choice-cards.has-pick > .cc:not(.picked) { opacity: .45; }
+  body.editing .slide .choice-cards { margin-top: 2.1em; }
+  body.editing .slide .choice-cards > .cc > p:empty::before { content: '여기에 적어 주세요'; color: #B9AE9C; font-weight: 500; }
+  #ws-root .choice-cards.cc-short > .cc { display: flex; align-items: center; gap: 2mm; }
+  #ws-root .choice-cards.cc-short > .cc > p { margin: 0; flex: 1; text-align: center; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -2201,7 +2218,7 @@ function __boot() {
       if (+s.dataset.l !== l) return;
       s.querySelectorAll('details.reveal').forEach(function (d) { d.open = true; d.classList.add('concealed'); });
       s.querySelectorAll('.cloze.open').forEach(function (z) { z.classList.remove('open'); });
-      s.querySelectorAll('.choice-cards .cc.picked').forEach(function (z) { z.classList.remove('picked'); });
+      s.querySelectorAll('.choice-cards .cc.picked').forEach(function (z) { z.classList.remove('picked'); }); s.querySelectorAll('.choice-cards.has-pick').forEach(function (z) { z.classList.remove('has-pick'); });
       s.querySelectorAll('.bogi > li.sel').forEach(function (z) { z.classList.remove('sel'); }); s.querySelectorAll('.bogi-picked').forEach(function (z) { z.remove(); });
       s.querySelectorAll('.match').forEach(function (m) { m.removeAttribute('data-lines'); var sv = m.querySelector('svg.m-lines'); if (sv) sv.innerHTML = ''; m.querySelectorAll('.m-dot').forEach(function (d) { d.classList.remove('on', 'armed'); }); });
       s.querySelectorAll('.venn').forEach(function (v) { v.removeAttribute('data-pos'); var dr = v.querySelector('.v-drop'); if (dr) dr.innerHTML = ''; v.querySelectorAll('.v-tok').forEach(function (t) { t.classList.remove('placed', 'armed'); }); });
@@ -2403,7 +2420,7 @@ function __boot() {
   (function () {
     var wsb = document.getElementById('ws-btn'); if (!wsb) return;
     var btn = document.createElement('button'); btn.type = 'button'; btn.id = 'check-btn'; btn.className = wsb.className; btn.textContent = '점검'; btn.title = '이 차시에 놓친 문제가 없는지 점검';
-    wsb.parentNode.insertBefore(btn, wsb);
+    var wwrap = wsb.closest('.ws-wrap') || wsb; wwrap.parentNode.insertBefore(btn, wwrap);
     var panel = document.createElement('div'); panel.id = 'lesson-check'; panel.hidden = true; document.body.appendChild(panel);
     var gridN = function (t) {
       var occ = [], n = 0, short = false, widths = [];
@@ -2471,6 +2488,19 @@ function __boot() {
     window.__lessonCheck = run;
   })();
   window.__resetLessonState = resetLessonState;
+  // 짧은 선택 카드(한두 단어)는 '이것 vs 저것' 모양으로
+  (function () {
+    var mark = function () {
+      document.querySelectorAll('section.stage .choice-cards').forEach(function (g) {
+        var cards = [].slice.call(g.querySelectorAll(':scope > .cc'));
+        var short = cards.length > 0 && cards.every(function (c) { if (c.querySelector('ul, ol, svg, img, table')) return false; var p = c.querySelector(':scope > p'); var t = ((p ? p.textContent : '') || '').trim(); return t.length <= 24; });
+        g.classList.toggle('cc-short', short); g.dataset.n = String(cards.length || 2);
+      });
+    };
+    var t = null, sl = document.getElementById('slide');
+    if (sl) new MutationObserver(function () { clearTimeout(t); t = setTimeout(mark, 300); }).observe(sl, { childList: true, subtree: true, characterData: true });
+    mark();
+  })();
   // 교사용 접힌 칸(요약이 '교사용'으로 시작)은 수정 모드에서만 보이기
   (function () {
     var mark = function () { document.querySelectorAll('section.stage details.reveal > summary').forEach(function (s) { s.parentNode.classList.toggle('teacher-only', /^\s*교사용/.test(s.textContent || '')); }); };
@@ -2492,7 +2522,11 @@ function __boot() {
   document.getElementById('slide').addEventListener('click', function (e) {
     if (document.body.classList.contains('editing')) return;
     var c = e.target.closest && e.target.closest('.choice-cards > .cc'); if (!c) return;
-    e.stopPropagation(); c.classList.toggle('picked');
+    e.stopPropagation();
+    var g = c.parentNode, was = c.classList.contains('picked');
+    [].forEach.call(g.querySelectorAll(':scope > .cc'), function (x) { x.classList.remove('picked'); });
+    if (!was) c.classList.add('picked');
+    g.classList.toggle('has-pick', !was);
   }, true);
   function setLesson(l) {
     if (l !== L) resetLessonState(l);
