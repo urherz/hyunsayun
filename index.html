@@ -1682,6 +1682,54 @@
   .slide .b-exam .bogi-picked { font-weight: 700; color: #8A5A0B; margin: .3em 0 0; min-height: 0; }
   .slide .b-exam .bogi-picked:empty { display: none; }
   #ws-root .bogi-picked { display: none !important; }
+
+  #ws-root .ws-actgrid { margin-top: 0; }
+  #ws-root .ws-actgrid .ws-box { break-inside: avoid; }
+  #ws-root.ws-allowbreak .ws-actgrid .ws-box { break-inside: auto; }
+
+  /* 수정 모드: 블록 위에 올리면 블록 지우기·옮기기 */
+  body.editing .slide .block { position: relative; }
+  body.editing .slide .block > .block-tools { opacity: 0; transition: opacity .12s; top: -14px; }
+  body.editing .slide .block:hover > .block-tools, body.editing .slide .block:focus-within > .block-tools { opacity: 1; }
+  body.editing .slide .block > .block-tools button[data-bk="del"] { background: #B3372B; }
+  @media print { .block-tools { display: none !important; } }
+
+  /* 반영 충돌 창 */
+  #pub-conflict { position: fixed; inset: 0; z-index: 500; background: rgba(40,30,20,.35); display: flex; align-items: center; justify-content: center; }
+  #pub-conflict .pc-box { width: min(560px, 92vw); background: #FFFDF8; border: 2px solid #B3372B; border-radius: 14px; padding: 18px 22px; font-family: var(--serif); box-shadow: 0 16px 40px rgba(0,0,0,.25); }
+  #pub-conflict h3 { margin: 0 0 8px; font-size: 19px; color: #B3372B; }
+  #pub-conflict p { font-size: 14.5px; line-height: 1.55; margin: 6px 0; }
+  #pub-conflict .pc-sub { font-weight: 700; margin-top: 10px; }
+  #pub-conflict ul { margin: 2px 0 8px 1.2em; font-size: 14px; }
+  #pub-conflict .pc-warn { color: #B87414; font-weight: 700; }
+  #pub-conflict .pc-btns { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+  #pub-conflict button { font-family: var(--serif); font-weight: 700; font-size: 14.5px; padding: 8px 12px; border: 1.5px solid var(--edge); border-radius: 8px; background: #FFF; cursor: pointer; text-align: left; }
+  #pub-conflict .pc-main { background: #4E5C42; color: #FFF; border-color: #4E5C42; }
+  #pub-conflict .pc-danger { color: #B3372B; border-color: #E2B4AE; }
+
+  /* 차시 점검 */
+  #lesson-check { position: fixed; inset: 0; z-index: 320; background: rgba(40,30,20,.28); display: flex; align-items: center; justify-content: center; }
+  #lesson-check[hidden] { display: none; }
+  #lesson-check .lc-box { width: min(640px, 94vw); max-height: 80vh; overflow: auto; background: #FFFDF8; border: 2px solid var(--edge); border-radius: 14px; padding: 14px 18px; box-shadow: 0 14px 40px rgba(0,0,0,.25); font-family: var(--serif); }
+  #lesson-check .lc-h { display: flex; align-items: center; gap: 10px; font-size: 18px; margin-bottom: 8px; }
+  #lesson-check .lc-h span { flex: 1; font-size: 14px; color: var(--ink-soft); }
+  #lesson-check .lc-h button { border: 1.5px solid var(--edge); background: #FFF; border-radius: 6px; cursor: pointer; padding: 2px 9px; }
+  #lesson-check ul { list-style: none; margin: 0; padding: 0; }
+  #lesson-check li { display: flex; align-items: flex-start; gap: 8px; padding: 7px 4px; border-bottom: 1px dashed #E2DACB; font-size: 14.5px; line-height: 1.45; }
+  #lesson-check li[data-p] { cursor: pointer; }
+  #lesson-check li[data-p]:hover { background: #F6F0E2; }
+  #lesson-check li em { margin-left: auto; font-style: normal; font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
+  #lesson-check .lc-ic { flex: none; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #FFF; margin-top: 1px; }
+  #lesson-check .lc-warn .lc-ic { background: #D0342C; }
+  #lesson-check .lc-info .lc-ic { background: #C98A1E; }
+  #lesson-check .lc-ok .lc-ic { background: #4E5C42; }
+
+  /* 학습지 형식 */
+  #ws-editor .wse-fmt { font-size: 13px; padding: 3px 6px; border: 1.5px solid var(--edge); border-radius: 6px; background: #FFF; margin-right: 4px; }
+  #ws-editor .wse-def { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--ink-soft); margin-right: 8px; cursor: pointer; }
+  /* 교사용 칸: 수업 화면에서 숨김 */
+  body:not(.editing) .slide details.reveal.teacher-only { display: none !important; }
+  body.editing .slide details.reveal.teacher-only > summary::after { content: ' · 수업 화면에선 숨김'; font-size: .7em; color: #B87414; }
 </style>
 </head>
 <body>
@@ -2351,7 +2399,85 @@ function __boot() {
     };
     window.__lessonTimer = { start: start, bowl: bowl, tick: tick };
   })();
+  // ===== 차시 점검 =====
+  (function () {
+    var wsb = document.getElementById('ws-btn'); if (!wsb) return;
+    var btn = document.createElement('button'); btn.type = 'button'; btn.id = 'check-btn'; btn.className = wsb.className; btn.textContent = '점검'; btn.title = '이 차시에 놓친 문제가 없는지 점검';
+    wsb.parentNode.insertBefore(btn, wsb);
+    var panel = document.createElement('div'); panel.id = 'lesson-check'; panel.hidden = true; document.body.appendChild(panel);
+    var gridN = function (t) {
+      var occ = [], n = 0, short = false, widths = [];
+      [].forEach.call(t.rows, function (r, ri) { occ[ri] = occ[ri] || []; var c = 0; [].forEach.call(r.cells, function (cell) { while (occ[ri][c]) c++; var cs = cell.colSpan || 1, rs = cell.rowSpan || 1; for (var a = 0; a < rs; a++) { occ[ri + a] = occ[ri + a] || []; for (var b = 0; b < cs; b++) occ[ri + a][c + b] = 1; } c += cs; if (c > n) n = c; }); });
+      occ.forEach(function (row) { var cnt = 0; for (var i = 0; i < row.length; i++) if (row[i]) cnt++; widths.push(cnt); });
+      widths.forEach(function (w) { if (w && w < n) short = true; });
+      return { n: n, short: short };
+    };
+    var PLACE = ['내용을 적어 주세요', '헤드라인을 적어 주세요', '기사 내용을', '활동 순서를 적어 주세요', '정리 내용을 적어 주세요', '분야 · 연도', '질문을 적어 주세요', '명제를 적어 주세요', '제목을 적어 주세요'];
+    var run = function () {
+      var act = document.querySelector('section.stage.active'); if (!act) return;
+      var L = +act.dataset.l, secs = [].slice.call(document.querySelectorAll('section.stage[data-l="' + L + '"]')), cur = secs.indexOf(act);
+      var out = [], add = function (lv, txt, p) { out.push({ lv: lv, txt: txt, p: p }); };
+      var lab = function (s) { return s.dataset.label || ''; };
+      // 1. 시간
+      var tot = 0, chips = 0;
+      secs.forEach(function (s, i) {
+        var t = s.querySelector('.stage-head .time'); if (!t) return;
+        var m = (t.textContent || '').match(/([0-9]+)/); if (!m) return; chips++; tot += +m[1];
+        var steps = [].map.call(s.querySelectorAll('.steps-list > li, ol > li'), function (li) { var mm = (li.textContent || '').match(/[(（]([0-9.]+)분[)）]/); return mm ? parseFloat(mm[1]) : 0; }).filter(Boolean);
+        if (steps.length >= 2) { var ss = steps.reduce(function (a, b) { return a + b; }, 0); if (Math.abs(ss - +m[1]) > 0.01) add('warn', '[' + lab(s) + '] 활동 단계 시간 합계 ' + ss + '분인데 시간 칩은 ' + m[1] + '분이에요', i); }
+      });
+      if (chips) add(tot === 50 ? 'ok' : 'warn', '페이지 시간 합계 ' + tot + '분' + (tot === 50 ? '' : ' (50분 기준 ' + (tot > 50 ? '+' : '') + (tot - 50) + '분)'), null);
+      // 2. 남은 안내 문구, 표, 기출
+      secs.forEach(function (s, i) {
+        var tx = s.textContent || '';
+        PLACE.forEach(function (ph) { if (tx.indexOf(ph) > -1) add('warn', '[' + lab(s) + '] 아직 채우지 않은 안내 문구: "' + ph + '"', i); });
+        s.querySelectorAll('table').forEach(function (t) {
+          var g = gridN(t), cg = t.querySelector('colgroup');
+          if (cg && cg.children.length !== g.n) add('warn', '[' + lab(s) + '] 표의 칸 넓이 설정이 실제 칸 수(' + g.n + '칸)와 달라요 · 수정 모드에서 표 칸을 한 번 끌면 맞춰져요', i);
+          if (g.short) add('warn', '[' + lab(s) + '] 표에 칸이 빠진 줄이 있어요', i);
+        });
+        s.querySelectorAll('.b-exam .item').forEach(function (it) { if (!it.querySelector('details.reveal')) add('info', '[' + lab(s) + '] 기출에 정답 확인이 없어요', i); });
+      });
+      // 3. 화면 넘침·글씨 크기 (페이지를 하나씩 열어서 확인)
+      secs.forEach(function (s, i) {
+        if (!window.__open) return;
+        window.__open(L, i);
+        var over = s.scrollHeight > s.clientHeight + 1, b = s.querySelector('.block'), fs = b ? parseFloat(getComputedStyle(b).fontSize) : 36;
+        if (over) add('warn', '[' + lab(s) + '] 한 화면에 다 들어가지 않아요', i);
+        else if (fs < 28) add('info', '[' + lab(s) + '] 내용이 많아 글씨가 ' + Math.round(fs) + 'px로 작아져요 (기본 36)', i);
+      });
+      if (window.__open) window.__open(L, cur);
+      // 4. 학습지 쪽수
+      try {
+        if (!document.getElementById('ws-root') && window.__buildWorksheet && window.__fitOnePage) {
+          var r = document.createElement('div'); r.id = 'ws-root'; r.innerHTML = window.__buildWorksheet(false); document.body.appendChild(r);
+          window.__fitOnePage(r, 2);
+          r.style.cssText = 'display:block;position:absolute;left:-99999px;top:0;width:196mm;';
+          var ruler = document.createElement('div'); ruler.style.cssText = 'height:283mm;position:absolute;visibility:hidden;'; document.body.appendChild(ruler);
+          var pages = Math.max(1, Math.ceil((r.offsetHeight + 2) / ruler.getBoundingClientRect().height)); ruler.remove(); r.remove();
+          add(pages <= 2 ? 'ok' : 'warn', '학습지(A4 세로) 약 ' + pages + '쪽' + (pages > 2 ? ' · 앞뒤 한 장을 넘어요' : ''), null);
+        }
+      } catch (er) {}
+      var warns = out.filter(function (x) { return x.lv === 'warn'; }).length;
+      panel.innerHTML = '<div class="lc-box"><div class="lc-h"><b>차시 점검</b><span>' + (warns ? '확인할 것 ' + warns + '개' : '문제 없어요') + '</span><button type="button" data-lc="close">✕</button></div><ul>' +
+        out.sort(function (a, b) { var o = { warn: 0, info: 1, ok: 2 }; return o[a.lv] - o[b.lv]; }).map(function (x) { return '<li class="lc-' + x.lv + '"' + (x.p != null ? ' data-p="' + x.p + '"' : '') + '><span class="lc-ic">' + (x.lv === 'warn' ? '!' : x.lv === 'info' ? 'i' : '✓') + '</span>' + x.txt.replace(/</g, '&lt;') + (x.p != null ? '<em>이동</em>' : '') + '</li>'; }).join('') + '</ul></div>';
+      panel.hidden = false;
+      panel.onclick = function (e) {
+        if (e.target === panel || e.target.closest('[data-lc=close]')) { panel.hidden = true; return; }
+        var li = e.target.closest('li[data-p]'); if (li) { panel.hidden = true; window.__open(L, +li.dataset.p); }
+      };
+    };
+    btn.addEventListener('click', run);
+    window.__lessonCheck = run;
+  })();
   window.__resetLessonState = resetLessonState;
+  // 교사용 접힌 칸(요약이 '교사용'으로 시작)은 수정 모드에서만 보이기
+  (function () {
+    var mark = function () { document.querySelectorAll('section.stage details.reveal > summary').forEach(function (s) { s.parentNode.classList.toggle('teacher-only', /^\s*교사용/.test(s.textContent || '')); }); };
+    var t = null, sl = document.getElementById('slide');
+    if (sl) new MutationObserver(function () { clearTimeout(t); t = setTimeout(mark, 300); }).observe(sl, { childList: true, subtree: true, characterData: true });
+    mark(); window.__markTeacherOnly = mark;
+  })();
   // 보기(ㄱㄴㄷㄹ) 여러 개 골라 표시하기: 수업 화면에서 누르면 켜고 끄기
   document.getElementById('slide').addEventListener('click', function (e) {
     if (document.body.classList.contains('editing')) return;
@@ -2688,7 +2814,7 @@ function __boot() {
 
     function blockTools(on) {
       document.querySelectorAll('.block-tools').forEach(function (x) { x.remove(); });
-      return;
+      if (!on) return;
       document.querySelectorAll('section.stage .block').forEach(function (b) {
         var t = document.createElement('div'); t.className = 'block-tools'; t.setAttribute('contenteditable', 'false');
         t.innerHTML = '<button type="button" data-bk="up" title="블록을 위로">↑</button><button type="button" data-bk="down" title="블록을 아래로">↓</button><button type="button" data-bk="del" title="블록 삭제">블록 삭제</button>';
@@ -3036,8 +3162,22 @@ function __boot() {
       var api = 'https://api.github.com/repos/' + s.repo + '/contents/' + contentPath(s.path).split('/').map(encodeURIComponent).join('/');
       var head = { 'Authorization': 'Bearer ' + s.token, 'Accept': 'application/vnd.github+json' };
       var rev = String(Date.now()), html = buildContent(rev);
+      var forceOverwrite = publish.__force; publish.__force = false;
+      var mergedFrom = publish.__merge; publish.__merge = null;
+      if (mergedFrom) { html = mergedFrom; var mrv = mergedFrom.match(/name="content-rev" content="([0-9]+)"/); if (mrv) rev = mrv[1]; }
       fetch(api + '?ref=' + encodeURIComponent(s.branch), { headers: Object.assign({}, head, { 'Accept': 'application/vnd.github.object' }), cache: 'no-store' })
         .then(function (r) { if (r.status === 404) return null; if (!r.ok) throw r; return r.json(); })
+        .then(function (cur) {
+          if (!cur || forceOverwrite || mergedFrom) return cur;
+          // 다른 기기·GitHub에서 그사이 바뀌었는지 확인
+          return fetch(api + '?ref=' + encodeURIComponent(s.branch) + '&t=' + Date.now(), { headers: Object.assign({}, head, { 'Accept': 'application/vnd.github.raw' }), cache: 'no-store' })
+            .then(function (r) { return r.ok ? r.text() : ''; })
+            .then(function (txt) {
+              var m = txt && txt.match(/name="content-rev" content="([0-9]+)"/), remoteRev = m ? m[1] : '';
+              if (remoteRev && revMeta.content && remoteRev !== String(revMeta.content)) { var c = new Error('conflict'); c.conflict = { text: txt }; throw c; }
+              return cur;
+            });
+        })
         .then(function (cur) {
           var body = { message: '수업 내용 수정 ' + new Date().toLocaleString('ko-KR'), content: b64(html), branch: s.branch };
           if (cur && cur.sha) body.sha = cur.sha;
@@ -3050,15 +3190,71 @@ function __boot() {
           try { localStorage.removeItem(DIRTY); } catch (err) {}
           markDirty();
           state.textContent = '사이트에 반영 완료 (' + new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) + ')';
+          if (mergedFrom) { state.textContent = '합쳐서 반영했어요 · 다시 불러오는 중…'; setTimeout(function () { location.reload(); }, 900); return; }
           var again = Object.keys(editedDuring); editedDuring = {};
           if (again.length) { busy = false; again.forEach(function (x) { storeLesson(+x); }); }
         })
         .catch(function (r) {
+          if (r && r.conflict) { busy = false; clearTimeout(autoT); showConflict(r.conflict.text, rev, html); state.textContent = '다른 기기에서 바뀐 내용이 있어요 · 확인이 필요해요'; return; }
           var code = r && r.status;
           state.textContent = code === 401 ? '토큰이 맞지 않아요' : code === 403 ? '토큰 권한(Contents 쓰기)을 확인해 주세요' : code === 404 ? '저장소나 경로를 찾을 수 없어요' : code === 409 || code === 422 ? '충돌이 생겼어요. 다시 눌러 주세요' : '올리기 실패 (인터넷 연결 확인)';
           if (code === 401 || code === 404) openSettings();
         })
         .then(function () { busy = false; });
+    }
+    // ===== 다른 기기에서 바뀐 내용과 충돌할 때 =====
+    function showConflict(remoteText, rev, myHtml) {
+      var old = document.getElementById('pub-conflict'); if (old) old.remove();
+      var changed = Object.keys(localStorage).filter(function (k) { return k.indexOf(KEY() + 'L') === 0; }).map(function (k) { return k.slice((KEY() + 'L').length); }).filter(function (x, i, a) { return x && a.indexOf(x) === i; });
+      var structural = !!localStorage.getItem(KEY() + 'A');
+      var titleOf = function (l) { var b = document.querySelector('#book button[data-lesson="' + l + '"]'); return b ? b.textContent.trim() : (l + '번 차시'); };
+      var d = document.createElement('div'); d.id = 'pub-conflict';
+      d.innerHTML = '<div class="pc-box"><h3>다른 곳에서 바뀐 내용이 있어요</h3>' +
+        '<p>이 컴퓨터에서 고치는 동안 다른 기기(또는 GitHub 직접 올리기)에서 이 과목이 먼저 반영됐어요. 그대로 올리면 그쪽 수정이 지워져요.</p>' +
+        (changed.length ? '<p class="pc-sub">이 컴퓨터에서 고친 차시</p><ul>' + changed.map(function (l) { return '<li>' + titleOf(l) + '</li>'; }).join('') + '</ul>' : '') +
+        (structural ? '<p class="pc-warn">차시 추가·삭제·목차 변경이 있어서 차시만 골라 합칠 수 없어요.</p>' : '') +
+        '<div class="pc-btns">' +
+        (!structural && changed.length ? '<button type="button" data-pc="merge" class="pc-main">고친 차시만 합쳐서 반영 (추천)</button>' : '') +
+        '<button type="button" data-pc="load">사이트 버전 불러오기 (내 수정은 되살리기 목록에 보관)</button>' +
+        '<button type="button" data-pc="force" class="pc-danger">내 버전으로 덮어쓰기</button>' +
+        '<button type="button" data-pc="cancel">나중에</button></div></div>';
+      document.body.appendChild(d);
+      d.addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-pc]'); if (!b) return;
+        var a = b.dataset.pc;
+        if (a === 'cancel') { d.remove(); return; }
+        if (a === 'load') { d.remove(); location.reload(); return; }
+        if (a === 'force') { if (!confirmTwice(b, '한 번 더 누르면 덮어써요')) return; d.remove(); publish.__force = true; publish(); return; }
+        if (a === 'merge') { d.remove(); publish.__merge = mergeLessons(remoteText, myHtml, changed, rev); publish(); }
+      });
+    }
+    function mergeLessons(remote, mine, lessons, rev) {
+      var secRe = function (l) { return new RegExp('<section class="stage[^"]*" data-l="' + l + '"[^>]*>[^]*?</section>', 'g'); };
+      var out = remote;
+      lessons.forEach(function (l) {
+        var mySecs = mine.match(secRe(l)) || [];
+        var first = true;
+        var replaced = out.replace(secRe(l), function () { if (first) { first = false; return mySecs.join(String.fromCharCode(10)); } return ''; });
+        if (first && mySecs.length) {
+          var lastIdx = replaced.lastIndexOf('</section>');
+          replaced = replaced.slice(0, lastIdx + 10) + String.fromCharCode(10) + mySecs.join(String.fromCharCode(10)) + replaced.slice(lastIdx + 10);
+        }
+        out = replaced;
+      });
+      // 학습지 수정본: 이 컴퓨터에서 고친 것만 덮어쓰기
+      try {
+        var wre = new RegExp('<script type="text/plain" id="course-worksheets">([^]*?)</scr' + 'ipt>');
+        var rm = out.match(wre), mm = mine.match(wre);
+        if (mm) {
+          var dec = function (s) { try { return JSON.parse(decodeURIComponent(escape(atob((s || '').trim())))) || {}; } catch (er) { return {}; } };
+          var R = rm ? dec(rm[1]) : {}, M = dec(mm[1]), loc = {};
+          try { loc = JSON.parse(localStorage.getItem(PFX + 'worksheets') || '{}'); } catch (er) {}
+          Object.keys(loc).forEach(function (k) { if (loc[k] === null) delete R[k]; else if (M[k]) R[k] = M[k]; });
+          var enc = btoa(unescape(encodeURIComponent(JSON.stringify(R))));
+          out = rm ? out.replace(wre, '<script type="text/plain" id="course-worksheets">' + enc + '</scr' + 'ipt>') : out;
+        }
+      } catch (er) {}
+      return out.replace(/name="content-rev" content="[0-9]*"/, 'name="content-rev" content="' + rev + '"');
     }
     // ===== 표 칸 너비 조절 (합친 칸이 있어도 실제 세로줄 기준) =====
     function tableGrid(table) {
@@ -5190,7 +5386,8 @@ function __boot() {
     var limit = pg.getBoundingClientRect().height * (pages > 1 ? pages * 0.96 : 1); pg.remove();
     root.style.cssText = 'display:block !important;position:absolute;left:-10000px;top:0;width:' + (land ? 283 : 196) + 'mm;';
     var hd = root.querySelector('.ws-head'), nt = root.querySelector('.ws-news-top'), colsH = limit - (hd ? hd.getBoundingClientRect().height + 8 : 0) - (nt ? nt.getBoundingClientRect().height + 8 : 0);
-    var over = function () { return body.getBoundingClientRect().height > colsH * (land ? 1.04 : 0.9); };
+    wseActsToGrid(root);
+    var over = function () { return body.getBoundingClientRect().height > colsH * (land ? 0.98 : 0.9); };
 
     var compactMode = root.classList.contains('ws-compact');
     if (compactMode) over = function () { return body.getBoundingClientRect().height > colsH * 0.97; };
@@ -5226,6 +5423,17 @@ function __boot() {
   }
   // ===== 학습지 미리보기·수정 창 =====
   function wseKey(withAns, land, compact) { return 'L' + L + ':' + (withAns ? 'a' : 's') + ':' + (land ? 'l' : 'p') + (compact ? 'c' : ''); }
+  // 활동 구역을 칸을 직접 옮길 수 있는 단(grid)으로 바꾸기
+  function wseActsToGrid(root) {
+    root.querySelectorAll('.ws-acts').forEach(function (a) {
+      var land = root.classList.contains('ws-land'), n = +a.dataset.n || (land ? 3 : 2);
+      var g = document.createElement('div'); g.className = 'ws-cols2 ws-actgrid' + (a.classList.contains('ws-newpage') ? ' ws-newpage' : '');
+      var c = document.createElement('div'); c.className = 'ws-colL'; g.appendChild(c);
+      [].slice.call(a.children).forEach(function (b) { c.appendChild(b); });
+      a.parentNode.replaceChild(g, a);
+      wseEqualCols(g, 1); if (n > 1) wseSetCols(g, n);
+    });
+  }
   // ===== 학습지 구역(단 설정 단위) =====
   function wseColNames(n) { return n === 1 ? ['ws-colL'] : n === 2 ? ['ws-colL', 'ws-colR'] : ['ws-colL', 'ws-colM', 'ws-colR']; }
   function wseGridN(g) { return g.classList.contains('ws-acts') ? (+g.dataset.n || (g.closest('#ws-root').classList.contains('ws-land') ? 3 : 2)) : g.querySelectorAll(':scope > div').length || 1; }
@@ -5261,7 +5469,7 @@ function __boot() {
         if (m) { var nums = m.map(function (x) { return parseFloat(x); }), s = nums.reduce(function (a, c) { return a + c; }, 0); v = Math.round(nums[0] / s * 100); }
         ratio = '<label class="wse-sr">왼쪽 폭 <input type="range" min="' + (n === 3 ? 25 : 30) + '" max="' + (n === 3 ? 60 : 75) + '" value="' + v + '" data-sr=""><b>' + v + '%</b></label>';
       }
-      b.innerHTML = '<span class="wse-sl">' + (isActs ? '활동 구역' : '구역 ' + (k + 1)) + '</span>' +
+      b.innerHTML = '<span class="wse-sl">' + (isActs || g.classList.contains('ws-actgrid') ? '활동 구역' : '구역 ' + (k + 1)) + '</span>' +
         [1, 2, 3].map(function (x) { return '<button type="button" data-wse="scol" data-n="' + x + '"' + (x === n ? ' class="on"' : '') + '>' + x + '단</button>'; }).join('') + ratio +
         '<label class="wse-snp"><input type="checkbox" data-snp=""' + (g.classList.contains('ws-newpage') ? ' checked' : '') + '> 새 쪽에서 시작</label>';
       g.parentNode.insertBefore(b, g);
@@ -5308,14 +5516,20 @@ function __boot() {
     var ps = document.createElement('style'); ps.id = 'ws-page-style'; ps.textContent = '@media print { @page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 7mm; } }'; document.head.appendChild(ps);
     var ov = document.createElement('div'); ov.id = 'ws-editor';
     var title = (secTitle() || '') + ' · ' + (withAns ? '정답지' : '학생용') + ' · A4 ' + (land ? '가로' : '세로') + (compact ? ' 한 장 압축' : '');
-    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><button type="button" data-wse="undo" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-wse="redo" title="다시 (Ctrl+Y)">↷ 다시</button><button type="button" data-wse="bul" title="커서가 있는 줄(또는 선택한 줄들)의 앞 기호를 없애거나 되살려요. 줄 앞 기호를 직접 클릭해도 돼요">● 이 줄 기호 끄기/켜기</button><label class="wse-nobul" title="목록 앞 ● 기호 모두 없애기"><input type="checkbox"> 기호 모두 없애기</label><button type="button" data-wse="band" title="아래에 새 구역을 만들어 단 수를 따로 정해요">＋ 구역 추가</button><label class="wse-cols" title="본문 단 수">단 <select><option value="2">2단</option><option value="3">3단</option></select></label><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
+    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><select class="wse-fmt" title="학습지 형식 바꾸기"><optgroup label="학생용"><option value="blank-p">학생용 · 세로</option><option value="blank-l">학생용 · 가로</option><option value="blank-pc">학생용 · 세로 한 장</option><option value="blank-lc">학생용 · 가로 한 장</option></optgroup><optgroup label="정답지"><option value="ans-p">정답지 · 세로</option><option value="ans-l">정답지 · 가로</option><option value="ans-pc">정답지 · 세로 한 장</option><option value="ans-lc">정답지 · 가로 한 장</option></optgroup></select><label class="wse-def" title="이 과목에서 학습지 버튼을 누르면 이 형식으로 바로 열기"><input type="checkbox"> 기본 형식</label><button type="button" data-wse="undo" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-wse="redo" title="다시 (Ctrl+Y)">↷ 다시</button><button type="button" data-wse="bul" title="커서가 있는 줄(또는 선택한 줄들)의 앞 기호를 없애거나 되살려요. 줄 앞 기호를 직접 클릭해도 돼요">● 이 줄 기호 끄기/켜기</button><label class="wse-nobul" title="목록 앞 ● 기호 모두 없애기"><input type="checkbox"> 기호 모두 없애기</label><button type="button" data-wse="band" title="아래에 새 구역을 만들어 단 수를 따로 정해요">＋ 구역 추가</button><label class="wse-cols" title="본문 단 수">단 <select><option value="2">2단</option><option value="3">3단</option></select></label><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
     ov.querySelector('.wse-t').textContent = title;
     document.body.appendChild(ov); document.body.classList.add('ws-editing');
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; if (compact) root.classList.add('ws-compact');
     ov.querySelector('.wse-paper').appendChild(root);
     if (stored) { root.innerHTML = stored; ov.querySelector('.wse-note').textContent = root.querySelector('.ws-cols2') ? '저장된 수정본' : '예전 배치로 저장된 수정본 · 새 배치로 바꾸려면 원래대로'; }
     else { root.innerHTML = buildWorksheet(withAns); fitOnePage(root, compact ? 1 : 2); }
-    root.setAttribute('contenteditable', 'true'); wseControls(root);
+    root.setAttribute('contenteditable', 'true'); if (root.querySelector('.ws-acts')) { wseActsToGrid(root); } wseControls(root);
+    (function () {
+      var code = wsCode(withAns, land, compact), sel = ov.querySelector('.wse-fmt'), cb = ov.querySelector('.wse-def input');
+      sel.value = code; cb.checked = wsDefault() === code;
+      sel.addEventListener('change', function () { openWsCode(sel.value); });
+      cb.addEventListener('change', function () { try { if (cb.checked) localStorage.setItem(wsDefKey(), code); else localStorage.removeItem(wsDefKey()); } catch (e) {} ov.querySelector('.wse-note').textContent = cb.checked ? '이제 학습지 버튼을 누르면 이 형식으로 바로 열려요' : '기본 형식을 해제했어요 (다시 메뉴에서 골라요)'; });
+    })();
     // 한 장 압축: 고칠 때마다 다시 한 장에 맞추기 (글씨 10pt → 9.5pt, 줄·간격 순서로만 조임)
     var refitCompact = function () {
       if (!compact) return;
@@ -5638,6 +5852,10 @@ function __boot() {
     document.removeEventListener('keydown', wseEsc, true);
   }
   function secTitle() { var c = all.filter(function (s) { return +s.dataset.l === L; })[0]; var h = c && c.querySelector('header.lesson h1'); return h ? h.textContent.trim() : ''; }
+  function wsDefKey() { return 'ws-default:' + (window.__course || ''); }
+  function wsDefault() { try { return localStorage.getItem(wsDefKey()) || ''; } catch (e) { return ''; } }
+  function wsCode(withAns, land, compact) { return (withAns ? 'ans' : 'blank') + '-' + (land ? 'l' : 'p') + (compact ? 'c' : ''); }
+  function openWsCode(code) { openWsEditor(code.indexOf('ans') === 0, /-l/.test(code), /c$/.test(code)); }
   window.__openWsEditor = openWsEditor;
   window.__printWorksheet = printWorksheet; window.__buildWorksheet = buildWorksheet;
   (function () {
@@ -5646,9 +5864,11 @@ function __boot() {
     wb.addEventListener('click', function () {
       var teacher = document.getElementById('edit-toggle') && !document.getElementById('edit-toggle').hidden;
       if (!teacher) { printWorksheet(false, 2, false); return; }
+      var def = wsDefault();
+      if (def) { wm.hidden = true; openWsCode(def); return; }
       wm.hidden = !wm.hidden;
     });
-    wm.addEventListener('click', function (e) { var b = e.target.closest('button[data-ws]'); if (!b) return; wm.hidden = true; openWsEditor(b.dataset.ws.indexOf('ans') === 0, /-l/.test(b.dataset.ws), /c$/.test(b.dataset.ws)); });
+    wm.addEventListener('click', function (e) { var b = e.target.closest('button[data-ws]'); if (!b) return; wm.hidden = true; openWsCode(b.dataset.ws); });
     document.addEventListener('click', function (e) { if (!wm.hidden && !e.target.closest('#ws-btn, #ws-menu')) wm.hidden = true; });
   })();
   // ===== 빈 곳 클릭으로 넘기기 =====
