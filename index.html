@@ -5687,12 +5687,12 @@ function __boot() {
           var hl = blk.querySelector('.headline'), ft = blk.querySelector('.fact'), sides = blk.querySelectorAll('.side');
           html = '<div class="ws-box ws-news ws-news-top"><h2>시사</h2>' + (hl ? '<p class="ws-hl">' + hl.innerHTML.trim() + '</p>' : '') +
             '<ul class="ws-sides">' + [].map.call(sides, function (sd) { var bd = sd.querySelector('.badge'), pp = sd.querySelector('p'); return '<li><b>' + (bd ? bd.textContent.trim() : '') + '</b>: ' + (pp ? pp.innerHTML.trim() : '') + '</li>'; }).join('') + '</ul>' +
-            '<p>나의 입장: A □ / B □ &nbsp; 이유:</p>' + wsLines(2) + '</div>';
+            '<p>나의 입장: A □ / B □ &nbsp; 이유:</p>' + wsLines(1) + '</div>';
         }
         else if (/b-concept/.test(cls)) { wsBlankify(blk, withAns); var h3c = blk.querySelector('h3'); html = '[[CONCEPT]]' + (h3c && h3c.textContent.trim() ? '<h3 class="ws-subt">' + h3c.innerHTML + '</h3>' : ''); h3c && h3c.remove(); html += blk.innerHTML; }
         else if (/b-summary/.test(cls)) {
           var pq = blk.querySelector('.pairq'), prop = blk.querySelector('details.reveal');
-          html = '<div class="ws-box ws-summary"><h2>정리</h2>' + (pq ? '<p><b>질문</b> ' + pq.textContent.trim() + '</p>' + wsLines(2) : '');
+          html = '<div class="ws-box ws-summary"><h2>정리</h2>' + (pq ? '<p><b>질문</b> ' + pq.textContent.trim() + '</p>' + wsLines(1) : '');
           if (prop) { var body = prop.querySelector('.rv-body') || prop; var c = body.cloneNode(true); c.querySelectorAll('summary').forEach(function (x) { x.remove(); }); wsBlankify(c, withAns); html += '<p class="ws-prop"><b>핵심 명제</b> ' + c.innerHTML.split('<p>').join(' ').split('</p>').join(' ') + '</p>'; }
           html += '</div>';
         }
@@ -5715,7 +5715,7 @@ function __boot() {
           var lis = blk.querySelectorAll('ol.steps-list > li, ul.concepts > li');
           var itxt = intro ? intro.textContent : '';
           var choice = /손가락|투표|판정/.test(itxt) || /[0-9]번 *[/]/.test(itxt);
-          var steps = [].map.call(lis, function (li) { return '<li>' + li.innerHTML + (choice ? ' <span class="ws-pick">( <span class="ws-pl"></span> )</span>' : wsLines(2)) + '</li>'; }).join('');
+          var steps = [].map.call(lis, function (li) { return '<li>' + li.innerHTML + (choice ? ' <span class="ws-pick">( <span class="ws-pl"></span> )</span>' : wsLines(1)) + '</li>'; }).join('');
           lis.forEach(function (li) { li.remove(); });
           blk.querySelectorAll('ol.steps-list, ul.concepts').forEach(function (x) { x.remove(); });
           blk.querySelectorAll('td').forEach(function (td) { if (!td.textContent.trim()) td.innerHTML = '<div class="ws-cell"></div>'; });
