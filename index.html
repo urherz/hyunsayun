@@ -1831,6 +1831,16 @@
   #ws-editor .ws-box.wse-on > .wse-ctl button, #ws-editor .ws-box.wse-on > .wse-ctl .wse-drag { font-size: 13px !important; padding: 3px 9px !important; }
   #ws-editor .wse-more { border: 0 !important; padding: 0 !important; background: none !important; }
   #ws-editor .wse-help { padding-bottom: 46px; }
+
+  /* 수정 모드: 블록 배지 누르면 글자 바꾸기 */
+  body.editing .slide .block > .tag { cursor: text; }
+  body.editing .slide .block > .tag:hover { outline: 2px dashed rgba(31,90,150,.7); outline-offset: 2px; }
+  body.editing .slide .block > .tag:hover::after { content: ' ✎'; font-size: .8em; }
+  body.editing .slide .block > .tag.tag-editing { outline: 2px solid #1F5A96; outline-offset: 2px; }
+  body.editing .slide .block > .tag.tag-editing::after { content: ''; }
+
+  /* 표 편집 도구판 자리만큼 수업 화면을 오른쪽으로 */
+  @media (min-width: 700px) { body.tp-open .viewport { margin-left: 168px; } }
 </style>
 </head>
 <body>
@@ -2573,6 +2583,68 @@ function __boot() {
     window.__lessonCheck = run;
   })();
   window.__resetLessonState = resetLessonState;
+  // 표 편집: ↑↓ 방향키로 바로 위·아래 칸으로 (오른쪽 칸으로 새지 않게)
+  (function () {
+    var cellAt = function (table, r, c) {
+      var occ = [], found = null;
+      [].forEach.call(table.rows, function (row, ri) {
+        occ[ri] = occ[ri] || []; var cc = 0;
+        [].forEach.call(row.cells, function (cell) {
+          while (occ[ri][cc]) cc++;
+          var cs = cell.colSpan || 1, rs = cell.rowSpan || 1;
+          for (var a = 0; a < rs; a++) { occ[ri + a] = occ[ri + a] || []; for (var b = 0; b < cs; b++) { occ[ri + a][cc + b] = cell; } }
+          cc += cs;
+        });
+      });
+      return occ[r] ? occ[r][c] || null : null;
+    };
+    var pos = function (table, cell) {
+      var occ = [], res = null;
+      [].forEach.call(table.rows, function (row, ri) {
+        occ[ri] = occ[ri] || []; var cc = 0;
+        [].forEach.call(row.cells, function (cl) {
+          while (occ[ri][cc]) cc++;
+          var cs = cl.colSpan || 1, rs = cl.rowSpan || 1;
+          if (cl === cell) res = { r: ri, c: cc, rs: rs };
+          for (var a = 0; a < rs; a++) { occ[ri + a] = occ[ri + a] || []; for (var b = 0; b < cs; b++) occ[ri + a][cc + b] = 1; }
+          cc += cs;
+        });
+      });
+      return res;
+    };
+    var caretCell = function () { var s = window.getSelection(); if (!s.rangeCount) return null; var n = s.anchorNode; n = n && (n.nodeType === 3 ? n.parentNode : n); return n && n.closest ? n.closest('td, th') : null; };
+    var place = function (cell, atEnd) {
+      var r = document.createRange(), s = window.getSelection();
+      r.selectNodeContents(cell); r.collapse(!atEnd); s.removeAllRanges(); s.addRange(r);
+    };
+    document.addEventListener('keydown', function (e) {
+      if ((e.key !== 'ArrowDown' && e.key !== 'ArrowUp') || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+      var cell = caretCell(); if (!cell) return;
+      var host = cell.closest('[contenteditable="true"]'); if (!host) return;
+      var table = cell.closest('table'); if (!table) return;
+      var down = e.key === 'ArrowDown';
+      setTimeout(function () {
+        var now = caretCell(); if (now === cell) return;
+        var p = pos(table, cell); if (!p) return;
+        var target = down ? cellAt(table, p.r + p.rs, p.c) : cellAt(table, p.r - 1, p.c);
+        if (target && target !== now) place(target, !down);
+        else if (!target && now && now.closest('table') === table) place(cell, down);
+      }, 0);
+    }, true);
+  })();
+  // 표 편집 도구판이 펼쳐져 있으면 화면을 오른쪽으로 비켜서 가리지 않게
+  (function () {
+    var sync = function () {
+      var tp = document.getElementById('table-panel');
+      var open = !!(tp && !tp.hidden && !tp.classList.contains('min') && document.body.classList.contains('editing'));
+      document.body.classList.toggle('tp-open', open);
+      if (tp && !tp.hidden) { var eb = document.querySelector('.edit-bar'); if (eb && eb.offsetHeight) { var top = tp.getBoundingClientRect().top || 70; tp.style.maxHeight = Math.max(160, eb.getBoundingClientRect().top - top - 8) + 'px'; } }
+    };
+    new MutationObserver(function (ms) {
+      for (var i = 0; i < ms.length; i++) { var t = ms[i].target; if (t.id === 'table-panel' || t === document.body || (ms[i].addedNodes && [].some.call(ms[i].addedNodes, function (n) { return n.id === 'table-panel'; }))) { sync(); return; } }
+    }).observe(document.body, { attributes: true, attributeFilter: ['class', 'hidden'], subtree: true, childList: true });
+    sync(); window.addEventListener('resize', sync);
+  })();
   document.getElementById('pagenav').addEventListener('click', function (e) {
     if (!document.body.classList.contains('editing')) return;
     var b = e.target.closest('button'); if (!b) return;
@@ -3160,6 +3232,35 @@ function __boot() {
         var an1 = r.commonAncestorContainer; if (an1.nodeType === 3) an1 = an1.parentNode;
         var b0 = an1.closest('.bd, b, strong');
         if (b0 && b0.textContent.trim() === String(r).trim()) { unwrap(b0); state.textContent = '굵게 해제'; storeLesson(+pages[P].dataset.l); return; }
+        // 선택 안의 굵은 부분 찾기: 하나라도 있으면 '해제', 없으면 '굵게'
+        var BSEL = '.bd, b, strong, [style*="font-weight"]';
+        var boldEls = [], scope = an1.closest('.block, section.stage') || an1;
+        var anc = an1.closest(BSEL); if (anc && scope.contains(anc)) boldEls.push(anc);
+        an1.querySelectorAll(BSEL).forEach(function (x) { if (r.intersectsNode(x) && boldEls.indexOf(x) < 0) boldEls.push(x); });
+        if (boldEls.length) {
+          boldEls.forEach(function (el) {
+            if (!el.isConnected) return;
+            var full = document.createRange(); full.selectNodeContents(el);
+            var inside = r.compareBoundaryPoints(Range.START_TO_START, full) <= 0 && r.compareBoundaryPoints(Range.END_TO_END, full) >= 0;
+            var plainIt = function (node) { if (node.style && node.style.fontWeight) { node.style.removeProperty('font-weight'); if (!node.getAttribute('style')) node.removeAttribute('style'); if (node.tagName === 'SPAN' && !node.className && !node.attributes.length) unwrap(node); } else unwrap(node); };
+            if (inside) { plainIt(el); return; }
+            // 부분만 선택: 앞(굵게) | 가운데(보통) | 뒤(굵게)로 나누기
+            var s = document.createRange();
+            if (r.compareBoundaryPoints(Range.START_TO_START, full) > 0) s.setStart(r.startContainer, r.startOffset); else s.setStart(full.startContainer, full.startOffset);
+            if (r.compareBoundaryPoints(Range.END_TO_END, full) < 0) s.setEnd(r.endContainer, r.endOffset); else s.setEnd(full.endContainer, full.endOffset);
+            var after = document.createRange(); after.setStart(s.endContainer, s.endOffset); after.setEnd(el, el.childNodes.length);
+            var afterFrag = after.extractContents();
+            var mid = document.createRange(); mid.setStart(s.startContainer, s.startOffset); mid.setEnd(el, el.childNodes.length);
+            var midFrag = mid.extractContents();
+            var holder = document.createElement('span'); holder.appendChild(midFrag);
+            holder.querySelectorAll(BSEL).forEach(function (x) { plainIt(x); });
+            var ref = el.nextSibling, parent = el.parentNode;
+            while (holder.firstChild) parent.insertBefore(holder.firstChild, ref);
+            if (afterFrag.textContent) { var tail = el.cloneNode(false); tail.appendChild(afterFrag); parent.insertBefore(tail, ref); }
+            if (!el.textContent) el.remove();
+          });
+          state.textContent = '굵게 해제'; storeLesson(+pages[P].dataset.l); return;
+        }
       }
       if (cls.indexOf('hl') === 0) {
         var an0 = r.commonAncestorContainer; if (an0.nodeType === 3) an0 = an0.parentNode;
@@ -4465,6 +4566,24 @@ function __boot() {
         });
       });
     }
+    // ===== 블록 배지(연계·개념·활동…) 글자 바꾸기: 배지를 누르면 바로 고침 =====
+    document.getElementById('slide').addEventListener('click', function (e) {
+      if (!editing) return;
+      var t = e.target.closest && e.target.closest('.block > .tag'); if (!t || t.getAttribute('contenteditable') === 'true') return;
+      e.preventDefault(); e.stopPropagation();
+      var old = t.textContent;
+      t.setAttribute('contenteditable', 'true'); t.classList.add('tag-editing'); t.focus();
+      var r = document.createRange(); r.selectNodeContents(t); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      var done = function () {
+        t.removeEventListener('blur', done); t.removeEventListener('keydown', key);
+        var v = (t.textContent || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 10);
+        t.textContent = v || old; t.setAttribute('contenteditable', 'false'); t.classList.remove('tag-editing');
+        if (t.textContent !== old) { storeLesson(+t.closest('section.stage').dataset.l); state.textContent = '배지를 "' + t.textContent + '"(으)로 바꿨어요'; }
+      };
+      var key = function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); t.blur(); } else if (ev.key === 'Escape') { t.textContent = old; t.blur(); } };
+      t.addEventListener('blur', done); t.addEventListener('keydown', key);
+      state.textContent = '배지 글자를 고치고 Enter를 누르세요';
+    }, true);
     function pagePhotoTools(on) {
       document.querySelectorAll('.pp-tools').forEach(function (x) { x.remove(); });
       if (!on) return;
