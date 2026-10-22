@@ -1754,6 +1754,83 @@
   @media (min-width: 761px) { .topbar { grid-template-columns: minmax(max-content, 1fr) minmax(0, auto) minmax(max-content, 1fr) !important; } }
   .topbar nav.steps { min-width: 0; overflow-x: auto; scrollbar-width: none; }
   .topbar nav.steps::-webkit-scrollbar { display: none; }
+
+  /* 선택 카드는 보여 주기 전용 */
+  body:not(.editing) .slide .choice-cards > .cc { cursor: default; }
+  /* 투표: 색 없는 카드, 고르면 노랗게 */
+  .slide .vote { position: relative; display: flex; flex-direction: column; gap: .45em; margin: .4em 0; }
+  .slide .vote .vrow { display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: .6em; }
+  .slide .vote .vs { align-self: center; font-family: var(--serif); font-weight: 700; font-size: .72em; color: #9A8E7C; }
+  .slide .vote .vc { display: flex; align-items: center; justify-content: center; text-align: center; background: #FFFFFF; border: 2px solid #D9D2C4; border-radius: 12px; padding: .35em .7em; transition: background .15s, border-color .15s, opacity .15s, transform .15s, box-shadow .15s; }
+  .slide .vote .vc > p { margin: 0; font-weight: 700; font-size: 1.02em; color: var(--ink); }
+  body:not(.editing) .slide .vote .vc { cursor: pointer; }
+  body:not(.editing) .slide .vote .vc:hover { border-color: #B9AE9C; }
+  .slide .vote .vc.picked { background: #FFE27A; border-color: #E0A800; box-shadow: 0 0 0 4px rgba(232,185,49,.35); transform: scale(1.03); }
+  .slide .vote .vrow.has-pick .vc:not(.picked) { opacity: .35; }
+  body.editing .slide .vote { margin-top: 2.1em; }
+  body.editing .slide .vote .vc > p:empty::before { content: '선택지'; color: #C2B8A6; font-weight: 500; }
+  .vt-tools, .sp-tools { position: absolute; right: 0; top: -1.9em; display: flex; gap: 4px; z-index: 5; }
+  .vt-tools button, .sp-tools button { font-family: var(--serif); font-weight: 700; font-size: 15px; padding: 2px 10px; border: 1.5px solid var(--edge); border-radius: 6px; background: #FFFFFF; cursor: pointer; }
+  .vt-tools .vt-del, .sp-tools .vt-del { color: #B3372B; border-color: #E2B4AE; }
+  /* 2분할 */
+  .slide .split { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 1em; margin: .4em 0; align-items: start; }
+  .slide .split[data-r="40"] { grid-template-columns: 2fr 3fr; }
+  .slide .split[data-r="60"] { grid-template-columns: 3fr 2fr; }
+  .slide .split > .pane { min-width: 0; }
+  .slide .split > .pane > :first-child { margin-top: 0; }
+  .slide .split > .pane figure.page-photo { width: 100% !important; margin: 0 !important; float: none !important; }
+  .slide .split > .pane .video, .slide .split > .pane iframe { max-width: 100%; }
+  body.editing .slide .split { margin-top: 2.1em; }
+  body.editing .slide .split > .pane { outline: 1.5px dashed #C9BFAE; outline-offset: 4px; min-height: 2em; }
+  @media (max-width: 760px) { .slide .split { grid-template-columns: 1fr !important; } }
+  /* 학습지 */
+  #ws-root .vote .vrow { display: grid; grid-template-columns: 1fr auto 1fr; gap: 2mm; margin: 1mm 0; align-items: center; }
+  #ws-root .vote .vc { border: 1px solid #B4B4B4; border-radius: 3px; padding: .8mm 2mm; text-align: center; }
+  #ws-root .vote .vc > p { margin: 0 !important; }
+  #ws-root .vote .vs { font-size: 9pt; color: #777; }
+  #ws-root .split { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+  #ws-root .split > .pane { min-width: 0; }
+
+  .slide .vote .vc { font-weight: 700; font-size: 1.02em; color: var(--ink); }
+  body.editing .slide .vote .vc:empty::before { content: '선택지'; color: #C2B8A6; font-weight: 500; }
+  body.editing .slide .vote .vc[contenteditable="true"] { cursor: text; }
+
+  /* 번호 목록: 기호 없음·들여쓴 줄은 번호를 세지 않음 → 다음 줄 번호가 이어짐 */
+  ol > li.bul-none, ol > li.lv1, ol > li.lv2 { counter-increment: list-item 0; }
+  .block ol > li.bul-none, #ws-root ol > li.bul-none { list-style: none; }
+  .block ol > li.bul-none::marker, #ws-root ol > li.bul-none::marker { content: ""; }
+
+  /* 1. 수정 모드: 지금 탭에 ✎ (누르면 이름 바꾸기) */
+  body.editing #pagenav button.current::after, body.editing #pagenav button[aria-current]::after { content: ' ✎'; font-size: .85em; opacity: .85; }
+  body.editing #pagenav button.current, body.editing #pagenav button[aria-current] { cursor: text; }
+  /* 3. 시간 칩: 눌러서 타이머 */
+  body:not(.editing) .slide .stage-head .time::before { content: '▶ '; font-size: .72em; vertical-align: 1px; color: #4E5C42; }
+  /* 4. 접힌 칸 숨기기 체크 */
+  .rv-hide { display: inline-flex; align-items: center; gap: 4px; margin: .25em 0 0 .3em; font-family: var(--sans); font-size: 14px; color: #B87414; cursor: pointer; user-select: none; }
+  .rv-hide input { width: 15px; height: 15px; }
+  @media print { .rv-hide { display: none !important; } }
+
+  /* ===== 학습지 수정 창 정리: 고른 칸에만 도구 ===== */
+  #ws-editor .ws-box > .wse-ctl { opacity: 0 !important; pointer-events: none; transition: opacity .12s; }
+  #ws-editor .ws-box:hover > .wse-ctl { opacity: .3 !important; }
+  #ws-editor .ws-box.wse-on > .wse-ctl { opacity: 1 !important; pointer-events: auto; }
+  #ws-editor .ws-box.wse-on { outline: 2px solid #1F5A96; outline-offset: 3px; }
+  #ws-editor .wse-ctl button, #ws-editor .wse-ctl .wse-drag { font-size: 11.5px !important; padding: 2px 7px !important; }
+  #ws-editor .wse-split button, #ws-editor .wse-tctl button { opacity: 0 !important; pointer-events: none; }
+  #ws-editor .ws-box.wse-on .wse-split button, #ws-editor .ws-box.wse-on .wse-tctl button { opacity: 1 !important; pointer-events: auto; }
+  #ws-editor .wse-more { position: relative; margin-right: 6px; }
+  #ws-editor .wse-more > summary { list-style: none; cursor: pointer; font-family: var(--serif); font-weight: 700; font-size: 13px; padding: 5px 10px; border: 1.5px solid var(--edge); border-radius: 6px; background: #FFF; }
+  #ws-editor .wse-more > summary::-webkit-details-marker { display: none; }
+  #ws-editor .wse-more-body { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 220px; padding: 10px 12px; background: #FFFDF8; border: 1.5px solid var(--edge); border-radius: 10px; box-shadow: 0 8px 22px rgba(0,0,0,.15); }
+  #ws-editor .wse-more-body > * { margin: 0 !important; }
+  #ws-editor .wse-more-body button { width: 100%; text-align: left; }
+
+  /* 고른 칸의 도구: 화면 위쪽에 한 줄로 고정 */
+  #ws-editor .ws-box.wse-on > .wse-ctl { position: fixed !important; top: 98px !important; left: 50% !important; right: auto !important; transform: translateX(-50%) !important; display: flex; flex-wrap: nowrap; gap: 5px; align-items: center; background: #FFFDF8; padding: 6px 10px; border: 1.5px solid #1F5A96; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,.18); z-index: 40; white-space: nowrap; }
+  #ws-editor .ws-box.wse-on > .wse-ctl::before { content: '고른 칸'; font-family: var(--sans); font-size: 12px; font-weight: 700; color: #1F5A96; margin-right: 4px; }
+  #ws-editor .ws-box.wse-on > .wse-ctl button, #ws-editor .ws-box.wse-on > .wse-ctl .wse-drag { font-size: 13px !important; padding: 3px 9px !important; }
+  #ws-editor .wse-more { border: 0 !important; padding: 0 !important; background: none !important; }
+  #ws-editor .wse-help { padding-bottom: 46px; }
 </style>
 </head>
 <body>
@@ -2150,12 +2227,12 @@
   </div></div>
   <div class="edit-bar" id="edit-bar" hidden>
     <div class="grp"><button type="button" data-cmd="undoall" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-cmd="redoall" title="다시 실행 (Ctrl+Y)">↷ 다시</button></div>
-    <div class="grp"><span class="glab">페이지</span><select data-sel="page" aria-label="페이지 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select><button type="button" data-cmd="left" title="앞으로 옮기기">◀</button><button type="button" data-cmd="right" title="뒤로 옮기기">▶</button><button type="button" data-cmd="delpage" title="지금 보고 있는 페이지를 통째로 지워요 (두 번 눌러야 지워져요)">✕ 페이지 삭제</button></div>
+    <div class="grp"><span class="glab">페이지</span><select data-sel="page" aria-label="페이지 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select><button type="button" data-cmd="left" title="앞으로 옮기기">◀</button><button type="button" data-cmd="right" title="뒤로 옮기기">▶</button><button type="button" data-cmd="duppage" title="지금 페이지를 그대로 복사해 바로 뒤에 넣어요">⧉ 복사</button><button type="button" data-cmd="pgname" title="위쪽 페이지 탭에 보이는 이름 바꾸기 (탭을 두 번 눌러도 돼요)">✎ 이름</button><button type="button" data-cmd="delpage" title="지금 보고 있는 페이지를 통째로 지워요 (두 번 눌러야 지워져요)">✕ 페이지 삭제</button></div>
     <div class="grp"><span class="glab">차시</span><button type="button" data-cmd="addlesson" title="지금 차시 바로 뒤(같은 소단원)에 새 차시(표지 + 개념 1쪽)를 만들어요">＋ 차시</button><button type="button" data-cmd="dellesson" title="지금 차시를 통째로 지워요">차시 삭제</button></div>
-    <div class="grp"><select data-sel="tool" aria-label="수업 도구 넣기" title="커서가 있는 자리에 넣어요. 선 잇기·벤다이어그램은 커서가 있는 목록을 바꿔요"><option value="">＋ 수업 도구</option><option value="table">표</option><option value="match">선 잇기</option><option value="venn">벤다이어그램</option><option value="video">동영상 (유튜브)</option><option value="photo">사진</option><option value="choice">선택 카드 (A·B)</option></select></div>
+    <div class="grp"><select data-sel="tool" aria-label="수업 도구 넣기" title="커서가 있는 자리에 넣어요. 선 잇기·벤다이어그램은 커서가 있는 목록을 바꿔요"><option value="">＋ 수업 도구</option><option value="table">표</option><option value="match">선 잇기</option><option value="venn">벤다이어그램</option><option value="video">동영상 (유튜브)</option><option value="photo">사진</option><option value="choice">선택 카드 (A·B)</option><option value="vote">투표 (고르기)</option><option value="split">2분할 (사진·동영상·도구)</option></select></div>
     <span class="grp-sep"></span>
     <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="bd" class="t-bd" title="굵게 (Ctrl+B). 굵은 글자를 선택하고 다시 누르면 해제">굵게</button><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><button type="button" data-cmd="cloze" title="선택한 글자를 ( ) 빈칸으로. 수업 중 누르면 열려요">( ) 빈칸</button><button type="button" data-cmd="clozecho" title="선택한 글자를 초성 힌트가 있는 빈칸으로">초성 빈칸</button><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button><select data-sel="badge" aria-label="배지 넣기" title="커서 자리에 배지를 넣어요"><option value="">＋ 배지</option><option value="질문">질문</option><option value="미션">미션</option><option value="핵심 명제">핵심 명제</option><option value="정리">정리</option><option value="예시">예시</option><option value="주의">주의</option><option value="__custom">직접 입력…</option></select><input id="badge-text" class="badge-text" type="text" placeholder="배지 글자 입력 후 Enter" hidden></div>
-    <div class="grp"><span class="glab">줄</span><button type="button" data-cmd="outdent" title="내어쓰기 (Shift+Tab)">← 내어쓰기</button><button type="button" data-cmd="indent" title="들여쓰기 (Tab)">들여쓰기 →</button><select data-sel="bullet" aria-label="머리 기호" title="목록 줄 앞 기호 바꾸기"><option value="">머리 기호</option><option value="auto">기본</option><option value="dot">• 점</option><option value="dash">– 줄표</option><option value="arrow">→ 화살표</option><option value="check">✓ 체크</option><option value="none">없음</option></select></div>
+    <div class="grp"><span class="glab">줄</span><button type="button" data-cmd="outdent" title="내어쓰기 (Shift+Tab)">← 내어쓰기</button><button type="button" data-cmd="indent" title="들여쓰기 (Tab)">들여쓰기 →</button><button type="button" data-cmd="hang" title="커서를 맞추고 싶은 글자 앞에 두고 누르면, 둘째 줄부터 그 위치에 맞춰져요 (Shift+Tab과 같아요). 맨 앞에서 누르면 풀려요">⇥ 줄맞춤</button><select data-sel="bullet" aria-label="머리 기호" title="목록 줄 앞 기호 바꾸기"><option value="">머리 기호</option><option value="auto">기본</option><option value="dot">• 점</option><option value="dash">– 줄표</option><option value="arrow">→ 화살표</option><option value="check">✓ 체크</option><option value="none">없음</option></select></div>
     <div class="grp grp-size"><span class="glab">글씨 크기</span><button type="button" data-cmd="fsdown" title="1씩 작게">가－</button><input id="fs-num" class="fs-num" type="number" min="12" max="120" step="1" value="40" aria-label="글씨 크기"><button type="button" data-cmd="fsup" title="1씩 크게">가＋</button><button type="button" data-cmd="fsauto" title="이 페이지 글씨를 화면에 맞게 자동 조절">자동</button></div>
     <div class="grp grp-save"><div class="ver-info" id="ver-info"></div><a class="ver-hist" id="ver-hist" target="_blank" rel="noopener" hidden title="GitHub에서 반영 기록(버전) 보기">기록</a><button type="button" data-cmd="publish" class="t-save">GitHub 반영</button><button type="button" data-cmd="ghset" title="GitHub 연결 설정">⚙</button><button type="button" data-cmd="save" title="내용 파일(content.html)을 내려받기">내용 저장</button><select data-sel="backup" aria-label="내용 백업" title="지금 과목의 모든 내용을 텍스트나 엑셀로 내려받아요"><option value="">백업</option><option value="txt">텍스트(.txt)</option><option value="xlsx">엑셀(.xlsx)</option></select><button type="button" data-cmd="reset">초기화</button><span class="save-state" id="save-state" aria-live="polite"></span></div>
   </div>
@@ -2225,7 +2302,7 @@ function __boot() {
       if (+s.dataset.l !== l) return;
       s.querySelectorAll('details.reveal').forEach(function (d) { d.open = true; d.classList.add('concealed'); });
       s.querySelectorAll('.cloze.open').forEach(function (z) { z.classList.remove('open'); });
-      s.querySelectorAll('.choice-cards .cc.picked').forEach(function (z) { z.classList.remove('picked'); }); s.querySelectorAll('.choice-cards.has-pick').forEach(function (z) { z.classList.remove('has-pick'); });
+      s.querySelectorAll('.choice-cards .cc.picked').forEach(function (z) { z.classList.remove('picked'); }); s.querySelectorAll('.choice-cards.has-pick, .vrow.has-pick').forEach(function (z) { z.classList.remove('has-pick'); }); s.querySelectorAll('.vote .vc.picked').forEach(function (z) { z.classList.remove('picked'); });
       s.querySelectorAll('.bogi > li.sel').forEach(function (z) { z.classList.remove('sel'); }); s.querySelectorAll('.bogi-picked').forEach(function (z) { z.remove(); });
       s.querySelectorAll('.match').forEach(function (m) { m.removeAttribute('data-lines'); var sv = m.querySelector('svg.m-lines'); if (sv) sv.innerHTML = ''; m.querySelectorAll('.m-dot').forEach(function (d) { d.classList.remove('on', 'armed'); }); });
       s.querySelectorAll('.venn').forEach(function (v) { v.removeAttribute('data-pos'); var dr = v.querySelector('.v-drop'); if (dr) dr.innerHTML = ''; v.querySelectorAll('.v-tok').forEach(function (t) { t.classList.remove('placed', 'armed'); }); });
@@ -2295,7 +2372,8 @@ function __boot() {
       if (muted() || !ac()) return;
       var now = ctx.currentTime, base = 262;
       var master = ctx.createGain(); master.gain.value = 0.55; master.connect(ctx.destination);
-      [[1, 0.6, 7.5], [2.71, 0.32, 5.5], [5.12, 0.16, 3.6], [8.2, 0.07, 2.2]].forEach(function (p) {
+      var lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 4.2; lg.gain.value = 0.12; lfo.connect(lg); lg.connect(master.gain); lfo.start(now); lfo.stop(now + 15.5);
+      [[1, 0.6, 15], [2.71, 0.3, 11], [5.12, 0.14, 7], [8.2, 0.06, 4]].forEach(function (p) {
         [0, 1.3].forEach(function (det) {
           var o = ctx.createOscillator(), g = ctx.createGain();
           o.type = 'sine'; o.frequency.value = base * p[0] + det;
@@ -2495,6 +2573,13 @@ function __boot() {
     window.__lessonCheck = run;
   })();
   window.__resetLessonState = resetLessonState;
+  document.getElementById('pagenav').addEventListener('click', function (e) {
+    if (!document.body.classList.contains('editing')) return;
+    var b = e.target.closest('button'); if (!b) return;
+    var isCur = b.classList.contains('current') || b.getAttribute('aria-current');
+    if (!isCur && !e.target.closest('.tab-pen')) return;
+    e.preventDefault(); e.stopPropagation(); setTimeout(function () { if (window.__renamePage) window.__renamePage(); }, 30);
+  }, true);
   // 짧은 선택 카드(한두 단어)는 '이것 vs 저것' 모양으로
   (function () {
     var mark = function () {
@@ -2510,7 +2595,7 @@ function __boot() {
   })();
   // 교사용 접힌 칸(요약이 '교사용'으로 시작)은 수정 모드에서만 보이기
   (function () {
-    var mark = function () { document.querySelectorAll('section.stage details.reveal > summary').forEach(function (s) { s.parentNode.classList.toggle('teacher-only', /^\s*교사용/.test(s.textContent || '')); }); };
+    var mark = function () { document.querySelectorAll('section.stage details.reveal > summary').forEach(function (s) { s.parentNode.classList.toggle('teacher-only', s.parentNode.dataset.hide === '1' || /^\s*교사용/.test(s.textContent || '')); }); };
     var t = null, sl = document.getElementById('slide');
     if (sl) new MutationObserver(function () { clearTimeout(t); t = setTimeout(mark, 300); }).observe(sl, { childList: true, subtree: true, characterData: true });
     mark(); window.__markTeacherOnly = mark;
@@ -2528,10 +2613,10 @@ function __boot() {
   }, true);
   document.getElementById('slide').addEventListener('click', function (e) {
     if (document.body.classList.contains('editing')) return;
-    var c = e.target.closest && e.target.closest('.choice-cards > .cc'); if (!c) return;
+    var c = e.target.closest && e.target.closest('.vote .vc'); if (!c) return;
     e.stopPropagation();
-    var g = c.parentNode, was = c.classList.contains('picked');
-    [].forEach.call(g.querySelectorAll(':scope > .cc'), function (x) { x.classList.remove('picked'); });
+    var g = c.closest('.vrow'), was = c.classList.contains('picked');
+    [].forEach.call(g.querySelectorAll('.vc'), function (x) { x.classList.remove('picked'); });
     if (!was) c.classList.add('picked');
     g.classList.toggle('has-pick', !was);
   }, true);
@@ -2639,18 +2724,39 @@ function __boot() {
       return '페이지';
     }
     function renumber(l) {
-      var cnt = {};
+      var cnt = {}, used = {};
       lessonSecs(l).forEach(function (s, i) {
         s.dataset.p = i; var t = typeOf(s), lab = t;
-        if (t === '개념' || t === '요약' || t === '활동') { cnt[t] = (cnt[t] || 0) + 1; lab = t + cnt[t]; }
-        s.dataset.label = lab;
+        var old = s.dataset.label || '';
+        if (!s.dataset.name && old && old !== t && !/^(개념|요약|활동)[0-9]+$/.test(old)) s.dataset.name = old;
+        if (s.dataset.name) lab = s.dataset.name;
+        else if (t === '개념' || t === '요약' || t === '활동') { cnt[t] = (cnt[t] || 0) + 1; lab = t + cnt[t]; }
+        var base = lab, k = 2, sep = /[0-9]$/.test(base) ? '-' : ''; while (used[lab]) lab = base + sep + k++;
+        used[lab] = 1; s.dataset.label = lab;
       });
     }
+    function dupPage() {
+      var cur = pages[P], c = cur.cloneNode(true);
+      c.classList.remove('active', 'scrolly', 'measuring'); c.style.fontSize = '';
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .bogi-picked, .vt-tools, .sp-tools, .fn-note.fn-copy').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); });
+      cur.parentNode.insertBefore(c, cur.nextSibling);
+      changed(c); state.textContent = '페이지를 복사했어요 (바로 뒤에 넣었어요)';
+    }
+    function renamePage() {
+      var cur = pages[P], now = cur.dataset.name || cur.dataset.label || '';
+      var v = window.prompt('위쪽 페이지 탭에 보일 이름 (비우면 자동 이름: 개념1, 활동2 …)', now);
+      if (v === null) return;
+      v = v.trim().slice(0, 12);
+      if (v) cur.dataset.name = v; else delete cur.dataset.name;
+      changed(cur); state.textContent = v ? '페이지 이름을 "' + v + '"(으)로 바꿨어요' : '자동 이름으로 되돌렸어요';
+    }
+    window.__renamePage = function () { if (editing) renamePage(); };
     function clean(s) {
       var c = s.cloneNode(true);
       c.classList.remove('active', 'scrolly', 'measuring'); c.style.fontSize = ''; if (!c.getAttribute('style')) c.removeAttribute('style');
       c.querySelectorAll('.block, header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .bogi-picked').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .bogi-picked, .vt-tools, .sp-tools, .rv-hide').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -2777,7 +2883,7 @@ function __boot() {
         });
       });
       photoTools(on); blockTools(on); gripTools(on); noteTools(on); widgetTools(on); if (!on) clearTableBar();
-      bookEditTools(on); videoTools(on); pagePhotoTools(on); choiceTools(on); try { progRender(); } catch (e) {}
+      bookEditTools(on); videoTools(on); pagePhotoTools(on); choiceTools(on); voteTools(on); splitTools(on); revealTools(on); try { progRender(); } catch (e) {}
       if (window.__reveal) window.__reveal.wrap();
     }
     // ===== 반영 안 된 수정 알림 · 되살리기 · 자동 반영 =====
@@ -2844,7 +2950,7 @@ function __boot() {
       applyEdit(on);
       state.textContent = on ? '수정 중' : '';
       if (on) { var ab = pages[P] && pages[P].querySelector('.block'); var fz = ab ? parseFloat(ab.style.fontSize || 0) : 0; if (fz && fz < 36 && !pages[P].dataset.fs) state.textContent = '이 페이지는 내용이 많아 글씨가 ' + fz + '로 줄었어요. 페이지를 나누면 36으로 맞춰져요'; }
-      if (!on) { var cur0 = pages[P]; if (cur0 && dropEmpty(cur0)) storeLesson(+cur0.dataset.l); }
+      if (!on) { var cur0 = pages[P]; if (cur0 && dropEmpty(cur0)) storeLesson(+cur0.dataset.l); if (cur0 && pruneLesson(+cur0.dataset.l)) state.textContent = '글을 다 지운 형식 칸을 정리했어요'; }
       if (!on && isDirty() && ghGet()) setTimeout(function () { publish(); }, 50);
       if (!on && isDirty() && !ghGet()) state.textContent = 'GitHub에 반영 안 된 수정이 있어요. GitHub 반영을 눌러 주세요';
       if (!on && window.__notes) window.__notes.link();
@@ -3112,7 +3218,7 @@ function __boot() {
       c.querySelectorAll('section.stage').forEach(function (s) { s.classList.remove('active'); s.style.fontSize = ''; if (!s.getAttribute('style')) s.removeAttribute('style'); });
       c.querySelectorAll('section.stage .block, section.stage header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
       c.querySelectorAll('.current').forEach(function (e) { e.classList.remove('current'); e.removeAttribute('aria-current'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, input[type=file]').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .vt-tools, .sp-tools, .rv-hide, input[type=file]').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -3374,7 +3480,8 @@ function __boot() {
       if ((!n || !n.closest || !n.closest('section.stage.active .block')) && savedRange && savedRange.startContainer.isConnected) { n = savedRange.startContainer; if (n.nodeType === 3) n = n.parentNode; }
       if (n && n.closest && n.closest('section.stage.active .block')) {
         var el = n;
-        while (el.parentNode && !(el.parentNode.classList && el.parentNode.classList.contains('block')) && el.parentNode.tagName !== 'DETAILS') el = el.parentNode;
+        while (el.parentNode && !(el.parentNode.classList && (el.parentNode.classList.contains('block') || el.parentNode.classList.contains('pane'))) && el.parentNode.tagName !== 'DETAILS') el = el.parentNode;
+        if (el.classList && el.classList.contains('pane')) { var lc = el.lastElementChild; if (lc) return lc; var ph = document.createElement('p'); el.appendChild(ph); return ph; }
         return el;
       }
       var blocks = pages[P].querySelectorAll('.block');
@@ -4213,7 +4320,7 @@ function __boot() {
     function pruneBlock(blk) {
       if (!blk || !blk.isConnected) return 0;
       var removed = 0, rm = function (el) { el.remove(); removed++; };
-      var skip = function (el) { return el.closest('.match, .venn, table, .fn-note'); };
+      var skip = function (el) { return el.closest('.match, .venn, table, .fn-note, .vote, .split'); };
       for (var pass = 0; pass < 3; pass++) {
         blk.querySelectorAll('.clip').forEach(function (c) { if (isBlank(c)) rm(c); });
         blk.querySelectorAll('.side, .mission-bar, .cc, details.reveal').forEach(function (c) { if (!skip(c) && isBlank(c)) rm(c); });
@@ -4226,16 +4333,11 @@ function __boot() {
       return removed;
     }
     var pruneT = null;
-    document.getElementById('slide').addEventListener('input', function () {
-      if (!editing) return;
-      var sel = window.getSelection(), n = sel && sel.anchorNode; if (!n) return;
-      var blk = (n.nodeType === 3 ? n.parentNode : n).closest && (n.nodeType === 3 ? n.parentNode : n).closest('.block'); if (!blk) return;
-      clearTimeout(pruneT);
-      pruneT = setTimeout(function () {
-        var sec = blk.closest('section.stage'), k = pruneBlock(blk);
-        if (k && sec) { storeLesson(+sec.dataset.l); state.textContent = '글을 지운 형식 칸을 정리했어요 (Ctrl+Z로 되돌리기)'; }
-      }, 900);
-    });
+    function pruneLesson(l) {
+      var k = 0; lessonSecs(l).forEach(function (s) { s.querySelectorAll('.block').forEach(function (b) { k += pruneBlock(b); }); });
+      if (k) storeLesson(l);
+      return k;
+    }
     // 사진 붙여넣기(Ctrl+V)·끌어다 놓기로도 넣기
     function insertPhotoFile(f) {
       state.textContent = '사진 넣는 중…';
@@ -4296,6 +4398,73 @@ function __boot() {
       w.dataset.n = String(w.querySelectorAll(':scope > .cc').length); choiceTools(true); storeLesson(+sec.dataset.l);
       if (window.__autofitForce) window.__autofitForce();
     });
+    // ===== 투표 (고르기): 색 없는 카드, 줄마다 하나 선택 =====
+    function vRow(a, b) { return '<div class="vrow"><div class="vc">' + (a || '') + '</div><span class="vs">VS</span><div class="vc">' + (b || '') + '</div></div>'; }
+    function makeVote() {
+      var w = document.createElement('div'); w.className = 'vote';
+      w.innerHTML = vRow('', '') + vRow('', '');
+      placeTable(w); voteTools(true); state.textContent = '투표를 넣었어요. 칸을 눌러 선택지를 적으세요';
+    }
+    function voteTools(on) {
+      document.querySelectorAll('.vt-tools').forEach(function (x) { x.remove(); });
+      document.querySelectorAll('section.stage .vote').forEach(function (w) {
+        if (on) {
+          w.setAttribute('contenteditable', 'false');
+          w.querySelectorAll('.vc').forEach(function (vc) { var pp = vc.querySelector('p'); (pp || vc).setAttribute('contenteditable', 'true'); });
+          var t = document.createElement('div'); t.className = 'vt-tools'; t.setAttribute('contenteditable', 'false');
+          t.innerHTML = '<button type="button" data-vt="+">＋ 줄</button><button type="button" data-vt="-">－ 줄</button><button type="button" data-vt="del" class="vt-del">삭제</button>';
+          w.insertBefore(t, w.firstChild);
+        } else { w.removeAttribute('contenteditable'); w.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); }); }
+      });
+    }
+    // ===== 2분할: 왼쪽·오른쪽 칸에 글·사진·동영상·도구 =====
+    function makeSplit() {
+      var w = document.createElement('div'); w.className = 'split'; w.dataset.r = '50';
+      w.innerHTML = '<div class="pane"><p>왼쪽 칸</p></div><div class="pane"><p>오른쪽 칸</p></div>';
+      placeTable(w); splitTools(true); state.textContent = '2분할을 넣었어요. 칸 안을 누르고 ＋ 수업 도구로 사진·동영상·표를 넣을 수 있어요';
+    }
+    function splitTools(on) {
+      document.querySelectorAll('.sp-tools').forEach(function (x) { x.remove(); });
+      document.querySelectorAll('section.stage .split').forEach(function (w) {
+        if (on) {
+          w.setAttribute('contenteditable', 'false');
+          w.querySelectorAll(':scope > .pane').forEach(function (x) { x.setAttribute('contenteditable', 'true'); });
+          var t = document.createElement('div'); t.className = 'sp-tools'; t.setAttribute('contenteditable', 'false');
+          t.innerHTML = '<button type="button" data-sp="40">왼쪽 좁게</button><button type="button" data-sp="50">반반</button><button type="button" data-sp="60">왼쪽 넓게</button><button type="button" data-sp="del" class="vt-del">삭제</button>';
+          w.insertBefore(t, w.firstChild);
+        } else { w.removeAttribute('contenteditable'); w.querySelectorAll(':scope > .pane').forEach(function (x) { x.removeAttribute('contenteditable'); }); }
+      });
+    }
+    document.getElementById('slide').addEventListener('click', function (e) {
+      if (!editing) return;
+      var b = e.target.closest('.vt-tools button, .sp-tools button'); if (!b) return;
+      e.preventDefault(); var sec = b.closest('section.stage');
+      if (b.dataset.vt) {
+        var w = b.closest('.vote'), rows = w.querySelectorAll(':scope > .vrow');
+        if (b.dataset.vt === 'del') { if (!confirmTwice(b, '한 번 더 누르면 삭제')) return; w.remove(); }
+        else if (b.dataset.vt === '+') { var d = document.createElement('div'); d.innerHTML = vRow('', ''); w.appendChild(d.firstChild); voteTools(true); }
+        else if (rows.length > 1) rows[rows.length - 1].remove();
+      } else if (b.dataset.sp) {
+        var s = b.closest('.split');
+        if (b.dataset.sp === 'del') { if (!confirmTwice(b, '한 번 더 누르면 삭제')) return; s.remove(); }
+        else s.dataset.r = b.dataset.sp;
+      }
+      storeLesson(+sec.dataset.l); if (window.__autofitForce) window.__autofitForce();
+    });
+    function revealTools(on) {
+      document.querySelectorAll('.rv-hide').forEach(function (x) { x.remove(); });
+      if (!on) return;
+      document.querySelectorAll('section.stage details.reveal').forEach(function (d) {
+        var lb = document.createElement('label'); lb.className = 'rv-hide'; lb.setAttribute('contenteditable', 'false');
+        lb.innerHTML = '<input type="checkbox"' + (d.classList.contains('teacher-only') ? ' checked' : '') + '> 수업 화면에서 숨기기 (교사용)';
+        d.parentNode.insertBefore(lb, d.nextSibling);
+        lb.querySelector('input').addEventListener('change', function (e) {
+          if (e.target.checked) d.dataset.hide = '1'; else { delete d.dataset.hide; var sm = d.querySelector('summary'); if (sm && /^\s*교사용/.test(sm.textContent)) sm.textContent = sm.textContent.replace(/^\s*교사용\s*/, '') || '정리 보기'; }
+          d.classList.toggle('teacher-only', e.target.checked);
+          storeLesson(+d.closest('section.stage').dataset.l);
+        });
+      });
+    }
     function pagePhotoTools(on) {
       document.querySelectorAll('.pp-tools').forEach(function (x) { x.remove(); });
       if (!on) return;
@@ -4393,6 +4562,8 @@ function __boot() {
         else if (sel.value === 'venn') makeVenn();
         else if (sel.value === 'video') addVideo();
         else if (sel.value === 'choice') makeChoice();
+        else if (sel.value === 'vote') makeVote();
+        else if (sel.value === 'split') makeSplit();
         else if (sel.value === 'photo') addPhoto();
       }
       else if (sel.dataset.sel === 'badge') {
@@ -4419,6 +4590,14 @@ function __boot() {
       else if (c === 'left') movePage(-1);
       else if (c === 'right') movePage(1);
       else if (c === 'delpage') delPage(btn);
+      else if (c === 'duppage') dupPage();
+      else if (c === 'hang') {
+        var hs = window.getSelection(); if ((!hs.rangeCount || !document.getElementById('slide').contains(hs.anchorNode)) && savedRange) { hs.removeAllRanges(); hs.addRange(savedRange); }
+        var hr = window.__hangAtCaret ? window.__hangAtCaret(document.getElementById('slide')) : false;
+        if (hr) { storeLesson(L); state.textContent = hr === 'on' ? '줄맞춤 했어요: 둘째 줄부터 이 위치에 맞춰요' : '줄맞춤을 풀었어요'; }
+        else state.textContent = '맞추고 싶은 글자 앞에 커서를 두고 줄맞춤을 누르세요';
+      }
+      else if (c === 'pgname') renamePage();
       else if (c === 'nohead') toggleHead();
       else if (c === 'addlesson') addLesson();
       else if (c === 'dellesson') delLesson(btn);
@@ -5318,6 +5497,7 @@ function __boot() {
   function wsClean(el) {
     el.querySelectorAll('.fn-anchor').forEach(function (a) { while (a.firstChild) a.parentNode.insertBefore(a.firstChild, a); a.remove(); });
     el.querySelectorAll('.video-wrap').forEach(function (x) { x.remove(); });
+    el.querySelectorAll('.vote, .vt-tools').forEach(function (x) { x.remove(); });
     el.querySelectorAll('.kind, .tag, .prog-panel, .rv-open, .rv-close, .m-clear, .v-clear, .wd-undo, .fn-mark, .fn-note, figure, svg, img, .m-dot, .v-tok, .v-drop, .v-stage, .lab').forEach(function (x) { x.remove(); });
     el.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); });
     el.querySelectorAll('span[style], font[color]').forEach(function (x) { var c = (x.style && x.style.color) || x.getAttribute('color') || ''; if (c && !/^(rgb\(0, 0, 0\)|#000|#000000|black|inherit)$/i.test(c.trim())) x.classList.add('ws-colored'); });
@@ -5544,7 +5724,7 @@ function __boot() {
         if (m) { var nums = m.map(function (x) { return parseFloat(x); }), s = nums.reduce(function (a, c) { return a + c; }, 0); v = Math.round(nums[0] / s * 100); }
         ratio = '<label class="wse-sr">왼쪽 폭 <input type="range" min="' + (n === 3 ? 25 : 30) + '" max="' + (n === 3 ? 60 : 75) + '" value="' + v + '" data-sr=""><b>' + v + '%</b></label>';
       }
-      b.innerHTML = '<span class="wse-sl">' + (isActs || g.classList.contains('ws-actgrid') ? '활동 구역' : '구역 ' + (k + 1)) + '</span>' +
+      b.innerHTML = '<span class="wse-sl">' + (isActs || g.classList.contains('ws-actgrid') ? '활동 묶음' : '묶음 ' + (k + 1)) + ' · 단 나누기</span>' +
         [1, 2, 3].map(function (x) { return '<button type="button" data-wse="scol" data-n="' + x + '"' + (x === n ? ' class="on"' : '') + '>' + x + '단</button>'; }).join('') + ratio +
         '<label class="wse-snp"><input type="checkbox" data-snp=""' + (g.classList.contains('ws-newpage') ? ' checked' : '') + '> 새 쪽에서 시작</label>';
       g.parentNode.insertBefore(b, g);
@@ -5580,19 +5760,28 @@ function __boot() {
       var c = document.createElement('div'); c.className = 'wse-ctl'; c.setAttribute('contenteditable', 'false');
       var nx = bx.nextElementSibling; while (nx && !nx.classList.contains('ws-box')) nx = nx.nextElementSibling;
       var canMerge = nx && wseType(nx) && wseType(nx) === wseType(bx) && (wseType(bx) === 'ws-concept' || wseType(bx) === 'ws-summary');
-      c.innerHTML = '<button type="button" data-wse="up" title="한 칸 앞으로(위로)">▲</button><button type="button" data-wse="down" title="한 칸 뒤로(아래로)">▼</button><span class="wse-drag" draggable="true" title="끌어서 이 칸 옮기기">⠿ 옮기기</span>' + (bx.querySelector('.ws-line') ? '<button type="button" data-wse="line+" title="문항마다 쓰는 줄 1개 더">줄＋</button><button type="button" data-wse="line-" title="문항마다 쓰는 줄 1개 빼기">줄－</button>' : '') + (canMerge ? '<button type="button" data-wse="merge" title="바로 아래 같은 종류 칸과 합치기">⤓ 합치기</button>' : '') + (bx.closest('.ws-body') ? '<button type="button" data-wse="newsec" title="이 칸부터 새 구역(새 쪽)으로 보내고, 그 구역의 단 수를 따로 정해요">⤓ 새 쪽</button>' : '') + '<button type="button" data-wse="del" title="이 칸 빼기">✕ 빼기</button>';
+      c.innerHTML = '<button type="button" data-wse="up" title="한 칸 앞으로(위로)">▲ 위로</button><button type="button" data-wse="down" title="한 칸 뒤로(아래로)">▼ 아래로</button><span class="wse-drag" draggable="true" title="잡고 끌어서 원하는 곳에 놓기">⠿ 끌어 옮기기</span>' + (bx.querySelector('.ws-line') ? '<button type="button" data-wse="line+" title="문항마다 쓰는 줄 1개 더">쓰는 줄＋</button><button type="button" data-wse="line-" title="문항마다 쓰는 줄 1개 빼기">쓰는 줄－</button>' : '') + (canMerge ? '<button type="button" data-wse="merge" title="바로 아래 같은 종류 칸과 합치기">⤓ 아래 칸과 합치기</button>' : '') + (bx.closest('.ws-body') ? '<button type="button" data-wse="newsec" title="이 칸부터 다음 쪽에서 시작하고, 그 묶음의 단 수를 따로 정해요">↧ 여기부터 새 쪽</button>' : '') + '<button type="button" data-wse="del" title="이 칸 빼기">✕ 빼기</button>';
       bx.insertBefore(c, bx.firstChild);
     });
   }
-  function wseHtml(root) { var c = root.cloneNode(true); c.querySelectorAll('.wse-sctl').forEach(function (x) { x.remove(); }); c.querySelectorAll('.ws-newpage').forEach(function (x) { x.style.removeProperty('margin-top'); }); c.querySelectorAll('.wse-split, .wse-bandctl').forEach(function (x) { x.remove(); }); c.querySelectorAll('.wse-dragging, .wse-drop-before, .wse-drop-after, .wse-drop-in').forEach(function (x) { x.classList.remove('wse-dragging', 'wse-drop-before', 'wse-drop-after', 'wse-drop-in'); }); c.querySelectorAll('.wse-bsel').forEach(function (x) { x.classList.remove('wse-bsel'); }); c.querySelectorAll('.wse-colhot').forEach(function (x) { x.classList.remove('wse-colhot'); }); c.querySelectorAll('.ws-blank, .ws-pl, .ws-inline-line').forEach(function (x) { x.removeAttribute('contenteditable'); }); c.querySelectorAll('.wse-ctl, .wse-tctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
+  function wseHtml(root) { var c = root.cloneNode(true); c.querySelectorAll('.wse-on').forEach(function (x) { x.classList.remove('wse-on'); }); c.querySelectorAll('.wse-sctl').forEach(function (x) { x.remove(); }); c.querySelectorAll('.ws-newpage').forEach(function (x) { x.style.removeProperty('margin-top'); }); c.querySelectorAll('.wse-split, .wse-bandctl').forEach(function (x) { x.remove(); }); c.querySelectorAll('.wse-dragging, .wse-drop-before, .wse-drop-after, .wse-drop-in').forEach(function (x) { x.classList.remove('wse-dragging', 'wse-drop-before', 'wse-drop-after', 'wse-drop-in'); }); c.querySelectorAll('.wse-bsel').forEach(function (x) { x.classList.remove('wse-bsel'); }); c.querySelectorAll('.wse-colhot').forEach(function (x) { x.classList.remove('wse-colhot'); }); c.querySelectorAll('.ws-blank, .ws-pl, .ws-inline-line').forEach(function (x) { x.removeAttribute('contenteditable'); }); c.querySelectorAll('.wse-ctl, .wse-tctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
   function openWsEditor(withAns, land, compact) {
     closeWsEditor();
     var key = wseKey(withAns, land, compact), stored = window.__wsGet ? window.__wsGet(key) : null;
     var ps = document.createElement('style'); ps.id = 'ws-page-style'; ps.textContent = '@media print { @page { size: A4 ' + (land ? 'landscape' : 'portrait') + '; margin: 7mm; } }'; document.head.appendChild(ps);
     var ov = document.createElement('div'); ov.id = 'ws-editor';
     var title = (secTitle() || '') + ' · ' + (withAns ? '정답지' : '학생용') + ' · A4 ' + (land ? '가로' : '세로') + (compact ? ' 한 장 압축' : '');
-    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><select class="wse-fmt" title="학습지 형식 바꾸기"><optgroup label="학생용"><option value="blank-p">학생용 · 세로</option><option value="blank-l">학생용 · 가로</option><option value="blank-pc">학생용 · 세로 한 장</option><option value="blank-lc">학생용 · 가로 한 장</option></optgroup><optgroup label="정답지"><option value="ans-p">정답지 · 세로</option><option value="ans-l">정답지 · 가로</option><option value="ans-pc">정답지 · 세로 한 장</option><option value="ans-lc">정답지 · 가로 한 장</option></optgroup></select><label class="wse-def" title="이 과목에서 학습지 버튼을 누르면 이 형식으로 바로 열기"><input type="checkbox"> 기본 형식</label><button type="button" data-wse="undo" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-wse="redo" title="다시 (Ctrl+Y)">↷ 다시</button><button type="button" data-wse="bul" title="커서가 있는 줄(또는 선택한 줄들)의 앞 기호를 없애거나 되살려요. 줄 앞 기호를 직접 클릭해도 돼요">● 이 줄 기호 끄기/켜기</button><label class="wse-nobul" title="목록 앞 ● 기호 모두 없애기"><input type="checkbox"> 기호 모두 없애기</label><button type="button" data-wse="band" title="아래에 새 구역을 만들어 단 수를 따로 정해요">＋ 구역 추가</button><label class="wse-cols" title="본문 단 수">단 <select><option value="2">2단</option><option value="3">3단</option></select></label><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help">글자를 눌러 바로 고칠 수 있어요. 칸 오른쪽 위 ▲▼로 칸을 한 칸씩 앞뒤로 옮기거나 ⠿ 옮기기를 끌어 원하는 곳에 놓고, 버튼으로 칸을 빼거나 쓰는 줄을 늘리고 줄일 수 있어요. 위쪽 단 비율로 왼쪽·오른쪽 폭을 바꿔요. 고친 내용은 차시별로 저장되고, 사이트(GitHub)에 함께 반영돼서 어느 컴퓨터에서나 같아요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
+    ov.innerHTML = '<div class="wse-bar"><b>학습지 수정</b><span class="wse-t"></span><span class="wse-note"></span><span class="wse-pages"></span><span class="wse-sp"></span><select class="wse-fmt" title="학습지 형식 바꾸기"><optgroup label="학생용"><option value="blank-p">학생용 · 세로</option><option value="blank-l">학생용 · 가로</option><option value="blank-pc">학생용 · 세로 한 장</option><option value="blank-lc">학생용 · 가로 한 장</option></optgroup><optgroup label="정답지"><option value="ans-p">정답지 · 세로</option><option value="ans-l">정답지 · 가로</option><option value="ans-pc">정답지 · 세로 한 장</option><option value="ans-lc">정답지 · 가로 한 장</option></optgroup></select><label class="wse-def" title="이 과목에서 학습지 버튼을 누르면 이 형식으로 바로 열기"><input type="checkbox"> 기본 형식</label><button type="button" data-wse="undo" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-wse="redo" title="다시 (Ctrl+Y)">↷ 다시</button><button type="button" data-wse="bul" title="커서가 있는 줄(또는 선택한 줄들)의 앞 기호를 없애거나 되살려요. 줄 앞 기호를 직접 클릭해도 돼요">● 이 줄 기호 끄기/켜기</button><label class="wse-nobul" title="목록 앞 ● 기호 모두 없애기"><input type="checkbox"> 기호 모두 없애기</label><label class="wse-cols" title="본문 단 수">단 <select><option value="2">2단</option><option value="3">3단</option></select></label><label class="wse-ratio" title="왼쪽 단 : 오른쪽 단 비율">단 비율 <input type="range" min="35" max="75" step="1"><span class="wse-rv"></span></label><button type="button" data-wse="print" class="wse-main">인쇄 / PDF 저장</button><button type="button" data-wse="reset">원래대로</button><button type="button" data-wse="close">닫기</button></div><div class="wse-help"><b>칸을 누르면</b> 그 칸의 도구(옮기기·빼기·쓰는 줄·나누기)가 나와요. 글자는 바로 눌러서 고쳐요. 점선 막대에서 묶음마다 단 수를 정해요.</div><div class="wse-scroll"><div class="wse-paper' + (land ? ' land' : '') + '"></div></div>';
     ov.querySelector('.wse-t').textContent = title;
+    (function () {
+      var bar = ov.querySelector('.wse-bar'), pr = bar.querySelector('button[data-wse=print]');
+      var more = document.createElement('details'); more.className = 'wse-more';
+      more.innerHTML = '<summary>더보기 ▾</summary><div class="wse-more-body"></div>';
+      var body = more.querySelector('.wse-more-body');
+      ['.wse-def', 'button[data-wse=bul]', '.wse-nobul', 'button[data-wse=reset]'].forEach(function (s) { var el = bar.querySelector(s); if (el) body.appendChild(el); });
+      bar.insertBefore(more, pr);
+      document.addEventListener('click', function (e) { if (more.open && !more.contains(e.target)) more.open = false; });
+    })();
     document.body.appendChild(ov); document.body.classList.add('ws-editing');
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; if (compact) root.classList.add('ws-compact');
     ov.querySelector('.wse-paper').appendChild(root);
@@ -5789,6 +5978,12 @@ function __boot() {
     root.addEventListener('change', function (e) {
       var np = e.target.closest && e.target.closest('input[data-snp]'); if (!np) return;
       np.closest('.wse-sctl').nextElementSibling.classList.toggle('ws-newpage', np.checked); save();
+    });
+    root.addEventListener('mousedown', function (e) {
+      if (e.target.closest('.wse-sctl')) return;
+      var bx = e.target.closest('.ws-box');
+      root.querySelectorAll('.ws-box.wse-on').forEach(function (x) { if (x !== bx) x.classList.remove('wse-on'); });
+      if (bx) bx.classList.add('wse-on');
     });
     root.addEventListener('input', save);
     root.addEventListener('keydown', function (e) {
