@@ -1875,6 +1875,17 @@
   .slide .stage-head .pin-chip.on { color: #8A5A0B; border: 1.5px solid #C98A1E; background: #FFF4DC; }
   @media print { .pin-chip { display: none !important; } }
   #pin-pop { bottom: auto; }
+
+  /* 목차 반별 진도: 📍 지금 페이지까지 */
+  .prog-sum .ps-row { display: inline-flex; align-items: stretch; gap: 0; }
+  .prog-sum .ps-row .ps-c { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .prog-sum .ps-pin { border: 1.5px solid var(--edge); border-left: 0; background: #FFF; border-radius: 0 8px 8px 0; padding: 0 7px; cursor: pointer; font-size: 13px; opacity: .55; }
+  .prog-sum .ps-pin:hover { opacity: 1; }
+  .prog-sum .ps-pin.on { opacity: 1; background: #FFF4DC; border-color: #C98A1E; }
+
+  .slide .stage-head .pin-chip { padding: 0 8px; opacity: .55; border-color: transparent; }
+  .slide .stage-head .pin-chip:hover { opacity: 1; border-color: var(--edge); }
+  .slide .stage-head .pin-chip.on { opacity: 1; padding: 1px 10px; }
 </style>
 </head>
 <body>
@@ -4357,10 +4368,13 @@ function __boot() {
       if (toggle.hidden || !PROG.classes.length) return;
       var ln = function (id) { return window.__lessonNo ? window.__lessonNo(id) : id; };
       var sum = document.createElement('div'); sum.className = 'prog-sum';
+      var curLab = pages[P] ? (pages[P].dataset.label || '') : '';
       sum.innerHTML = '<div class="ps-h"><b>반별 진도</b><button type="button" class="pp-set">반 설정</button></div><div class="ps-list">' + PROG.classes.map(function (c) {
         var lt = latestOf(c), at = PROG.at[c], ord = lessonOrder();
-        if (at && ord.indexOf(String(at.l)) > -1 && (!lt || ord.indexOf(String(at.l)) > ord.indexOf(String(lt)))) return '<button type="button" class="ps-c mid" data-go="' + at.l + '" data-p="' + (at.p || 0) + '" title="이어서 하기"><b>' + esc2(c) + '</b> ' + ln(at.l) + '차시 · ' + esc2(at.label || '') + '까지</button>';
-        return '<button type="button" class="ps-c' + (lt ? '' : ' none') + '"' + (lt ? ' data-go="' + lt + '"' : '') + '><b>' + esc2(c) + '</b> ' + (lt ? ln(lt) + '차시' : '시작 전') + '</button>';
+        var here = at && String(at.l) === String(L) && +at.p === P;
+        var pin = '<button type="button" class="ps-pin' + (here ? ' on' : '') + '" data-pin="' + esc2(c) + '" title="' + (here ? '여기까지 표시 지우기' : '지금 보고 있는 페이지(' + esc2(curLab) + ')에서 끝났다고 표시') + '">📍</button>';
+        if (at && ord.indexOf(String(at.l)) > -1 && (!lt || ord.indexOf(String(at.l)) > ord.indexOf(String(lt)))) return '<span class="ps-row"><button type="button" class="ps-c mid" data-go="' + at.l + '" data-p="' + (at.p || 0) + '" title="이어서 하기"><b>' + esc2(c) + '</b> ' + ln(at.l) + '차시 · ' + esc2(at.label || '') + '까지</button>' + pin + '</span>';
+        return '<span class="ps-row"><button type="button" class="ps-c' + (lt ? '' : ' none') + '"' + (lt ? ' data-go="' + lt + '"' : '') + '><b>' + esc2(c) + '</b> ' + (lt ? ln(lt) + '차시' : '시작 전') + '</button>' + pin + '</span>';
       }).join('') + '</div>';
       var anchor = bk.querySelector('.book-edit') || bk.querySelector('.course-switch');
       bk.insertBefore(sum, anchor ? anchor.nextSibling : bk.firstChild);
@@ -4420,8 +4434,8 @@ function __boot() {
         var sec = hd.closest('section.stage'), l = sec.dataset.l, idx = [].indexOf.call(lessonSecs(+l), sec);
         var who = PROG.classes.filter(function (c) { var at = PROG.at[c]; return at && String(at.l) === String(l) && +at.p === idx; });
         var ch = document.createElement('button'); ch.type = 'button'; ch.className = 'pin-chip' + (who.length ? ' on' : ''); ch.setAttribute('contenteditable', 'false');
-        ch.textContent = who.length ? '📍 ' + who.join(', ') + ' 여기까지' : '📍 여기까지';
-        ch.title = '수업이 이 페이지에서 끝났으면 눌러서 반을 골라요';
+        ch.textContent = who.length ? '📍 ' + who.join(', ') : '📍';
+        ch.title = who.length ? who.join(', ') + ' 여기까지 · 눌러서 바꾸기' : '수업이 이 페이지에서 끝났으면 눌러서 반을 골라요';
         var tm = hd.querySelector('.time'); hd.insertBefore(ch, tm || null);
       });
     }
@@ -4465,6 +4479,14 @@ function __boot() {
         if (!arr.length) delete PROG.done[l];
         progSave(); state.textContent = name + (i > -1 ? ' 진도 체크 해제' : ' 진도 체크');
         return;
+      }
+      var pn = e.target.closest('.ps-pin');
+      if (pn) {
+        e.preventDefault(); e.stopPropagation();
+        var cc = pn.dataset.pin, at0 = PROG.at[cc];
+        if (at0 && String(at0.l) === String(L) && +at0.p === P) { delete PROG.at[cc]; state.textContent = cc + ' 여기까지 표시를 지웠어요'; }
+        else { PROG.at[cc] = { l: String(L), p: P, label: pages[P] ? (pages[P].dataset.label || '') : '' }; state.textContent = cc + ': ' + (PROG.at[cc].label || '') + '까지 했어요'; }
+        progSave(); return;
       }
       var g = e.target.closest('.ps-c[data-go]'); if (g) { e.preventDefault(); if (window.__open) window.__open(+g.dataset.go, +(g.dataset.p || 0)); }
     }
