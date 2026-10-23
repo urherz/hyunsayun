@@ -1845,6 +1845,36 @@
   /* 쪽 계산할 때는 인쇄와 같은 모양으로 재기 */
   #ws-editor #ws-root.wse-measure .wse-sctl, #ws-editor #ws-root.wse-measure .wse-split, #ws-editor #ws-root.wse-measure .wse-tctl { display: none !important; }
   #ws-editor #ws-root.wse-measure .ws-box { margin-top: 0 !important; outline: 0 !important; }
+
+  /* 📍 여기까지 (중간 진도) */
+  #pin-btn { position: fixed; left: 16px; bottom: 16px; z-index: 290; font-family: var(--serif); font-weight: 700; font-size: 14px; padding: 7px 12px; border: 1.5px solid var(--edge); border-radius: 999px; background: #FFFDF8; color: var(--ink); cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.12); opacity: .75; }
+  #pin-btn:hover { opacity: 1; }
+  #pin-btn[hidden], #pin-pop[hidden] { display: none; }
+  #pin-pop { position: fixed; left: 16px; bottom: 60px; z-index: 291; width: min(360px, 90vw); background: #FFFDF8; border: 2px solid var(--edge); border-radius: 12px; padding: 10px 12px; box-shadow: 0 10px 28px rgba(0,0,0,.2); font-family: var(--serif); }
+  #pin-pop .pn-h { font-size: 14px; margin-bottom: 8px; }
+  #pin-pop .pn-cls { display: flex; flex-wrap: wrap; gap: 6px; }
+  #pin-pop .pn-cls button { font-family: var(--serif); font-weight: 700; font-size: 14px; padding: 5px 12px; border: 1.5px solid var(--edge); border-radius: 8px; background: #FFF; cursor: pointer; }
+  #pin-pop .pn-cls button.on { background: #C98A1E; border-color: #C98A1E; color: #FFF; }
+  #pin-pop .pn-tip { font-size: 11.5px; color: var(--ink-soft); margin-top: 8px; }
+  #pagenav button[data-pin] { position: relative; }
+  #pagenav button[data-pin]::after { content: '📍'; position: absolute; top: -9px; right: -6px; font-size: 13px; }
+  .prog-chips i.mid { background: #FFF4DC !important; color: #8A5A0B !important; border: 1.5px dashed #C98A1E !important; }
+  .prog-sum .ps-c.mid { border-style: dashed; border-color: #C98A1E; }
+  @media print { #pin-btn, #pin-pop { display: none !important; } }
+
+  body.side-open #pin-btn, body.side-open #pin-pop { left: calc(38vw + 16px); }
+  @media (max-width: 760px) { #pin-btn { bottom: 12px; left: 12px; font-size: 13px; padding: 6px 10px; } }
+
+  #ctimer:not(.big) { cursor: grab; touch-action: none; }
+  #ctimer.dragging { cursor: grabbing; opacity: .9; }
+  #ctimer:not(.big) .ct-top::before { content: '⠿'; color: #B9AE9C; margin-right: 4px; }
+
+  /* 📍 여기까지: 페이지 위 시간 칩 옆 */
+  .slide .stage-head .pin-chip { order: 2; margin-left: auto; margin-right: 8px; font-family: var(--serif); font-size: .5em; font-weight: 700; color: var(--ink-soft); border: 1px dashed var(--edge); border-radius: 999px; padding: 1px 12px; background: transparent; cursor: pointer; white-space: nowrap; }
+  .slide .stage-head .pin-chip:hover { border-style: solid; color: var(--ink); background: #FFF8E8; }
+  .slide .stage-head .pin-chip.on { color: #8A5A0B; border: 1.5px solid #C98A1E; background: #FFF4DC; }
+  @media print { .pin-chip { display: none !important; } }
+  #pin-pop { bottom: auto; }
 </style>
 </head>
 <body>
@@ -2440,7 +2470,7 @@ function __boot() {
     w.addEventListener('click', function (e) {
       e.stopPropagation();
       var b = e.target.closest('button[data-ct]');
-      if (!b) { if (w.classList.contains('big')) w.classList.remove('big'); return; }
+      if (!b) { if (w.classList.contains('big') && !w.__dragged) { w.classList.remove('big'); bigLabel(); placeSaved(); } w.__dragged = false; return; }
       var a = b.dataset.ct; ac();
       if (a === 'pause') {
         if (w.classList.contains('end')) { start(0, T.label, T.segs); return; }
@@ -2458,7 +2488,7 @@ function __boot() {
         fg.setAttribute('stroke-dashoffset', C.toFixed(2));
         w.querySelector('[data-ct=pause]').textContent = '↺ 다시'; bowl();
         setTimeout(function () { if (!T.run && w.classList.contains('end') && tEl.textContent === '완료') { w.hidden = true; w.classList.remove('big'); } }, 6000);
-      } else if (a === 'big') { w.classList.toggle('big'); }
+      } else if (a === 'big') { w.classList.toggle('big'); bigLabel(); placeSaved(); }
       else if (a === 'close') { stop(); w.hidden = true; w.classList.remove('big', 'end'); }
       else if (a === 'mute') { try { localStorage.setItem(MUTE_KEY, muted() ? '0' : '1'); } catch (er) {} setMuteBtn(); }
     });
@@ -2513,6 +2543,33 @@ function __boot() {
         }
       };
     };
+    // 작은 타이머: 끌어서 위치 옮기기 (위치 기억)
+    var POS_KEY = 'lesson-timer-pos';
+    var bigLabel = function () { var bb = w.querySelector('[data-ct=big]'); if (bb) bb.textContent = w.classList.contains('big') ? '⤡ 작게' : '⤢ 크게'; };
+    var clampPos = function (x, y) { var r = w.getBoundingClientRect(); return [Math.max(4, Math.min(window.innerWidth - r.width - 4, x)), Math.max(4, Math.min(window.innerHeight - r.height - 4, y))]; };
+    var placeSaved = function () {
+      if (w.classList.contains('big')) { w.style.left = w.style.top = ''; w.style.right = w.style.bottom = ''; return; }
+      var s = null; try { s = JSON.parse(localStorage.getItem(POS_KEY) || 'null'); } catch (e) {}
+      if (!s) { w.style.left = w.style.top = ''; w.style.right = w.style.bottom = ''; return; }
+      var c = clampPos(s.x, s.y); w.style.left = c[0] + 'px'; w.style.top = c[1] + 'px'; w.style.right = 'auto'; w.style.bottom = 'auto';
+    };
+    w.addEventListener('pointerdown', function (e) {
+      if (w.classList.contains('big') || e.target.closest('button')) return;
+      var r = w.getBoundingClientRect(), sx = e.clientX, sy = e.clientY, ox = r.left, oy = r.top, moved = false;
+      var mv = function (ev) {
+        var dx = ev.clientX - sx, dy = ev.clientY - sy; if (!moved && Math.abs(dx) + Math.abs(dy) < 4) return;
+        moved = true; w.classList.add('dragging');
+        var c = clampPos(ox + dx, oy + dy); w.style.left = c[0] + 'px'; w.style.top = c[1] + 'px'; w.style.right = 'auto'; w.style.bottom = 'auto';
+      };
+      var up = function () {
+        document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up); w.classList.remove('dragging');
+        if (moved) { w.__dragged = true; try { localStorage.setItem(POS_KEY, JSON.stringify({ x: parseFloat(w.style.left), y: parseFloat(w.style.top) })); } catch (er) {} }
+      };
+      document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up);
+    });
+    w.addEventListener('dblclick', function (e) { if (w.classList.contains('big') || e.target.closest('button')) return; try { localStorage.removeItem(POS_KEY); } catch (er) {} placeSaved(); });
+    window.addEventListener('resize', placeSaved);
+    var _start = start; start = function (a, b2, c2) { _start(a, b2, c2); bigLabel(); placeSaved(); };
     window.__lessonTimer = { start: start, bowl: bowl, tick: tick };
   })();
   // ===== 차시 점검 =====
@@ -2832,7 +2889,7 @@ function __boot() {
       var c = s.cloneNode(true);
       c.classList.remove('active', 'scrolly', 'measuring'); c.style.fontSize = ''; if (!c.getAttribute('style')) c.removeAttribute('style');
       c.querySelectorAll('.block, header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .bogi-picked, .vt-tools, .sp-tools, .rv-hide').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .bogi-picked, .vt-tools, .sp-tools, .rv-hide, .pin-chip').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -3023,7 +3080,7 @@ function __boot() {
       editing = on;
       if (on) baseline(L); document.body.classList.toggle('editing', on);
       toggle.setAttribute('aria-pressed', String(on)); bar.hidden = !on;
-      applyEdit(on);
+      applyEdit(on); if (typeof pinVis === 'function') pinVis();
       state.textContent = on ? '수정 중' : '';
       if (on) { var ab = pages[P] && pages[P].querySelector('.block'); var fz = ab ? parseFloat(ab.style.fontSize || 0) : 0; if (fz && fz < 36 && !pages[P].dataset.fs) state.textContent = '이 페이지는 내용이 많아 글씨가 ' + fz + '로 줄었어요. 페이지를 나누면 36으로 맞춰져요'; }
       if (!on) { var cur0 = pages[P]; if (cur0 && dropEmpty(cur0)) storeLesson(+cur0.dataset.l); if (cur0 && pruneLesson(+cur0.dataset.l)) state.textContent = '글을 다 지운 형식 칸을 정리했어요'; }
@@ -3323,7 +3380,7 @@ function __boot() {
       c.querySelectorAll('section.stage').forEach(function (s) { s.classList.remove('active'); s.style.fontSize = ''; if (!s.getAttribute('style')) s.removeAttribute('style'); });
       c.querySelectorAll('section.stage .block, section.stage header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
       c.querySelectorAll('.current').forEach(function (e) { e.classList.remove('current'); e.removeAttribute('aria-current'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .vt-tools, .sp-tools, .rv-hide, input[type=file]').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .vt-tools, .sp-tools, .rv-hide, .pin-chip, input[type=file]').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -4267,7 +4324,7 @@ function __boot() {
       try { var loc = localStorage.getItem(PROG_KEY); if (loc) return JSON.parse(loc); } catch (e) {}
       var b0 = window.__progressBase; return b0 ? JSON.parse(JSON.stringify(b0)) : { classes: [], done: {} };
     }
-    var PROG = progLoad(); if (!PROG.classes) PROG.classes = []; if (!PROG.done) PROG.done = {};
+    var PROG = progLoad(); if (!PROG.classes) PROG.classes = []; if (!PROG.done) PROG.done = {}; if (!PROG.at) PROG.at = {};
     window.__getProgress = function () { return PROG; };
     var pubT = null;
     function progSave() {
@@ -4301,7 +4358,9 @@ function __boot() {
       var ln = function (id) { return window.__lessonNo ? window.__lessonNo(id) : id; };
       var sum = document.createElement('div'); sum.className = 'prog-sum';
       sum.innerHTML = '<div class="ps-h"><b>반별 진도</b><button type="button" class="pp-set">반 설정</button></div><div class="ps-list">' + PROG.classes.map(function (c) {
-        var lt = latestOf(c); return '<button type="button" class="ps-c' + (lt ? '' : ' none') + '"' + (lt ? ' data-go="' + lt + '"' : '') + '><b>' + esc2(c) + '</b> ' + (lt ? ln(lt) + '차시' : '시작 전') + '</button>';
+        var lt = latestOf(c), at = PROG.at[c], ord = lessonOrder();
+        if (at && ord.indexOf(String(at.l)) > -1 && (!lt || ord.indexOf(String(at.l)) > ord.indexOf(String(lt)))) return '<button type="button" class="ps-c mid" data-go="' + at.l + '" data-p="' + (at.p || 0) + '" title="이어서 하기"><b>' + esc2(c) + '</b> ' + ln(at.l) + '차시 · ' + esc2(at.label || '') + '까지</button>';
+        return '<button type="button" class="ps-c' + (lt ? '' : ' none') + '"' + (lt ? ' data-go="' + lt + '"' : '') + '><b>' + esc2(c) + '</b> ' + (lt ? ln(lt) + '차시' : '시작 전') + '</button>';
       }).join('') + '</div>';
       var anchor = bk.querySelector('.book-edit') || bk.querySelector('.course-switch');
       bk.insertBefore(sum, anchor ? anchor.nextSibling : bk.firstChild);
@@ -4315,8 +4374,68 @@ function __boot() {
         ch.innerHTML = list.map(function (c) { var cur = String(latest[c]) === String(id); return '<i class="' + (cur ? 'cur' : 'past') + '" title="' + esc2(c) + (cur ? ' · 지금 여기까지' : ' · 마침') + '">' + esc2(c) + '</i>'; }).join('');
         b.appendChild(ch);
       });
+      PROG.classes.forEach(function (c) {
+        var at = PROG.at[c]; if (!at) return;
+        var b = bk.querySelector('li.les button[data-lesson="' + at.l + '"]'); if (!b) return;
+        var ch = b.querySelector('.prog-chips'); if (!ch) { ch = document.createElement('span'); ch.className = 'prog-chips'; b.appendChild(ch); }
+        ch.insertAdjacentHTML('beforeend', '<i class="mid" title="' + esc2(c) + ' · ' + esc2(at.label || '') + '까지 함">◐' + esc2(c) + '</i>');
+      });
     }
-    function progRender() { progPanels(); progToc(); }
+    // ===== 중간에 끝난 곳 표시 (📍 여기까지) =====
+    function pinTabs() {
+      document.querySelectorAll('#pagenav button[data-pin]').forEach(function (b) { b.removeAttribute('data-pin'); b.removeAttribute('title'); });
+      var btns = document.querySelectorAll('#pagenav button');
+      PROG.classes.forEach(function (c) {
+        var at = PROG.at[c]; if (!at || String(at.l) !== String(L)) return;
+        var b = btns[at.p]; if (!b) return;
+        b.dataset.pin = (b.dataset.pin ? b.dataset.pin + ', ' : '') + c; b.title = '📍 ' + b.dataset.pin + ' 여기까지';
+      });
+    }
+    var pinBtn = document.createElement('button'); pinBtn.type = 'button'; pinBtn.id = 'pin-btn'; pinBtn.hidden = true; pinBtn.textContent = '📍 여기까지'; pinBtn.title = '수업이 이 페이지에서 끝났으면 반을 골라 표시해요';
+    var pinPop = document.createElement('div'); pinPop.id = 'pin-pop'; pinPop.hidden = true;
+    document.body.appendChild(pinBtn); document.body.appendChild(pinPop);
+    function pinShow() {
+      var lab = pages[P] ? (pages[P].dataset.label || '') : '';
+      pinPop.innerHTML = '<div class="pn-h">이 페이지(<b>' + esc2(lab) + '</b>)에서 끝난 반</div><div class="pn-cls">' + PROG.classes.map(function (c) {
+        var at = PROG.at[c], on = at && String(at.l) === String(L) && +at.p === P;
+        return '<button type="button" data-c="' + esc2(c) + '" class="' + (on ? 'on' : '') + '">' + (on ? '📍 ' : '') + esc2(c) + '</button>';
+      }).join('') + '</div><div class="pn-tip">다시 누르면 지워져요 · 마지막 페이지에서 진도 체크를 하면 자동으로 지워져요</div>';
+      pinPop.hidden = false;
+    }
+    pinBtn.addEventListener('click', function (e) { e.stopPropagation(); if (pinPop.hidden) pinShow(); else pinPop.hidden = true; });
+    pinPop.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var b = e.target.closest('button[data-c]'); if (!b) return;
+      var c = b.dataset.c, at = PROG.at[c];
+      if (at && String(at.l) === String(L) && +at.p === P) delete PROG.at[c];
+      else PROG.at[c] = { l: String(L), p: P, label: pages[P] ? (pages[P].dataset.label || '') : '' };
+      progSave(); pinShow(); pinVis();
+    });
+    document.addEventListener('click', function (e) { if (!pinPop.hidden && !pinPop.contains(e.target) && !(e.target.closest && e.target.closest('.pin-chip'))) pinPop.hidden = true; });
+    function pinVis() {
+      pinBtn.hidden = true;
+      document.querySelectorAll('.pin-chip').forEach(function (x) { x.remove(); });
+      if (toggle.hidden || editing) { pinPop.hidden = true; return; }
+      document.querySelectorAll('section.stage .stage-head').forEach(function (hd) {
+        var sec = hd.closest('section.stage'), l = sec.dataset.l, idx = [].indexOf.call(lessonSecs(+l), sec);
+        var who = PROG.classes.filter(function (c) { var at = PROG.at[c]; return at && String(at.l) === String(l) && +at.p === idx; });
+        var ch = document.createElement('button'); ch.type = 'button'; ch.className = 'pin-chip' + (who.length ? ' on' : ''); ch.setAttribute('contenteditable', 'false');
+        ch.textContent = who.length ? '📍 ' + who.join(', ') + ' 여기까지' : '📍 여기까지';
+        ch.title = '수업이 이 페이지에서 끝났으면 눌러서 반을 골라요';
+        var tm = hd.querySelector('.time'); hd.insertBefore(ch, tm || null);
+      });
+    }
+    document.getElementById('slide').addEventListener('click', function (e) {
+      var ch = e.target.closest && e.target.closest('.pin-chip'); if (!ch) return;
+      e.preventDefault(); e.stopPropagation();
+      if (!PROG.classes.length) { state.textContent = '목차의 반별 진도에서 반 설정을 먼저 해 주세요'; alert('먼저 반 이름을 정해 주세요.\n목차(≡) → 반별 진도 → 반 설정'); return; }
+      if (!pinPop.hidden) { pinPop.hidden = true; return; }
+      pinShow();
+      var r = ch.getBoundingClientRect(), pw = Math.min(360, window.innerWidth * 0.9);
+      pinPop.style.left = Math.max(8, Math.min(window.innerWidth - pw - 8, r.right - pw)) + 'px'; pinPop.style.top = (r.bottom + 8) + 'px'; pinPop.style.bottom = 'auto';
+    }, true);
+    new MutationObserver(function () { pinTabs(); }).observe(document.getElementById('pagenav'), { childList: true });
+    function progRender() { progPanels(); progToc(); pinTabs(); pinVis(); }
     window.__progRender = progRender;
     function classEditor(host) {
       if (host.querySelector('.pp-edit')) return;
@@ -4342,12 +4461,12 @@ function __boot() {
       if (c) {
         e.preventDefault(); e.stopPropagation();
         var l = c.closest('.prog-panel').dataset.l, name = c.dataset.c, arr = PROG.done[l] = PROG.done[l] || [], i = arr.indexOf(name);
-        if (i > -1) arr.splice(i, 1); else arr.push(name);
+        if (i > -1) arr.splice(i, 1); else { arr.push(name); if (PROG.at[name] && String(PROG.at[name].l) === String(l)) delete PROG.at[name]; }
         if (!arr.length) delete PROG.done[l];
         progSave(); state.textContent = name + (i > -1 ? ' 진도 체크 해제' : ' 진도 체크');
         return;
       }
-      var g = e.target.closest('.ps-c[data-go]'); if (g) { e.preventDefault(); if (window.__open) window.__open(+g.dataset.go, 0); }
+      var g = e.target.closest('.ps-c[data-go]'); if (g) { e.preventDefault(); if (window.__open) window.__open(+g.dataset.go, +(g.dataset.p || 0)); }
     }
     document.getElementById('slide').addEventListener('click', onProgClick, true);
     document.getElementById('book').addEventListener('click', onProgClick, true);
