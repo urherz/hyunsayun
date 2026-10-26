@@ -1886,6 +1886,11 @@
   .slide .stage-head .pin-chip { padding: 0 8px; opacity: .55; border-color: transparent; }
   .slide .stage-head .pin-chip:hover { opacity: 1; border-color: var(--edge); }
   .slide .stage-head .pin-chip.on { opacity: 1; padding: 1px 10px; }
+
+  #ctsetup .cs-ex { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 8px 10px; background: #F6F1E6; border-radius: 8px; font-size: 13.5px; }
+  #ctsetup .cs-ex label { font-weight: 700; }
+  #ctsetup .cs-ex input { width: 58px; font-size: 14px; padding: 3px 6px; border: 1.5px solid var(--edge); border-radius: 6px; text-align: right; }
+  #ctsetup .cs-ex span { color: var(--ink-soft); font-size: 12.5px; }
 </style>
 </head>
 <body>
@@ -2399,7 +2404,7 @@ function __boot() {
     var w = document.createElement('div'); w.id = 'ctimer'; w.hidden = true;
     w.innerHTML = '<div class="ct-top"><span class="ct-lab"></span><button type="button" data-ct="mute" class="ct-mute" title="소리 켜기/끄기"></button></div>' +
       '<div class="ct-ring"><svg viewBox="0 0 120 120"><circle class="ct-bg" cx="60" cy="60" r="' + R + '"></circle><circle class="ct-fg" cx="60" cy="60" r="' + R + '" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="0"></circle></svg><div class="ct-time">0:00</div></div><div class="ct-step"></div><div class="ct-all"><i></i></div>' +
-      '<div class="ct-btns"><button type="button" data-ct="pause">⏸ 멈춤</button><button type="button" data-ct="plus">＋1분</button><button type="button" data-ct="next" class="ct-next">⏭ 다음 단계</button><button type="button" data-ct="done" class="ct-done">✓ 완료</button><button type="button" data-ct="big" title="학생들이 보도록 크게">⤢ 크게</button><button type="button" data-ct="close" title="타이머 끄기">✕</button></div>';
+      '<div class="ct-btns"><button type="button" data-ct="pause">⏸ 멈춤</button><button type="button" data-ct="plus">＋1분</button><button type="button" data-ct="prev" class="ct-next">⏮ 이전 단계</button><button type="button" data-ct="next" class="ct-next">⏭ 다음 단계</button><button type="button" data-ct="done" class="ct-done">✓ 완료</button><button type="button" data-ct="big" title="학생들이 보도록 크게">⤢ 크게</button><button type="button" data-ct="close" title="타이머 끄기">✕</button></div>';
     document.body.appendChild(w);
     var tEl = w.querySelector('.ct-time'), labEl = w.querySelector('.ct-lab'), fg = w.querySelector('.ct-fg'), stepEl = w.querySelector('.ct-step'), allBar = w.querySelector('.ct-all i');
     var muted = function () { try { return localStorage.getItem(MUTE_KEY) === '1'; } catch (e) { return false; } };
@@ -2492,6 +2497,8 @@ function __boot() {
         else { if (T.run) T.endAt += 60000; else T.left += 60; T.total += 60; T.lastTick = -1; paint(); }
       } else if (a === 'next') {
         if (T.si < T.segs.length - 1) { T.si++; softBowl(); startSeg(); }
+      } else if (a === 'prev') {
+        if (T.si > 0) { T.si--; startSeg(); } else startSeg();
       } else if (a === 'done') {
         var used = T.segs.slice(0, T.si).reduce(function (a2, x) { return a2 + x.sec; }, 0) + T.total - (T.run ? (T.endAt - Date.now()) / 1000 : T.left);
         stop(); w.classList.remove('warn', 'hurry', 'paused'); w.classList.add('end');
@@ -2527,15 +2534,26 @@ function __boot() {
     var openSetup = function (min, lab, sec) {
       ac();
       var saved = null; try { saved = JSON.parse(localStorage.getItem(segKey(sec)) || 'null'); } catch (er) {}
-      var segs = saved && saved.length ? saved : parseSteps(sec);
+      var savedSegs = saved && saved.segs ? saved.segs : (saved && saved.length ? saved : null);
+      var segs = savedSegs || parseSteps(sec);
       if (!segs.length) segs = [{ name: '', sec: min * 60 }];
+      var actSum0 = segs.reduce(function (a2, x) { return a2 + x.sec; }, 0) / 60;
+      var explain = saved && saved.explain != null ? saved.explain : Math.max(0, Math.round((min - actSum0) * 2) / 2);
       var row = function (sg) { return '<div class="cs-row"><input class="cs-name" placeholder="단계 이름 (예: 개인 판정)" value="' + (sg.name || '').replace(/"/g, '&quot;') + '"><input class="cs-min" type="number" min="0.5" step="0.5" value="' + (Math.round(sg.sec / 30) / 2) + '"><span>분</span><button type="button" data-cs="del" title="이 단계 빼기">✕</button></div>'; };
+      var actMin = Math.max(0.5, Math.round((min - explain) * 2) / 2);
       sp.innerHTML = '<div class="cs-box"><div class="cs-h"><b>' + (lab || '타이머') + '</b><button type="button" data-cs="close">✕</button></div>' +
-        '<button type="button" class="cs-quick" data-cs="quick">▶ ' + min + '분 한 번에 시작</button>' +
-        '<div class="cs-sub">또는 단계로 나눠서 (단계가 끝나면 작은 종소리 후 다음 단계로 넘어가요)</div>' +
+        '<button type="button" class="cs-quick" data-cs="quick">▶ 활동 ' + actMin + '분 한 번에 시작</button>' +
+        '<div class="cs-ex"><label>설명 시간 <input class="cs-explain" type="number" min="0" step="0.5" value="' + explain + '"> 분</label><span>메모용이에요. 타이머는 <b>활동 시간</b>만 재요.</span></div>' +
+        '<div class="cs-sub">활동을 단계로 나눠서 (단계가 끝나면 작은 종소리 후 다음 단계로 넘어가요)</div>' +
         '<div class="cs-rows">' + segs.map(row).join('') + '</div>' +
         '<div class="cs-foot"><button type="button" data-cs="add">＋ 단계 추가</button><span class="cs-sum"></span><button type="button" class="cs-go" data-cs="go">▶ 단계별로 시작</button></div></div>';
-      var sum = function () { var t = [].reduce.call(sp.querySelectorAll('.cs-min'), function (a, x) { return a + (parseFloat(x.value) || 0); }, 0); var el = sp.querySelector('.cs-sum'); el.textContent = '합계 ' + (Math.round(t * 10) / 10) + '분' + (Math.abs(t - min) > 0.01 ? ' (칩 ' + min + '분)' : ''); el.classList.toggle('diff', Math.abs(t - min) > 0.01); };
+      var sum = function () {
+        var t = [].reduce.call(sp.querySelectorAll('.cs-min'), function (a, x) { return a + (parseFloat(x.value) || 0); }, 0), ex = parseFloat((sp.querySelector('.cs-explain') || {}).value) || 0;
+        var el = sp.querySelector('.cs-sum'), tot = Math.round((t + ex) * 10) / 10;
+        el.textContent = '설명 ' + ex + '분 + 활동 ' + (Math.round(t * 10) / 10) + '분 = ' + tot + '분' + (Math.abs(tot - min) > 0.01 ? ' (칩 ' + min + '분)' : ' ✓');
+        el.classList.toggle('diff', Math.abs(tot - min) > 0.01);
+        var qb = sp.querySelector('.cs-quick'); if (qb) qb.textContent = '▶ 활동 ' + Math.max(0.5, Math.round((min - ex) * 2) / 2) + '분 한 번에 시작';
+      };
       sum(); sp.hidden = false;
       sp.oninput = sum;
       sp.onclick = function (ev) {
@@ -2543,13 +2561,13 @@ function __boot() {
         var b = ev.target.closest('button[data-cs]'); if (!b) { if (ev.target === sp) sp.hidden = true; return; }
         var a = b.dataset.cs;
         if (a === 'close') { sp.hidden = true; return; }
-        if (a === 'quick') { sp.hidden = true; start(min, lab); return; }
+        if (a === 'quick') { var ex0 = parseFloat(sp.querySelector('.cs-explain').value) || 0; try { var sv = JSON.parse(localStorage.getItem(segKey(sec)) || 'null') || {}; if (sv.length) sv = { segs: sv }; sv.explain = ex0; localStorage.setItem(segKey(sec), JSON.stringify(sv)); } catch (er) {} sp.hidden = true; start(Math.max(0.5, min - ex0), lab); return; }
         if (a === 'add') { var d = document.createElement('div'); d.innerHTML = row({ name: '', sec: 60 }); sp.querySelector('.cs-rows').appendChild(d.firstChild); sum(); return; }
         if (a === 'del') { if (sp.querySelectorAll('.cs-row').length > 1) b.closest('.cs-row').remove(); sum(); return; }
         if (a === 'go') {
           var list = [].map.call(sp.querySelectorAll('.cs-row'), function (r) { return { name: r.querySelector('.cs-name').value.trim(), sec: Math.round((parseFloat(r.querySelector('.cs-min').value) || 0) * 60) }; }).filter(function (x) { return x.sec > 0; });
           if (!list.length) return;
-          try { localStorage.setItem(segKey(sec), JSON.stringify(list)); } catch (er) {}
+          try { localStorage.setItem(segKey(sec), JSON.stringify({ segs: list, explain: parseFloat(sp.querySelector('.cs-explain').value) || 0 })); } catch (er) {}
           sp.hidden = true; start(0, lab, list);
         }
       };
@@ -2608,7 +2626,7 @@ function __boot() {
         var t = s.querySelector('.stage-head .time'); if (!t) return;
         var m = (t.textContent || '').match(/([0-9]+)/); if (!m) return; chips++; tot += +m[1];
         var steps = [].map.call(s.querySelectorAll('.steps-list > li, ol > li'), function (li) { var mm = (li.textContent || '').match(/[(（]([0-9.]+)분[)）]/); return mm ? parseFloat(mm[1]) : 0; }).filter(Boolean);
-        if (steps.length >= 2) { var ss = steps.reduce(function (a, b) { return a + b; }, 0); if (Math.abs(ss - +m[1]) > 0.01) add('warn', '[' + lab(s) + '] 활동 단계 시간 합계 ' + ss + '분인데 시간 칩은 ' + m[1] + '분이에요', i); }
+        if (steps.length >= 2) { var ss = steps.reduce(function (a, b) { return a + b; }, 0); if (ss > +m[1] + 0.01) add('warn', '[' + lab(s) + '] 활동 단계 시간 합계 ' + ss + '분이 시간 칩 ' + m[1] + '분보다 길어요 (설명 시간도 칩 안에 들어가야 해요)', i); }
       });
       if (chips) add(tot === 50 ? 'ok' : 'warn', '페이지 시간 합계 ' + tot + '분' + (tot === 50 ? '' : ' (50분 기준 ' + (tot > 50 ? '+' : '') + (tot - 50) + '분)'), null);
       // 2. 남은 안내 문구, 표, 기출
