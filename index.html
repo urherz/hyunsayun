@@ -1891,6 +1891,11 @@
   #ctsetup .cs-ex label { font-weight: 700; }
   #ctsetup .cs-ex input { width: 58px; font-size: 14px; padding: 3px 6px; border: 1.5px solid var(--edge); border-radius: 6px; text-align: right; }
   #ctsetup .cs-ex span { color: var(--ink-soft); font-size: 12.5px; }
+
+  /* 선 잇기 왼쪽·오른쪽 비율 */
+  .match .m-ratio { position: absolute; left: 50%; bottom: -2.3em; transform: translateX(-50%); display: flex; gap: 4px; z-index: 5; }
+  .match .m-ratio button { font-family: var(--serif); font-weight: 700; font-size: 14px; padding: 2px 9px; border: 1.5px dashed #9A8B78; border-radius: 6px; background: #FFFFFF; color: #5A4C3A; cursor: pointer; }
+  @media print { .m-ratio { display: none !important; } }
 </style>
 </head>
 <body>
@@ -2918,7 +2923,7 @@ function __boot() {
       var c = s.cloneNode(true);
       c.classList.remove('active', 'scrolly', 'measuring'); c.style.fontSize = ''; if (!c.getAttribute('style')) c.removeAttribute('style');
       c.querySelectorAll('.block, header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .bogi-picked, .vt-tools, .sp-tools, .rv-hide, .pin-chip').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .bogi-picked, .vt-tools, .sp-tools, .rv-hide, .pin-chip, .m-ratio').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -3409,7 +3414,7 @@ function __boot() {
       c.querySelectorAll('section.stage').forEach(function (s) { s.classList.remove('active'); s.style.fontSize = ''; if (!s.getAttribute('style')) s.removeAttribute('style'); });
       c.querySelectorAll('section.stage .block, section.stage header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
       c.querySelectorAll('.current').forEach(function (e) { e.classList.remove('current'); e.removeAttribute('aria-current'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .vt-tools, .sp-tools, .rv-hide, .pin-chip, input[type=file]').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .vt-tools, .sp-tools, .rv-hide, .pin-chip, .m-ratio, input[type=file]').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -4225,13 +4230,28 @@ function __boot() {
       state.textContent = '보통 목록으로 되돌렸어요';
     }
     function widgetTools(on) {
-      document.querySelectorAll('.wd-undo').forEach(function (x) { x.remove(); });
+      document.querySelectorAll('.wd-undo, .m-ratio').forEach(function (x) { x.remove(); });
       if (!on) return;
+      document.querySelectorAll('section.stage .match').forEach(function (wd) {
+        var g = document.createElement('span'); g.className = 'm-ratio'; g.setAttribute('contenteditable', 'false');
+        g.innerHTML = '<button type="button" data-mr="-">◀ 왼쪽 좁게</button><button type="button" data-mr="0">기본</button><button type="button" data-mr="+">왼쪽 넓게 ▶</button>';
+        wd.appendChild(g);
+      });
       document.querySelectorAll('section.stage .match, section.stage .venn').forEach(function (wd) {
         var b = document.createElement('button'); b.type = 'button'; b.className = 'wd-undo'; b.setAttribute('contenteditable', 'false');
         b.textContent = (wd.classList.contains('venn') ? '벤다이어그램' : '선 잇기') + ' 해제 → 보통 목록'; wd.appendChild(b);
       });
     }
+    document.getElementById('slide').addEventListener('click', function (e) {
+      var mr = e.target.closest('.m-ratio button'); if (!mr || !editing) return;
+      e.preventDefault(); e.stopPropagation();
+      var wd = mr.closest('.match'), r = +(wd.dataset.r || 63);
+      r = mr.dataset.mr === '0' ? 63 : Math.max(25, Math.min(80, r + (mr.dataset.mr === '+' ? 5 : -5)));
+      if (r === 63) { delete wd.dataset.r; wd.style.removeProperty('grid-template-columns'); }
+      else { wd.dataset.r = r; var L = (2.15 * r / 100).toFixed(3), R = (2.15 - L).toFixed(3); wd.style.gridTemplateColumns = 'minmax(0, ' + L + 'fr) minmax(70px, .45fr) minmax(0, ' + R + 'fr)'; }
+      if (window.__match) window.__match.drawAll();
+      storeLesson(+wd.closest('section.stage').dataset.l); state.textContent = '선 잇기 왼쪽:오른쪽 = ' + r + ':' + (100 - r);
+    }, true);
     document.getElementById('slide').addEventListener('click', function (e) {
       var u = e.target.closest('.wd-undo'); if (!u || !editing) return;
       e.preventDefault(); if (!confirmTwice(u, '한 번 더 누르면 목록으로 되돌려요')) return;
@@ -5652,6 +5672,17 @@ function __boot() {
     svg.innerHTML = out;
   }
   function mDrawAll(scope) { (scope || document).querySelectorAll('section.stage.active .match').forEach(function (m) { mNormalize(m); mDraw(m); }); }
+  // 수정 중 글을 지우다 동그라미가 사라지면 바로 다시 붙이기
+  (function () {
+    var t = null, sl = document.getElementById('slide');
+    var fix = function (e) {
+      if (!document.body.classList.contains('editing')) return;
+      var sel = window.getSelection(), n = sel && sel.anchorNode; n = n && (n.nodeType === 3 ? n.parentNode : n);
+      var m = (e && e.target && e.target.closest && e.target.closest('.match')) || (n && n.closest && n.closest('.match')); if (!m) return;
+      clearTimeout(t); t = setTimeout(function () { mNormalize(m); mDraw(m); }, 350);
+    };
+    if (sl) { sl.addEventListener('input', fix); sl.addEventListener('keyup', fix); sl.addEventListener('focusout', fix); }
+  })();
   var mArmed = null;
   function mConnect(m, leftIdx, rightIdx) { var o = mLines(m); o[leftIdx] = rightIdx; mSave(m, o); mDraw(m); }
   function mSide(dot) { return dot.closest('.m-left') ? 'L' : 'R'; }
