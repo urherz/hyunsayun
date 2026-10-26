@@ -1896,6 +1896,12 @@
   .match .m-ratio { position: absolute; left: 50%; bottom: -2.3em; transform: translateX(-50%); display: flex; gap: 4px; z-index: 5; }
   .match .m-ratio button { font-family: var(--serif); font-weight: 700; font-size: 14px; padding: 2px 9px; border: 1.5px dashed #9A8B78; border-radius: 6px; background: #FFFFFF; color: #5A4C3A; cursor: pointer; }
   @media print { .m-ratio { display: none !important; } }
+
+  /* 선 잇기 비율 버튼: 아래로 잘리지 않게 선 잇기 안쪽 맨 아래 줄에 */
+  .match .m-ratio { position: static !important; transform: none !important; grid-column: 1 / -1; justify-self: center; margin-top: .5em; }
+  .match .m-ratio button { font-size: .42em; }
+
+  .rv-hide .rv-del { margin-left: 12px; font-family: var(--serif); font-weight: 700; font-size: 13px; padding: 1px 9px; border: 1.5px solid #E2B4AE; color: #B3372B; background: #FFF; border-radius: 6px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -4740,8 +4746,16 @@ function __boot() {
       if (!on) return;
       document.querySelectorAll('section.stage details.reveal').forEach(function (d) {
         var lb = document.createElement('label'); lb.className = 'rv-hide'; lb.setAttribute('contenteditable', 'false');
-        lb.innerHTML = '<input type="checkbox"' + (d.classList.contains('teacher-only') ? ' checked' : '') + '> 수업 화면에서 숨기기 (교사용)';
+        lb.innerHTML = '<input type="checkbox"' + (d.classList.contains('teacher-only') ? ' checked' : '') + '> 수업 화면에서 숨기기 (교사용)<button type="button" class="rv-del" title="이 접힌 칸(' + ((d.querySelector('summary') || {}).textContent || '').trim() + ')을 통째로 지워요">✕ 이 칸 지우기</button>';
         d.parentNode.insertBefore(lb, d.nextSibling);
+        lb.querySelector('.rv-del').addEventListener('click', function (e) {
+          e.preventDefault(); e.stopPropagation();
+          if (!confirmTwice(e.target, '한 번 더 누르면 지워요')) return;
+          var sec = d.closest('section.stage');
+          var nx = d.nextElementSibling; while (nx && (nx.classList.contains('rv-open') || nx.classList.contains('rv-hide'))) { var n2 = nx.nextElementSibling; nx.remove(); nx = n2; }
+          var pv = d.previousElementSibling; if (pv && pv.classList.contains('rv-open')) pv.remove();
+          d.remove(); lb.remove(); storeLesson(+sec.dataset.l); state.textContent = '접힌 칸을 지웠어요 (Ctrl+Z로 되돌리기)';
+        });
         lb.querySelector('input').addEventListener('change', function (e) {
           if (e.target.checked) d.dataset.hide = '1'; else { delete d.dataset.hide; var sm = d.querySelector('summary'); if (sm && /^\s*교사용/.test(sm.textContent)) sm.textContent = sm.textContent.replace(/^\s*교사용\s*/, '') || '정리 보기'; }
           d.classList.toggle('teacher-only', e.target.checked);
