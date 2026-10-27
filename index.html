@@ -1902,6 +1902,11 @@
   .match .m-ratio button { font-size: .42em; }
 
   .rv-hide .rv-del { margin-left: 12px; font-family: var(--serif); font-weight: 700; font-size: 13px; padding: 1px 9px; border: 1.5px solid #E2B4AE; color: #B3372B; background: #FFF; border-radius: 6px; cursor: pointer; }
+
+  /* 학습지 선 잇기: 수업 화면에서 정한 왼쪽 비율 반영 */
+  #ws-root .ws-match[style*="--wl"] { justify-content: flex-start; }
+  #ws-root .ws-match[style*="--wl"] > ol { flex: 0 0 calc(var(--wl) - 9mm); min-width: 0; }
+  #ws-root .ws-match[style*="--wl"] > ul { flex: 1 1 0; min-width: 0; }
 </style>
 </head>
 <body>
@@ -5914,7 +5919,8 @@ function __boot() {
           var bodyHtml = '';
           var match = blk.querySelector('.match'), venn = blk.querySelector('.venn');
           if (match) {
-            bodyHtml = '<div class="ws-match"><ol>' + [].map.call(match.querySelectorAll('.m-left > li'), function (li) { return '<li>' + li.textContent.trim() + ' <span class="ws-dot"></span></li>'; }).join('') + '</ol><ul>' + [].map.call(match.querySelectorAll('.m-right > li'), function (li) { return '<li><span class="ws-dot"></span> ' + li.textContent.trim() + '</li>'; }).join('') + '</ul></div>';
+            var mr = +(match.getAttribute('data-r') || 0);
+            bodyHtml = '<div class="ws-match"' + (mr ? ' style="--wl: ' + mr + '%"' : '') + '><ol>' + [].map.call(match.querySelectorAll('.m-left > li'), function (li) { return '<li>' + li.textContent.trim() + ' <span class="ws-dot"></span></li>'; }).join('') + '</ol><ul>' + [].map.call(match.querySelectorAll('.m-right > li'), function (li) { return '<li><span class="ws-dot"></span> ' + li.textContent.trim() + '</li>'; }).join('') + '</ul></div>';
             match.remove();
           } else if (venn) {
             bodyHtml = '<ol class="ws-steps">' + [].map.call(venn.querySelectorAll('.v-items > li'), function (li) { return '<li>' + li.textContent.trim() + ' &nbsp; → ( <span class="ws-pl"></span> )</li>'; }).join('') + '</ol>';
@@ -5923,7 +5929,7 @@ function __boot() {
           var lis = blk.querySelectorAll('ol.steps-list > li, ul.concepts > li');
           var itxt = intro ? intro.textContent : '';
           var choice = /손가락|투표|판정/.test(itxt) || /[0-9]번 *[/]/.test(itxt);
-          var steps = [].map.call(lis, function (li) { return '<li>' + li.innerHTML + (choice ? ' <span class="ws-pick">( <span class="ws-pl"></span> )</span>' : wsLines(1)) + '</li>'; }).join('');
+          var steps = [].map.call(lis, function (li) { var at = (li.className ? ' class="' + li.className + '"' : '') + (li.getAttribute('data-hang') ? ' data-hang="' + li.getAttribute('data-hang') + '"' : '') + (li.getAttribute('style') ? ' style="' + li.getAttribute('style').replace(/"/g, '&quot;') + '"' : ''); return '<li' + at + '>' + li.innerHTML + (choice ? ' <span class="ws-pick">( <span class="ws-pl"></span> )</span>' : wsLines(1)) + '</li>'; }).join('');
           lis.forEach(function (li) { li.remove(); });
           blk.querySelectorAll('ol.steps-list, ul.concepts').forEach(function (x) { x.remove(); });
           blk.querySelectorAll('td').forEach(function (td) { if (!td.textContent.trim()) td.innerHTML = '<div class="ws-cell"></div>'; });
