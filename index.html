@@ -1907,6 +1907,8 @@
   #ws-root .ws-match[style*="--wl"] { justify-content: flex-start; }
   #ws-root .ws-match[style*="--wl"] > ol { flex: 0 0 calc(var(--wl) - 9mm); min-width: 0; }
   #ws-root .ws-match[style*="--wl"] > ul { flex: 1 1 0; min-width: 0; }
+
+  #ws-editor .wse-refresh-tip { font-family: var(--serif); font-weight: 700; font-size: 13px; padding: 4px 10px; border: 1.5px solid #C98A1E; background: #FFF4DC; color: #8A5A0B; border-radius: 999px; cursor: pointer; margin-left: 6px; }
 </style>
 </head>
 <body>
@@ -5849,7 +5851,7 @@ function __boot() {
       var first = boxes[0];
       if (cls === 'ws-summary') {
         var nb = document.createElement('div'); nb.className = 'ws-box ws-summary'; nb.innerHTML = '<h2>' + label + '</h2>';
-        boxes.forEach(function (bx) { var sub = document.createElement('div'); sub.className = 'ws-sub'; [].slice.call(bx.childNodes).forEach(function (n) { if (!(n.nodeType === 1 && n.tagName === 'H2')) sub.appendChild(n); }); nb.appendChild(sub); bx.remove(); });
+        boxes.forEach(function (bx) { var sub = document.createElement('div'); sub.className = 'ws-sub'; if (bx.dataset.src) sub.dataset.src = bx.dataset.src; [].slice.call(bx.childNodes).forEach(function (n) { if (!(n.nodeType === 1 && n.tagName === 'H2')) sub.appendChild(n); }); nb.appendChild(sub); bx.remove(); });
         d.appendChild(nb); return;
       }
       boxes.slice(1).forEach(function (bx) { [].slice.call(bx.querySelectorAll(':scope > .ws-sub')).forEach(function (sb) { first.appendChild(sb); }); bx.remove(); });
@@ -5886,12 +5888,13 @@ function __boot() {
     var q = cov && cov.querySelector('.question') ? cov.querySelector('.question').textContent.trim() : '';
     var no = (window.__lessonNo ? window.__lessonNo(L) : L);
     var out = '<header class="ws-head"><div class="ws-meta">' + wsEsc(document.title) + (withAns ? ' · <b>정답지</b>' : '') + '</div><h1>' + wsEsc(title) + '</h1>' + (q ? '<p class="ws-q">' + wsEsc(q) + '</p>' : '') + '<div class="ws-name">학번 <span></span> 이름 <span></span></div></header>';
-    var parts = [];
+    var parts = [], keys = {};
     secs.forEach(function (s) {
       var lab = s.dataset.label || '';
       if (/표지|성취기준|예고/.test(lab)) return;
-      s.querySelectorAll('.block').forEach(function (blk0) {
+      s.querySelectorAll('.block').forEach(function (blk0, bi) {
         if (blk0.hasAttribute('data-ws-skip')) return;
+        var wsKey = ((s.dataset.label || ('p' + s.dataset.p)) + ':' + bi).replace(/"/g, '');
         var blk = wsClean(blk0.cloneNode(true)), cls = blk0.className;
         var html = '';
         if (/b-link/.test(cls)) { html = ''; }
@@ -5941,6 +5944,8 @@ function __boot() {
           if (!withAns) { var stm = blk.querySelector('.stem'); if (stm) stm.insertAdjacentHTML('beforeend', ' <span class="ws-pick">( <span class="ws-pl"></span> )</span>'); }
           html = '<div class="ws-box ws-exam"><h2>기출</h2>' + blk.innerHTML + ans2 + '</div>';
         }
+        if (html && html.indexOf('[[CONCEPT]]') === 0) keys[parts.length] = wsKey;
+        else if (html) html = html.replace('<div class="ws-box', '<div data-src="' + wsKey + '" class="ws-box');
         parts.push(html);
       });
     });
@@ -5948,7 +5953,7 @@ function __boot() {
     while (i < parts.length) {
       if (parts[i].indexOf('[[CONCEPT]]') === 0) {
         var grp = [];
-        while (i < parts.length && parts[i].indexOf('[[CONCEPT]]') === 0) { grp.push('<div class="ws-sub">' + parts[i].slice(11) + '</div>'); i++; }
+        while (i < parts.length && parts[i].indexOf('[[CONCEPT]]') === 0) { grp.push('<div class="ws-sub" data-src="' + (keys[i] || '') + '">' + parts[i].slice(11) + '</div>'); i++; }
         out += '<div class="ws-box ws-concept"><h2>핵심 개념</h2>' + grp.join('') + '</div>';
       } else { out += parts[i]; i++; }
     }
@@ -6097,6 +6102,40 @@ function __boot() {
       bx.insertBefore(c, bx.firstChild);
     });
   }
+  function wsHash(s) { var x = 5381; for (var i = 0; i < s.length; i++) x = ((x << 5) + x + s.charCodeAt(i)) | 0; return String(x >>> 0); }
+  // 수업 내용만 새로 가져오기: 칸 배치·뺀 칸·단 설정은 그대로, 칸 안의 내용만 사이트 기준으로
+  function wseRefresh(root, withAns) {
+    if (!root.querySelector('[data-src]')) return { legacy: true };
+    var fresh = document.createElement('div'); fresh.innerHTML = buildWorksheet(withAns);
+    var hd = root.querySelector('.ws-head'), removed = ((hd && hd.dataset.removed) || '').split('|').filter(Boolean);
+    var esc = function (k) { return window.CSS && CSS.escape ? CSS.escape(k) : k.replace(/"/g, ''); };
+    var have = {}, changed = 0, added = 0, gone = 0;
+    [].slice.call(root.querySelectorAll('[data-src]')).forEach(function (E) {
+      var k = E.dataset.src; have[k] = 1;
+      var F = fresh.querySelector('[data-src="' + esc(k) + '"]');
+      if (!F) { E.remove(); gone++; return; }
+      var keep = [].slice.call(E.querySelectorAll(':scope > .wse-ctl, :scope > .wse-split, :scope > .wse-tctl'));
+      if (E.innerHTML !== F.innerHTML) { E.innerHTML = F.innerHTML; changed++; }
+      keep.forEach(function (x) { E.insertBefore(x, E.firstChild); });
+    });
+    [].slice.call(fresh.querySelectorAll('[data-src]')).forEach(function (F) {
+      var k = F.dataset.src; if (have[k] || removed.indexOf(k) > -1 || F.parentNode.closest && F.parentNode.closest('[data-src]')) return;
+      if (F.classList.contains('ws-sub')) {
+        var typ = F.closest('.ws-summary') ? 'ws-summary' : 'ws-concept', box = [].slice.call(root.querySelectorAll('.' + typ)).pop();
+        if (box) box.appendChild(F.cloneNode(true));
+        else { var nb = F.closest('.ws-box').cloneNode(false); nb.innerHTML = '<h2>' + (typ === 'ws-summary' ? '정리' : '핵심 개념') + '</h2>'; nb.appendChild(F.cloneNode(true)); (root.querySelector('.ws-cols2 > div') || root.querySelector('.ws-body') || root).appendChild(nb); }
+      } else if (F.classList.contains('ws-news-top') || F.classList.contains('ws-news')) {
+        var head = root.querySelector('.ws-head'); if (head) head.parentNode.insertBefore(F.cloneNode(true), head.nextSibling);
+      } else {
+        var cols = root.querySelectorAll('.ws-actgrid > div, .ws-cols2 > div'), last = cols[cols.length - 1] || root.querySelector('.ws-body') || root;
+        last.appendChild(F.cloneNode(true));
+      }
+      added++;
+    });
+    root.querySelectorAll('.ws-concept, .ws-summary').forEach(function (b) { if (!b.querySelector('.ws-sub')) b.remove(); });
+    if (hd) hd.dataset.sig = wsHash(fresh.innerHTML);
+    return { changed: changed, added: added, gone: gone };
+  }
   function wsePagePx(root) {
     var land = root.classList.contains('ws-land'), rl = document.createElement('div');
     rl.style.cssText = 'position:absolute;visibility:hidden;height:' + (land ? 196 : 283) + 'mm;width:1px;'; root.parentNode.appendChild(rl);
@@ -6137,6 +6176,7 @@ function __boot() {
       var b1 = document.createElement('button'); b1.type = 'button'; b1.dataset.wse = 'fill'; b1.textContent = '↕ 아래 빈 공간 채우기'; b1.title = '쪽 수는 그대로 두고, 남는 공간만큼 쓰는 줄을 고르게 늘려요';
       var b2 = document.createElement('button'); b2.type = 'button'; b2.dataset.wse = 'lines1'; b2.textContent = '― 쓰는 줄 모두 1줄로'; b2.title = '문항마다 쓰는 줄을 1줄로 맞추고 길이도 기본으로';
       body.insertBefore(b2, body.firstChild); body.insertBefore(b1, body.firstChild);
+      var b3 = document.createElement('button'); b3.type = 'button'; b3.dataset.wse = 'refresh'; b3.textContent = '↻ 수업 내용 새로 가져오기'; b3.title = '칸 배치·뺀 칸·단·쓰는 줄 설정은 그대로 두고, 칸 안의 내용만 지금 수업 페이지대로 바꿔요'; body.insertBefore(b3, body.firstChild);
       bar.insertBefore(more, pr);
       document.addEventListener('click', function (e) { if (more.open && !more.contains(e.target)) more.open = false; });
     })();
@@ -6144,7 +6184,9 @@ function __boot() {
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; if (compact) root.classList.add('ws-compact');
     ov.querySelector('.wse-paper').appendChild(root);
     if (stored) { root.innerHTML = stored; ov.querySelector('.wse-note').textContent = root.querySelector('.ws-cols2') ? '저장된 수정본' : '예전 배치로 저장된 수정본 · 새 배치로 바꾸려면 원래대로'; }
-    else { root.innerHTML = buildWorksheet(withAns); fitOnePage(root, compact ? 1 : 2); root.dataset.fresh = '1'; }
+    else { var fh = buildWorksheet(withAns); root.innerHTML = fh; fitOnePage(root, compact ? 1 : 2); root.dataset.fresh = '1'; var hd1 = root.querySelector('.ws-head'); if (hd1) { hd1.dataset.sig = wsHash(fh); var tmpF = document.createElement('div'); tmpF.innerHTML = fh; var miss = [].map.call(tmpF.querySelectorAll('[data-src]'), function (x) { return x.dataset.src; }).filter(function (k) { return !root.querySelector('[data-src="' + (window.CSS && CSS.escape ? CSS.escape(k) : k) + '"]'); }); if (miss.length) hd1.dataset.removed = miss.join('|'); } }
+    var siteChanged = false;
+    if (stored && root.querySelector('[data-src]')) { var hd2 = root.querySelector('.ws-head'); try { siteChanged = !hd2 || hd2.dataset.sig !== wsHash(buildWorksheet(withAns)); } catch (er) {} }
     root.setAttribute('contenteditable', 'true'); if (root.querySelector('.ws-acts')) { wseActsToGrid(root); } wseControls(root);
     (function () {
       var code = wsCode(withAns, land, compact), sel = ov.querySelector('.wse-fmt'), cb = ov.querySelector('.wse-def input');
@@ -6166,6 +6208,7 @@ function __boot() {
       if (root.dataset.over && note) note.textContent = '9.5pt로도 한 장을 넘어요 · 칸이나 줄을 줄여 주세요';
     };
     refitCompact();
+    if (siteChanged) { var tip = document.createElement('button'); tip.type = 'button'; tip.className = 'wse-refresh-tip'; tip.dataset.wse = 'refresh'; tip.textContent = '수업 내용이 바뀌었어요 · ↻ 내용만 새로 가져오기'; var nt = ov.querySelector('.wse-note'); nt.parentNode.insertBefore(tip, nt.nextSibling); }
     if (root.dataset.fresh) { delete root.dataset.fresh; setTimeout(function () { wseFill(root); }, 50); }
     // 특정 줄의 기호만 끄기/켜기: 줄 앞 기호를 클릭하거나, 커서를 두고 버튼
     var toggleBul = function (lis) {
@@ -6398,7 +6441,7 @@ function __boot() {
       var bt = e.target.closest('button[data-b]'); if (!bt || !curB) return;
       var fs = parseFloat(getComputedStyle(curB).fontSize) || 14, w = curB.getBoundingClientRect().width / fs;
       var nw = Math.max(1, Math.round((w + (bt.dataset.b === '+' ? 1 : -1)) * 2) / 2);
-      curB.style.width = nw + 'em'; curB.style.minWidth = '0'; showB(curB); save();
+      curB.style.setProperty('width', nw + 'em', 'important'); curB.style.setProperty('min-width', '0', 'important'); curB.style.setProperty('max-width', 'none', 'important'); showB(curB); save();
     });
     ov.addEventListener('click', function (e) {
       var bt = e.target.closest('button[data-wse]'); if (!bt) return;
@@ -6410,6 +6453,13 @@ function __boot() {
         body.appendChild(bd); wseControls(root); save(); bd.scrollIntoView({ block: 'center' });
         ov.querySelector('.wse-note').textContent = '새 구역을 만들었어요. ▲▼나 ⠿로 칸을 옮겨 넣으세요';
         return;
+      }
+      if (a === 'refresh') {
+        var rs = wseRefresh(root, withAns);
+        if (rs.legacy) { ov.querySelector('.wse-note').textContent = '이 학습지는 예전에 저장된 방식이라, 한 번만 더보기 → 원래대로를 눌러 주세요. 그다음부터는 내용만 가져올 수 있어요'; return; }
+        wseControls(root); if (typeof refitCompact === 'function') refitCompact(); save();
+        ov.querySelector('.wse-note').textContent = '수업 내용을 가져왔어요 (바뀐 칸 ' + rs.changed + ' · 새 칸 ' + rs.added + ' · 없어진 칸 ' + rs.gone + ')';
+        var nb2 = ov.querySelector('.wse-refresh-tip'); if (nb2) nb2.remove(); return;
       }
       if (a === 'fill') { var ad = wseFill(root); ov.querySelector('.wse-note').textContent = ad ? '쓰는 줄을 늘려 빈 공간을 채웠어요' : '채울 빈 공간이나 쓰는 줄이 없어요'; save(); return; }
       if (a === 'lines1') {
@@ -6458,7 +6508,7 @@ function __boot() {
         if (a === 'up') tg.parentNode.insertBefore(bx, tg); else tg.parentNode.insertBefore(bx, tg.nextSibling);
         bx.scrollIntoView({ block: 'nearest' }); save(); return;
       }
-      if (a === 'del') { bx.remove(); save(); return; }
+      if (a === 'del') { var hd0 = root.querySelector('.ws-head'); if (hd0) { var rm = (hd0.dataset.removed || '').split('|').filter(Boolean); [bx].concat([].slice.call(bx.querySelectorAll('[data-src]'))).forEach(function (x) { if (x.dataset && x.dataset.src && rm.indexOf(x.dataset.src) < 0) rm.push(x.dataset.src); }); hd0.dataset.removed = rm.join('|'); } bx.remove(); save(); return; }
       if (a === 'line+' || a === 'line-') {
         var lines = [].slice.call(bx.querySelectorAll('.ws-line'));
         lines.filter(function (ln) { var nx = ln.nextElementSibling; return !(nx && nx.classList.contains('ws-line')); }).forEach(function (last) {
