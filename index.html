@@ -1909,6 +1909,47 @@
   #ws-root .ws-match[style*="--wl"] > ul { flex: 1 1 0; min-width: 0; }
 
   #ws-editor .wse-refresh-tip { font-family: var(--serif); font-weight: 700; font-size: 13px; padding: 4px 10px; border: 1.5px solid #C98A1E; background: #FFF4DC; color: #8A5A0B; border-radius: 999px; cursor: pointer; margin-left: 6px; }
+
+  /* 마인드맵 */
+  .slide .mindmap { position: relative; margin: .4em 0; }
+  .slide .mindmap .mm-svg { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+  .slide .mindmap .mm-wrap { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1.6em; }
+  .slide .mindmap .mm-side { display: flex; flex-direction: column; gap: .7em; min-width: 0; }
+  .slide .mindmap .mm-grp { display: flex; align-items: center; gap: 1.4em; }
+  .slide .mindmap .mm-l .mm-grp { justify-content: flex-end; }
+  .slide .mindmap .mm-leaves { display: flex; flex-direction: column; gap: .3em; min-width: 0; }
+  .slide .mindmap .mm-l .mm-leaves { align-items: flex-end; }
+  .slide .mindmap .mm-n { position: relative; z-index: 1; }
+  .slide .mindmap .mm-c .mm-t { font-family: var(--serif); font-weight: 800; font-size: 1.05em; padding: .45em .9em; border-radius: 16px; background: #3B2F25; color: #FFFFFF; text-align: center; max-width: 9em; }
+  .slide .mindmap .mm-br .mm-t { font-weight: 800; font-size: .85em; padding: .3em .7em; border-radius: 12px; background: var(--mmc); color: #FFFFFF; max-width: 8em; }
+  .slide .mindmap .mm-leaf .mm-t { font-size: .7em; font-weight: 600; padding: .2em .55em; border-radius: 8px; border: 2px solid var(--mmc); background: #FFFFFF; color: var(--ink); max-width: 11em; }
+  .slide .mindmap .mm-t[contenteditable="true"] { cursor: text; outline: none; }
+  .slide .mindmap .mm-t[contenteditable="true"]:focus { box-shadow: 0 0 0 3px rgba(31,90,150,.45); }
+  .mm-bar { position: fixed; z-index: 260; display: flex; gap: 4px; }
+  .mm-bar[hidden] { display: none; }
+  .mm-bar button { font-family: var(--serif); font-weight: 700; font-size: 13px; padding: 3px 9px; border: 1.5px solid var(--edge); border-radius: 6px; background: #FFFFFF; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+  .mm-bar button[hidden] { display: none; }
+  .mm-bar .mm-del { color: #B3372B; border-color: #E2B4AE; }
+  @media (max-width: 760px) { .slide .mindmap .mm-wrap { grid-template-columns: 1fr; } .slide .mindmap .mm-l .mm-grp { flex-direction: row-reverse; justify-content: flex-start; } .slide .mindmap .mm-l .mm-leaves { align-items: flex-start; } }
+  /* 학습지: 마인드맵은 개요로 */
+  #ws-root .ws-mm .ws-mm-c { margin: 0 0 1mm !important; }
+  #ws-root .ws-mm ul { margin-left: 1.2em !important; }
+  @media print { .mm-bar { display: none !important; } }
+
+  /* ✕ 원래대로 견본 */
+  .sw-x, .hsw.sw-x { position: relative; background: #FFFFFF !important; border: 1.5px solid #B9AE9C !important; }
+  .sw-x::before, .sw-x::after { content: ''; position: absolute; left: 50%; top: 50%; width: 70%; height: 2px; background: #B3372B; }
+  .sw-x::before { transform: translate(-50%, -50%) rotate(45deg); }
+  .sw-x::after { transform: translate(-50%, -50%) rotate(-45deg); }
+  .tc-pick { display: inline-flex; align-items: center; gap: 3px; margin-right: 4px; }
+  #table-panel .sw[data-t="color:#FFFFFF"] { border: 1.5px solid #CFC6B6; }
+
+  /* 페이지 내용은 위에서부터 (제목 위치 고정) */
+  .js .slide section.stage.active > .block { justify-content: flex-start !important; }
+
+  .js .slide section.stage.active > .block > .tag + * { margin-top: 0 !important; }
+
+  .slide .block > .tag + br { display: none; }
 </style>
 </head>
 <body>
@@ -2307,9 +2348,9 @@
     <div class="grp"><button type="button" data-cmd="undoall" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button type="button" data-cmd="redoall" title="다시 실행 (Ctrl+Y)">↷ 다시</button></div>
     <div class="grp"><span class="glab">페이지</span><select data-sel="page" aria-label="페이지 추가"><option value="">＋ 추가</option><option value="연계">연계</option><option value="시사">시사</option><option value="개념">개념</option><option value="요약">요약</option><option value="활동">활동</option><option value="기출">기출</option><option value="예고">예고</option></select><button type="button" data-cmd="left" title="앞으로 옮기기">◀</button><button type="button" data-cmd="right" title="뒤로 옮기기">▶</button><button type="button" data-cmd="duppage" title="지금 페이지를 그대로 복사해 바로 뒤에 넣어요">⧉ 복사</button><button type="button" data-cmd="pgname" title="위쪽 페이지 탭에 보이는 이름 바꾸기 (탭을 두 번 눌러도 돼요)">✎ 이름</button><button type="button" data-cmd="delpage" title="지금 보고 있는 페이지를 통째로 지워요 (두 번 눌러야 지워져요)">✕ 페이지 삭제</button></div>
     <div class="grp"><span class="glab">차시</span><button type="button" data-cmd="addlesson" title="지금 차시 바로 뒤(같은 소단원)에 새 차시(표지 + 개념 1쪽)를 만들어요">＋ 차시</button><button type="button" data-cmd="dellesson" title="지금 차시를 통째로 지워요">차시 삭제</button></div>
-    <div class="grp"><select data-sel="tool" aria-label="수업 도구 넣기" title="커서가 있는 자리에 넣어요. 선 잇기·벤다이어그램은 커서가 있는 목록을 바꿔요"><option value="">＋ 수업 도구</option><option value="table">표</option><option value="match">선 잇기</option><option value="venn">벤다이어그램</option><option value="video">동영상 (유튜브)</option><option value="photo">사진</option><option value="choice">선택 카드 (A·B)</option><option value="vote">투표 (고르기)</option><option value="split">2분할 (사진·동영상·도구)</option></select></div>
+    <div class="grp"><select data-sel="tool" aria-label="수업 도구 넣기" title="커서가 있는 자리에 넣어요. 선 잇기·벤다이어그램은 커서가 있는 목록을 바꿔요"><option value="">＋ 수업 도구</option><option value="table">표</option><option value="match">선 잇기</option><option value="venn">벤다이어그램</option><option value="video">동영상 (유튜브)</option><option value="photo">사진</option><option value="choice">선택 카드 (A·B)</option><option value="vote">투표 (고르기)</option><option value="split">2분할 (사진·동영상·도구)</option><option value="mindmap">마인드맵</option></select></div>
     <span class="grp-sep"></span>
-    <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="bd" class="t-bd" title="굵게 (Ctrl+B). 굵은 글자를 선택하고 다시 누르면 해제">굵게</button><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><button type="button" data-cmd="cloze" title="선택한 글자를 ( ) 빈칸으로. 수업 중 누르면 열려요">( ) 빈칸</button><button type="button" data-cmd="clozecho" title="선택한 글자를 초성 힌트가 있는 빈칸으로">초성 빈칸</button><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button><select data-sel="badge" aria-label="배지 넣기" title="커서 자리에 배지를 넣어요"><option value="">＋ 배지</option><option value="질문">질문</option><option value="미션">미션</option><option value="핵심 명제">핵심 명제</option><option value="정리">정리</option><option value="예시">예시</option><option value="주의">주의</option><option value="__custom">직접 입력…</option></select><input id="badge-text" class="badge-text" type="text" placeholder="배지 글자 입력 후 Enter" hidden></div>
+    <div class="grp"><span class="glab">글자</span><button type="button" data-cmd="bd" class="t-bd" title="굵게 (Ctrl+B). 굵은 글자를 선택하고 다시 누르면 해제">굵게</button><button type="button" data-cmd="imp" class="t-imp">중요</button><button type="button" data-cmd="kw" class="t-kw">키워드</button><span class="hl-pick" title="형광펜: 글자를 선택하고 색을 누르세요"><span class="hl-lab">형광펜</span><button type="button" data-cmd="hl:y" class="hsw" style="background:#FFE58A" aria-label="노랑 형광펜"></button><button type="button" data-cmd="hl:g" class="hsw" style="background:#CFE8B4" aria-label="연두 형광펜"></button><button type="button" data-cmd="hl:b" class="hsw" style="background:#CFE3F5" aria-label="하늘 형광펜"></button><button type="button" data-cmd="hl:p" class="hsw" style="background:#F7D0D8" aria-label="분홍 형광펜"></button></span><span class="tc-pick" title="글자색: 글자를 선택하고 색을 누르세요"><span class="hl-lab">글자색</span><button type="button" data-cmd="tc:default" class="hsw sw-x" aria-label="원래대로(검정)" title="원래대로 (검정)"></button><button type="button" data-cmd="tc:#B3372B" class="hsw" style="background:#B3372B" aria-label="빨강"></button><button type="button" data-cmd="tc:#1F5A96" class="hsw" style="background:#1F5A96" aria-label="파랑"></button><button type="button" data-cmd="tc:#3E7A3A" class="hsw" style="background:#3E7A3A" aria-label="초록"></button><button type="button" data-cmd="tc:#C46A12" class="hsw" style="background:#C46A12" aria-label="주황"></button><button type="button" data-cmd="tc:#7A4E9A" class="hsw" style="background:#7A4E9A" aria-label="보라"></button><button type="button" data-cmd="tc:#8A8178" class="hsw" style="background:#8A8178" aria-label="회색"></button></span><button type="button" data-cmd="cloze" title="선택한 글자를 ( ) 빈칸으로. 수업 중 누르면 열려요">( ) 빈칸</button><button type="button" data-cmd="clozecho" title="선택한 글자를 초성 힌트가 있는 빈칸으로">초성 빈칸</button><button type="button" data-cmd="plain">지우기</button><button type="button" data-cmd="note" title="단어를 드래그해서 선택한 뒤 누르면 메모(쪽지)를 달아요">＋ 메모</button><select data-sel="badge" aria-label="배지 넣기" title="커서 자리에 배지를 넣어요"><option value="">＋ 배지</option><option value="질문">질문</option><option value="미션">미션</option><option value="핵심 명제">핵심 명제</option><option value="정리">정리</option><option value="예시">예시</option><option value="주의">주의</option><option value="__custom">직접 입력…</option></select><input id="badge-text" class="badge-text" type="text" placeholder="배지 글자 입력 후 Enter" hidden></div>
     <div class="grp"><span class="glab">줄</span><button type="button" data-cmd="outdent" title="내어쓰기 (Shift+Tab)">← 내어쓰기</button><button type="button" data-cmd="indent" title="들여쓰기 (Tab)">들여쓰기 →</button><button type="button" data-cmd="hang" title="커서를 맞추고 싶은 글자 앞에 두고 누르면, 둘째 줄부터 그 위치에 맞춰져요 (Shift+Tab과 같아요). 맨 앞에서 누르면 풀려요">⇥ 줄맞춤</button><select data-sel="bullet" aria-label="머리 기호" title="목록 줄 앞 기호 바꾸기"><option value="">머리 기호</option><option value="auto">기본</option><option value="dot">• 점</option><option value="dash">– 줄표</option><option value="arrow">→ 화살표</option><option value="check">✓ 체크</option><option value="none">없음</option></select></div>
     <div class="grp grp-size"><span class="glab">글씨 크기</span><button type="button" data-cmd="fsdown" title="1씩 작게">가－</button><input id="fs-num" class="fs-num" type="number" min="12" max="120" step="1" value="40" aria-label="글씨 크기"><button type="button" data-cmd="fsup" title="1씩 크게">가＋</button><button type="button" data-cmd="fsauto" title="이 페이지 글씨를 화면에 맞게 자동 조절">자동</button></div>
     <div class="grp grp-save"><div class="ver-info" id="ver-info"></div><a class="ver-hist" id="ver-hist" target="_blank" rel="noopener" hidden title="GitHub에서 반영 기록(버전) 보기">기록</a><button type="button" data-cmd="publish" class="t-save">GitHub 반영</button><button type="button" data-cmd="ghset" title="GitHub 연결 설정">⚙</button><button type="button" data-cmd="save" title="내용 파일(content.html)을 내려받기">내용 저장</button><select data-sel="backup" aria-label="내용 백업" title="지금 과목의 모든 내용을 텍스트나 엑셀로 내려받아요"><option value="">백업</option><option value="txt">텍스트(.txt)</option><option value="xlsx">엑셀(.xlsx)</option></select><button type="button" data-cmd="reset">초기화</button><span class="save-state" id="save-state" aria-live="polite"></span></div>
@@ -2690,6 +2731,91 @@ function __boot() {
     btn.addEventListener('click', run);
     window.__lessonCheck = run;
   })();
+  // ===== 마인드맵 =====
+  (function () {
+    var COL = ['#5B7896', '#B0643B', '#5E7F4E', '#82609A', '#9A6F42', '#3F7F7F', '#A04A5A', '#6F7D62'];
+    var parse = function (el) { try { return JSON.parse(el.getAttribute('data-mm') || ''); } catch (e) { return null; } };
+    var node = function (n, cls, path, color) {
+      return '<div class="mm-n ' + cls + '" data-path="' + path + '"' + (color ? ' style="--mmc:' + color + '"' : '') + '><div class="mm-t">' + (n.t || '') + '</div></div>';
+    };
+    function render(el) {
+      var d = parse(el); if (!d) return;
+      var kids = d.c || [], R = [], Lf = [];
+      kids.forEach(function (b, i) { (i % 2 === 0 ? R : Lf).push(i); });
+      var side = function (list, dir) {
+        return '<div class="mm-side mm-' + dir + '">' + list.map(function (i) {
+          var b = kids[i], col = COL[i % COL.length];
+          var leaves = '<div class="mm-leaves">' + (b.c || []).map(function (lf, j) { return node(lf, 'mm-leaf', i + '.' + j, col); }).join('') + '</div>';
+          return '<div class="mm-grp">' + (dir === 'l' ? leaves + node(b, 'mm-br', String(i), col) : node(b, 'mm-br', String(i), col) + leaves) + '</div>';
+        }).join('') + '</div>';
+      };
+      el.innerHTML = '<svg class="mm-svg" aria-hidden="true"></svg><div class="mm-wrap">' + side(Lf, 'l') + '<div class="mm-mid">' + node(d, 'mm-c', 'c') + '</div>' + side(R, 'r') + '</div>';
+      if (document.body.classList.contains('editing')) el.querySelectorAll('.mm-t').forEach(function (t) { t.setAttribute('contenteditable', 'true'); });
+      el.setAttribute('contenteditable', 'false');
+      lines(el);
+    }
+    function lines(el) {
+      var svg = el.querySelector('.mm-svg'); if (!svg || !el.offsetWidth) return;
+      var er = el.getBoundingClientRect(), s = er.width / el.offsetWidth || 1;
+      var box = function (n) { var r = n.getBoundingClientRect(); return { l: (r.left - er.left) / s, r: (r.right - er.left) / s, t: (r.top - er.top) / s, b: (r.bottom - er.top) / s }; };
+      var c = el.querySelector('.mm-c'); if (!c) return; var cb = box(c), cy = (cb.t + cb.b) / 2;
+      var out = '';
+      var curve = function (x1, y1, x2, y2, col, w) { var mx = (x1 + x2) / 2; return '<path d="M' + x1 + ',' + y1 + ' C' + mx + ',' + y1 + ' ' + mx + ',' + y2 + ' ' + x2 + ',' + y2 + '" stroke="' + col + '" stroke-width="' + w + '" fill="none" stroke-linecap="round"/>'; };
+      el.querySelectorAll('.mm-grp').forEach(function (g) {
+        var br = g.querySelector('.mm-br'), bb = box(br), col = getComputedStyle(br).getPropertyValue('--mmc') || '#888', left = !!g.closest('.mm-l'), by = (bb.t + bb.b) / 2;
+        out += left ? curve(cb.l, cy, bb.r, by, col, 5) : curve(cb.r, cy, bb.l, by, col, 5);
+        g.querySelectorAll('.mm-leaf').forEach(function (lf) { var lb = box(lf), ly = (lb.t + lb.b) / 2; out += left ? curve(bb.l, by, lb.r, ly, col, 2.5) : curve(bb.r, by, lb.l, ly, col, 2.5); });
+      });
+      svg.setAttribute('width', el.offsetWidth); svg.setAttribute('height', el.offsetHeight); svg.setAttribute('viewBox', '0 0 ' + el.offsetWidth + ' ' + el.offsetHeight);
+      svg.innerHTML = out;
+    }
+    function collect(el) {
+      var d = parse(el) || { t: '', c: [] };
+      el.querySelectorAll('.mm-n').forEach(function (n) {
+        var p = n.dataset.path, t = n.querySelector('.mm-t').innerHTML;
+        if (p === 'c') d.t = t;
+        else { var a = p.split('.').map(Number); if (a.length === 1) { if (d.c[a[0]]) d.c[a[0]].t = t; } else if (d.c[a[0]] && d.c[a[0]].c && d.c[a[0]].c[a[1]]) d.c[a[0]].c[a[1]].t = t; }
+      });
+      el.setAttribute('data-mm', JSON.stringify(d)); return d;
+    }
+    function all(scope) { (scope || document).querySelectorAll('.mindmap').forEach(render); }
+    window.__mm = { render: render, renderAll: all, lines: lines, collect: collect,
+      toText: function (el) { var d = parse(el); if (!d) return ''; return '<div class="ws-mm"><p class="ws-mm-c"><b>' + d.t + '</b></p><ul>' + (d.c || []).map(function (b) { return '<li><b>' + b.t + '</b>' + ((b.c && b.c.length) ? '<ul>' + b.c.map(function (x) { return '<li>' + x.t + '</li>'; }).join('') + '</ul>' : '') + '</li>'; }).join('') + '</ul></div>'; } };
+    var rs = window.ResizeObserver ? new ResizeObserver(function (es) { es.forEach(function (e) { lines(e.target); }); }) : null;
+    var watch = function () { document.querySelectorAll('.mindmap').forEach(function (m) { if (!m.__w && rs) { rs.observe(m); m.__w = 1; } }); };
+    var sl = document.getElementById('slide');
+    if (sl) new MutationObserver(function (ms) { var need = false; ms.forEach(function (m) { [].forEach.call(m.addedNodes || [], function (n) { if (n.nodeType === 1 && (n.classList.contains('mindmap') || (n.querySelector && n.querySelector('.mindmap')))) need = true; }); }); if (need) { document.querySelectorAll('.mindmap').forEach(function (m) { if (!m.querySelector('.mm-wrap')) render(m); }); watch(); } }).observe(sl, { childList: true, subtree: true });
+    setTimeout(function () { all(); watch(); }, 400);
+    // 수정 모드: 마디 고르면 도구
+    var bar = document.createElement('div'); bar.className = 'mm-bar'; bar.hidden = true;
+    bar.innerHTML = '<button type="button" data-mm="br">＋ 가지</button><button type="button" data-mm="leaf">＋ 세부</button><button type="button" data-mm="del" class="mm-del">✕ 지우기</button><button type="button" data-mm="rm" class="mm-del">마인드맵 삭제</button>';
+    document.body.appendChild(bar);
+    var cur = null;
+    document.addEventListener('focusin', function (e) {
+      if (!document.body.classList.contains('editing')) return;
+      var n = e.target.closest && e.target.closest('.mindmap .mm-n'); if (!n) return;
+      cur = n; var r = n.getBoundingClientRect(); bar.style.left = Math.max(6, r.left) + 'px'; bar.style.top = Math.max(6, r.top - 38) + 'px'; bar.hidden = false;
+      var tt = n.querySelector('.mm-t'); if (tt && /^(중심 주제|가지 [0-9]+|새 가지|세부 내용)$/.test((tt.textContent || '').trim())) { setTimeout(function () { var rg = document.createRange(); rg.selectNodeContents(tt); var sl2 = window.getSelection(); sl2.removeAllRanges(); sl2.addRange(rg); }, 0); }
+      bar.querySelector('[data-mm=leaf]').hidden = n.classList.contains('mm-leaf') ? false : n.classList.contains('mm-c');
+      bar.querySelector('[data-mm=del]').hidden = n.classList.contains('mm-c');
+    });
+    document.addEventListener('mousedown', function (e) { if (!bar.hidden && !bar.contains(e.target) && !(e.target.closest && e.target.closest('.mindmap'))) bar.hidden = true; });
+    bar.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-mm]'); if (!b || !cur) return;
+      var el = cur.closest('.mindmap'), d = collect(el), p = cur.dataset.path, a = p === 'c' ? [] : p.split('.').map(Number), k = b.dataset.mm;
+      if (k === 'rm') { if (!window.confirm('이 마인드맵을 지울까요?')) return; var sec0 = el.closest('section.stage'); el.remove(); bar.hidden = true; if (window.__storeLessonPub) window.__storeLessonPub(+sec0.dataset.l); return; }
+      if (k === 'br') d.c.splice(a.length ? a[0] + 1 : d.c.length, 0, { t: '새 가지', c: [] });
+      else if (k === 'leaf') { var bi = a[0]; d.c[bi].c = d.c[bi].c || []; d.c[bi].c.splice(a.length > 1 ? a[1] + 1 : d.c[bi].c.length, 0, { t: '세부 내용' }); }
+      else if (k === 'del') { if (a.length === 1) d.c.splice(a[0], 1); else d.c[a[0]].c.splice(a[1], 1); }
+      el.setAttribute('data-mm', JSON.stringify(d)); render(el); bar.hidden = true;
+      var sec = el.closest('section.stage'); if (window.__storeLessonPub && sec) window.__storeLessonPub(+sec.dataset.l);
+    });
+    document.addEventListener('input', function (e) {
+      var el = e.target.closest && e.target.closest('.mindmap'); if (!el) return;
+      clearTimeout(el.__t); el.__t = setTimeout(function () { collect(el); lines(el); }, 250);
+    });
+  })();
   window.__resetLessonState = resetLessonState;
   // 표 편집: ↑↓ 방향키로 바로 위·아래 칸으로 (오른쪽 칸으로 새지 않게)
   (function () {
@@ -3063,7 +3189,7 @@ function __boot() {
         });
       });
       photoTools(on); blockTools(on); gripTools(on); noteTools(on); widgetTools(on); if (!on) clearTableBar();
-      bookEditTools(on); videoTools(on); pagePhotoTools(on); choiceTools(on); voteTools(on); splitTools(on); revealTools(on); try { progRender(); } catch (e) {}
+      bookEditTools(on); videoTools(on); pagePhotoTools(on); choiceTools(on); voteTools(on); splitTools(on); revealTools(on); document.querySelectorAll('.mindmap').forEach(function (m) { if (window.__mm) window.__mm.collect(m); m.querySelectorAll('.mm-t').forEach(function (t) { if (on) t.setAttribute('contenteditable', 'true'); else t.removeAttribute('contenteditable'); }); m.setAttribute('contenteditable', 'false'); }); try { progRender(); } catch (e) {}
       if (window.__reveal) window.__reveal.wrap();
     }
     // ===== 반영 안 된 수정 알림 · 되살리기 · 자동 반영 =====
@@ -3220,7 +3346,7 @@ function __boot() {
     function scrubStyles(sec) {
       sec.querySelectorAll('.block font').forEach(function (f) { var p = f.parentNode; while (f.firstChild) p.insertBefore(f.firstChild, f); p.removeChild(f); });
       sec.querySelectorAll('.block [style]').forEach(function (el) {
-        if (el.matches('th, td, col, table, .fn-note, .photo-win, .fn-note *, img, svg, svg *, figure, .tablewrap, .block-tools, .table-bar, .table-bar *, .fsz')) return;
+        if (el.matches('th, td, col, table, .fn-note, .photo-win, .fn-note *, img, svg, svg *, figure, .tablewrap, .block-tools, .table-bar, .table-bar *, .fsz, .tc')) return;
         var inCell = !!el.closest('td, th');
         ['font-size', 'font-family', 'line-height', 'letter-spacing', 'font-weight', 'color', 'background-color', 'background'].forEach(function (p) { if (inCell && (p === 'color' || p === 'font-weight')) return; el.style.removeProperty(p); });
         if (!el.getAttribute('style')) el.removeAttribute('style');
@@ -3724,7 +3850,7 @@ function __boot() {
       return t.map(function (s) { var e = document.createElement('span'); e.textContent = s; return e.innerHTML; }).join('<br>');
     }
     // ===== 표 전용 도구 막대 (칸을 클릭하면 표 위에 나타남) =====
-    var TB_COLORS = [['default', '#FFFDF8', '무지(기본)'], ['#6E4B2E', '#6E4B2E', '나무'], ['#7D8559', '#7D8559', '올리브'], ['#5F7383', '#5F7383', '청회색'], ['#6F7D62', '#6F7D62', '이끼'], ['#9A6F42', '#9A6F42', '호박'], ['#3F3833', '#3F3833', '먹색'], ['#1F5A96', '#1F5A96', '파랑'], ['#B3372B', '#B3372B', '빨강']];
+    var TB_COLORS = [['default', 'none', '원래대로'], ['#FFFFFF', '#FFFFFF', '흰색'], ['#6E4B2E', '#6E4B2E', '나무'], ['#7D8559', '#7D8559', '올리브'], ['#5F7383', '#5F7383', '청회색'], ['#6F7D62', '#6F7D62', '이끼'], ['#9A6F42', '#9A6F42', '호박'], ['#3F3833', '#3F3833', '먹색'], ['#1F5A96', '#1F5A96', '파랑'], ['#B3372B', '#B3372B', '빨강']];
     function tableBarHTML() {
       return '<button type="button" class="tp-title" data-t="toggle" aria-expanded="true" title="도구판 접기/펴기">표 편집 <span class="tp-arrow">▾</span></button><div class="tp-body">' +
         '<div class="tp-g"><span class="tb-l">가로줄(행)</span><div class="tp-row"><button type="button" data-t="rowadd" title="아래에 가로줄 추가"><span class="tp-ic">＋</span>추가</button><button type="button" data-t="rowdel" class="tb-danger" title="이 가로줄 삭제"><span class="tp-ic">－</span>삭제</button></div></div>' +
@@ -3732,7 +3858,7 @@ function __boot() {
         '<div class="tp-g"><span class="tb-l">글자 정렬</span><div class="tp-row tp-row3"><button type="button" data-t="al-left" title="왼쪽 정렬">왼쪽</button><button type="button" data-t="al-center" title="가운데 정렬">가운데</button><button type="button" data-t="al-right" title="오른쪽 정렬">오른쪽</button></div><div class="tp-row"><button type="button" data-t="al-col" title="이 칸이 있는 세로줄 전체를 같은 정렬로">세로줄 전체 가운데</button></div></div>' +
         '<div class="tp-g"><span class="tb-l">칸 합치기</span><button type="button" data-t="merge" title="드래그로 선택한 칸들을 하나로 합쳐요">선택 칸 합치기</button><button type="button" data-t="split" title="합쳐진 칸을 다시 나눠요">합친 칸 나누기</button></div>' +
         '<div class="tp-g"><span class="tb-l">너비</span><button type="button" data-t="eqall">모두 같게</button><button type="button" data-t="eqothers">이 칸 빼고 같게</button></div>' +
-        '<div class="tp-g"><span class="tb-l">이 칸 머리색</span><div class="tp-sw">' + TB_COLORS.map(function (c) { return '<button type="button" class="sw" data-t="color:' + c[0] + '" title="' + c[2] + '" style="background:' + c[1] + '"></button>'; }).join('') + '</div><button type="button" data-t="colorall">모든 칸에 적용</button></div>' +
+        '<div class="tp-g"><span class="tb-l">이 칸 머리색</span><div class="tp-sw">' + TB_COLORS.map(function (c) { return c[0] === 'default' ? '<button type="button" class="sw sw-x" data-t="color:default" title="원래대로"></button>' : '<button type="button" class="sw" data-t="color:' + c[0] + '" title="' + c[2] + '" style="background:' + c[1] + '"></button>'; }).join('') + '</div><button type="button" data-t="colorall">모든 칸에 적용</button></div>' +
         '<div class="tp-g"><button type="button" data-t="undo" class="tb-undo">↶ 되돌리기</button><button type="button" data-t="tdel" class="tb-danger">표 삭제</button></div></div>';
     }
     function clearTableBar() {
@@ -3940,8 +4066,19 @@ function __boot() {
       if (['rowadd', 'rowdel', 'coladd', 'coldel', 'eqall', 'eqothers', 'colorall', 'tdel'].indexOf(c) > -1 || c.indexOf('color:') === 0) snapTable(table);
       if (c === 'rowadd') {
         var nr = document.createElement('tr');
-        for (var i = 0; i < tr.cells.length; i++) { var td = document.createElement('td'); td.innerHTML = '&nbsp;'; nr.appendChild(td); }
-        if (tr.parentNode.tagName === 'THEAD') tb.insertBefore(nr, tb.firstChild); else tb.insertBefore(nr, tr.nextSibling);
+        // 바로 위 줄(머리줄이면 본문 첫 줄)의 칸 모양·색을 그대로 따라가기 (합친 칸은 풀어서)
+        var model = tr.parentNode.tagName === 'THEAD' ? (tb.rows[0] || tr) : tr;
+        var occ = [], gridW = 0;
+        [].forEach.call(table.rows, function (r, ri) { occ[ri] = occ[ri] || []; var cc = 0; [].forEach.call(r.cells, function (cl) { while (occ[ri][cc]) cc++; var cs = cl.colSpan || 1, rs = cl.rowSpan || 1; for (var a = 0; a < rs; a++) { occ[ri + a] = occ[ri + a] || []; for (var b = 0; b < cs; b++) occ[ri + a][cc + b] = cl; } cc += cs; if (cc > gridW) gridW = cc; }); });
+        var mi = [].indexOf.call(table.rows, model), rowCells = occ[mi] || [];
+        for (var i = 0; i < gridW; i++) {
+          var ref = rowCells[i] || model.cells[Math.min(i, model.cells.length - 1)];
+          var tag = ref && ref.tagName === 'TH' && ref.parentNode.parentNode.tagName !== 'THEAD' ? 'th' : 'td';
+          var td = document.createElement(tag); td.innerHTML = '&nbsp;';
+          if (ref) { if (ref.className) td.className = ref.className.replace(/\bsel\b|\bcell-sel\b/g, '').trim(); ['background', 'backgroundColor', 'color', 'borderColor', 'textAlign', 'whiteSpace'].forEach(function (k) { if (ref.style[k]) td.style[k] = ref.style[k]; }); }
+          nr.appendChild(td);
+        }
+        if (tr.parentNode.tagName === 'THEAD') tb.insertBefore(nr, tb.firstChild); else { var after = tr; var lastRow = tr; [].forEach.call(tr.cells, function (cl) { if ((cl.rowSpan || 1) > 1) { var ix = [].indexOf.call(table.rows, tr) + cl.rowSpan - 1; if (table.rows[ix] && [].indexOf.call(table.rows, table.rows[ix]) > [].indexOf.call(table.rows, lastRow)) lastRow = table.rows[ix]; } }); tb.insertBefore(nr, lastRow.nextSibling); }
       } else if (c === 'rowdel') {
         if (tr.parentNode.tagName === 'THEAD' || tb.rows.length <= 1) { state.textContent = '머리줄과 마지막 줄은 못 지워요'; return; }
         tr.remove();
@@ -3960,10 +4097,15 @@ function __boot() {
           [].forEach.call(cols, function (x, k) { if (k !== col) x.style.width = rest.toFixed(2) + '%'; });
         }
       } else if (c.indexOf('color:') === 0) {
-        var hex = c.slice(6), th = table.tHead && table.tHead.rows[0] && table.tHead.rows[0].cells[col];
-        if (th) { th.style.background = hex === 'default' ? '' : hex; th.style.borderColor = hex === 'default' ? '' : hex; th.style.color = hex === 'default' ? '' : '#FFFFFF'; }
+        var hex = c.slice(6), inHead = tr.parentNode.tagName === 'THEAD';
+        var th = inHead ? cell : (cell.tagName === 'TH' ? cell : null);
+        var white = hex.toUpperCase() === '#FFFFFF';
+        if (th) { th.style.background = hex === 'default' ? '' : hex; th.style.borderColor = hex === 'default' || white ? '' : hex; th.style.color = hex === 'default' ? '' : (white ? '#2A221B' : '#FFFFFF'); }
+        else { cell.style.background = hex === 'default' ? '' : (white ? '#FFFFFF' : 'color-mix(in srgb, ' + hex + ' 16%, #FFFFFF)'); }
+        if (!inHead && th && !table.tHead) {}
       } else if (c === 'colorall') {
-        var hr = table.tHead && table.tHead.rows[0]; if (hr) { var src = hr.cells[col]; [].forEach.call(hr.cells, function (h) { h.style.background = src.style.background; h.style.borderColor = src.style.borderColor; h.style.color = src.style.color; }); }
+        if (tr.parentNode.tagName === 'THEAD') { var hr = table.tHead.rows[0]; var src = hr.cells[col]; [].forEach.call(hr.cells, function (h) { h.style.background = src.style.background; h.style.borderColor = src.style.borderColor; h.style.color = src.style.color; }); }
+        else { [].forEach.call(tb.rows, function (r) { [].forEach.call(r.cells, function (x) { if (x.tagName === cell.tagName) { x.style.background = cell.style.background; x.style.borderColor = cell.style.borderColor; x.style.color = cell.style.color; } }); }); }
       } else if (c === 'tdel') {
         (table.closest('.tablewrap') || table).remove();
       }
@@ -4715,6 +4857,13 @@ function __boot() {
       });
     }
     // ===== 2분할: 왼쪽·오른쪽 칸에 글·사진·동영상·도구 =====
+    function makeMindmap() {
+      var w = document.createElement('div'); w.className = 'mindmap';
+      w.setAttribute('data-mm', JSON.stringify({ t: '중심 주제', c: [{ t: '가지 1', c: [{ t: '세부 내용' }] }, { t: '가지 2', c: [{ t: '세부 내용' }] }, { t: '가지 3', c: [] }, { t: '가지 4', c: [] }] }));
+      placeTable(w); if (window.__mm) window.__mm.render(w);
+      state.textContent = '마인드맵을 넣었어요. 글자를 눌러 고치고, 위에 뜨는 버튼으로 가지를 늘려요';
+    }
+    window.__storeLessonPub = function (l) { storeLesson(l); };
     function makeSplit() {
       var w = document.createElement('div'); w.className = 'split'; w.dataset.r = '50';
       w.innerHTML = '<div class="pane"><p>왼쪽 칸</p></div><div class="pane"><p>오른쪽 칸</p></div>';
@@ -4788,6 +4937,32 @@ function __boot() {
       t.addEventListener('blur', done); t.addEventListener('keydown', key);
       state.textContent = '배지 글자를 고치고 Enter를 누르세요';
     }, true);
+    // ===== 글자색 (✕ = 원래대로 검정) =====
+    function textColor(hex) {
+      var s = window.getSelection();
+      if ((!s.rangeCount || s.isCollapsed || !document.getElementById('slide').contains(s.anchorNode)) && savedRange) { s.removeAllRanges(); s.addRange(savedRange); }
+      if (!s.rangeCount || s.isCollapsed) { state.textContent = '글자를 먼저 선택하세요'; return; }
+      var r = s.getRangeAt(0), an = r.commonAncestorContainer; if (an.nodeType === 3) an = an.parentNode;
+      var sec = an.closest('section.stage'); if (!sec) return;
+      if (hex === 'default') {
+        var hits = []; var up = an.closest('.tc, .imp, .kw, [style*="color"], font[color]'); if (up && up.closest('.block')) hits.push(up);
+        an.querySelectorAll('.tc, .imp, .kw, [style*="color"], font[color]').forEach(function (x) { if (r.intersectsNode(x)) hits.push(x); });
+        hits.forEach(function (x) {
+          if (x.classList.contains('tc') || x.tagName === 'FONT') unwrap(x);
+          else if (x.classList.contains('imp') || x.classList.contains('kw')) { x.classList.remove('imp', 'kw'); if (!x.className && !x.getAttribute('style')) unwrap(x); }
+          else if (x.style && x.style.color && !x.closest('table') || (x.style && x.style.color && x.tagName === 'SPAN')) { x.style.removeProperty('color'); if (!x.getAttribute('style')) x.removeAttribute('style'); }
+        });
+        state.textContent = '글자색을 원래대로(검정) 바꿨어요';
+      } else {
+        var frag = r.extractContents(), w = document.createElement('span'); w.className = 'tc'; w.style.color = hex;
+        var tmp = document.createElement('div'); tmp.appendChild(frag);
+        tmp.querySelectorAll('.tc').forEach(function (x) { unwrap(x); });
+        while (tmp.firstChild) w.appendChild(tmp.firstChild);
+        r.insertNode(w); s.removeAllRanges(); var nr = document.createRange(); nr.selectNodeContents(w); s.addRange(nr);
+        state.textContent = '글자색을 바꿨어요';
+      }
+      storeLesson(+sec.dataset.l);
+    }
     function pagePhotoTools(on) {
       document.querySelectorAll('.pp-tools').forEach(function (x) { x.remove(); });
       if (!on) return;
@@ -4887,6 +5062,7 @@ function __boot() {
         else if (sel.value === 'choice') makeChoice();
         else if (sel.value === 'vote') makeVote();
         else if (sel.value === 'split') makeSplit();
+        else if (sel.value === 'mindmap') makeMindmap();
         else if (sel.value === 'photo') addPhoto();
       }
       else if (sel.dataset.sel === 'badge') {
@@ -4902,6 +5078,7 @@ function __boot() {
       if (c === 'imp' || c === 'kw' || c === 'bd') mark(c);
       else if (c && c.indexOf('hl:') === 0) mark('hl hl-' + c.slice(3));
       else if (c === 'plain') plain();
+      else if (c && c.indexOf('tc:') === 0) textColor(c.slice(3));
       else if (c === 'note') addNote();
       else if (c === 'indent') indentLi(1);
       else if (c === 'outdent') indentLi(-1);
@@ -5832,6 +6009,7 @@ function __boot() {
     el.querySelectorAll('.fn-anchor').forEach(function (a) { while (a.firstChild) a.parentNode.insertBefore(a.firstChild, a); a.remove(); });
     el.querySelectorAll('.video-wrap').forEach(function (x) { x.remove(); });
     el.querySelectorAll('.vote, .vt-tools').forEach(function (x) { x.remove(); });
+    el.querySelectorAll('.mindmap').forEach(function (m) { var d = document.createElement('div'); d.innerHTML = window.__mm ? window.__mm.toText(m) : ''; m.replaceWith(d.firstChild || document.createTextNode('')); });
     el.querySelectorAll('.kind, .tag, .prog-panel, .rv-open, .rv-close, .m-clear, .v-clear, .wd-undo, .fn-mark, .fn-note, figure, svg, img, .m-dot, .v-tok, .v-drop, .v-stage, .lab').forEach(function (x) { x.remove(); });
     el.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); });
     el.querySelectorAll('span[style], font[color]').forEach(function (x) { var c = (x.style && x.style.color) || x.getAttribute('color') || ''; if (c && !/^(rgb\(0, 0, 0\)|#000|#000000|black|inherit)$/i.test(c.trim())) x.classList.add('ws-colored'); });
