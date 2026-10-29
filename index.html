@@ -3739,6 +3739,19 @@ function __boot() {
       return out.replace(/name="content-rev" content="[0-9]*"/, 'name="content-rev" content="' + rev + '"');
     }
     // ===== 표 칸 너비 조절 (합친 칸이 있어도 실제 세로줄 기준) =====
+    function gridMap(table) {
+      var occ = [], info = new Map(), n = 0;
+      [].forEach.call(table.rows, function (r, ri) {
+        occ[ri] = occ[ri] || []; var c = 0;
+        [].forEach.call(r.cells, function (cell) {
+          while (occ[ri][c]) c++;
+          var cs = cell.colSpan || 1, rs = cell.rowSpan || 1; info.set(cell, { r: ri, c: c, cs: cs, rs: rs });
+          for (var a = 0; a < rs; a++) { occ[ri + a] = occ[ri + a] || []; for (var b = 0; b < cs; b++) occ[ri + a][c + b] = cell; }
+          c += cs; if (c > n) n = c;
+        });
+      });
+      return { occ: occ, info: info, n: n };
+    }
     function tableGrid(table) {
       var occ = [], info = [], n = 0;
       [].forEach.call(table.rows, function (r, ri) {
@@ -4084,11 +4097,21 @@ function __boot() {
         tr.remove();
       } else if (c === 'coladd') {
         var cgA = table.querySelector('colgroup'); if (cgA) cgA.remove(); table.style.tableLayout = '';
-        [].forEach.call(table.rows, function (r) { var nc = document.createElement(r.parentNode.tagName === 'THEAD' ? 'th' : 'td'); nc.innerHTML = '&nbsp;'; r.insertBefore(nc, r.cells[col + 1] || null); });
+        // 합친 칸이 있어도 실제 세로줄 기준으로: 누른 칸 바로 오른쪽에 새 세로줄
+        var gmap = gridMap(table), me = gmap.info.get(cell), g = me.c + me.cs, done = new Set();
+        [].forEach.call(table.rows, function (r, ri) {
+          var row = gmap.occ[ri] || [], hit = row[g];
+          if (hit && gmap.info.get(hit).c < g) { if (!done.has(hit)) { hit.colSpan = (hit.colSpan || 1) + 1; done.add(hit); } return; }
+          var nc = document.createElement(r.parentNode.tagName === 'THEAD' ? 'th' : 'td'); nc.innerHTML = '&nbsp;';
+          var before = null; [].some.call(r.cells, function (x) { if (gmap.info.get(x).c >= g) { before = x; return true; } return false; });
+          r.insertBefore(nc, before);
+        });
       } else if (c === 'coldel') {
         if (tr.cells.length <= 1) return;
         var cgD = table.querySelector('colgroup'); if (cgD) cgD.remove(); table.style.tableLayout = '';
-        [].forEach.call(table.rows, function (r) { if (r.cells[col]) r.cells[col].remove(); });
+        var gm2 = gridMap(table), g2 = gm2.info.get(cell).c, seen = new Set();
+        if (gm2.n <= 1) return;
+        gm2.occ.forEach(function (row) { var x = row[g2]; if (!x || seen.has(x)) return; seen.add(x); if ((x.colSpan || 1) > 1) x.colSpan = x.colSpan - 1; else x.remove(); });
       } else if (c === 'eqall' || c === 'eqothers') {
         var cols = ensureCols(table).children, n = cols.length;
         if (c === 'eqall' || n < 2) { [].forEach.call(cols, function (x) { x.style.width = (100 / n).toFixed(2) + '%'; }); }
