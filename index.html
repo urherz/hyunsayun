@@ -2056,6 +2056,35 @@
   #cal-ov .sp-t.on { border: 1px solid #4E5C42; background: #4E5C42; color: #FFF; }
   #cal-ov .sp-l:not(:hover) .sp-t:not(.on) { opacity: 0; }
   #book li.les.taught .scope-tag { color: #4E5C42; border-color: #9CB08C; }
+
+  /* 진도표 가독성 */
+  #cal-ov .cal-box { width: min(1280px, 97vw); }
+  #cal-ov .cal-view { display: inline-flex; border: 1.5px solid var(--edge); border-radius: 9px; overflow: hidden; margin-right: 8px; }
+  #cal-ov .cal-view button { font-family: var(--serif); font-weight: 700; font-size: 14px; padding: 5px 12px; border: 0; background: #FFF; cursor: pointer; }
+  #cal-ov .cal-view button.on { background: #3B2F25; color: #FFF; }
+  #cal-ov .cal-slot { display: flex; align-items: center; gap: 5px; font-size: 13px; padding: 2px 6px 2px 3px; border: 0; border-left: 4px solid var(--cc); background: #FBF8F2; border-radius: 4px; color: var(--ink); }
+  #cal-ov .cal-slot .pn { font-style: normal; font-size: 11px; width: 16px; height: 16px; border-radius: 50%; background: #E9E2D4; color: #6E6458; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  #cal-ov .cal-slot b { color: var(--cc); font-weight: 800; }
+  #cal-ov .cal-slot .lsn { margin-left: auto; font-weight: 700; color: #3B2F25; }
+  #cal-ov .cal-it { font-size: 13px; }
+  #cal-ov .pt-sec { margin: 14px 0 6px; }
+  #cal-ov .pt-sec h3 { font-size: 17px; margin: 0 0 6px; padding-left: 8px; border-left: 5px solid var(--cc); }
+  #cal-ov .pt-wrap { overflow-x: auto; }
+  #cal-ov table.pt { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  #cal-ov table.pt th, #cal-ov table.pt td { border: 1px solid #E2DACB; padding: 5px 8px; text-align: center; white-space: nowrap; }
+  #cal-ov table.pt thead th { position: sticky; top: 0; background: #F6F0E2; font-weight: 800; color: var(--cc, #3B2F25); }
+  #cal-ov table.pt thead th:first-child { text-align: left; color: #3B2F25; }
+  #cal-ov table.pt th.pt-l { text-align: left; font-weight: 500; cursor: pointer; background: #FFF; min-width: 260px; }
+  #cal-ov table.pt th.pt-l:hover { background: #FFF8E8; }
+  #cal-ov table.pt th.pt-l b { display: inline-block; min-width: 2.2em; color: #8A5A0B; }
+  #cal-ov table.pt tr.pt-unit th { text-align: left; background: #EFE7D6; font-weight: 800; font-size: 13px; color: #5A4C3A; }
+  #cal-ov table.pt tr.pt-taught th.pt-l { color: #8A8178; }
+  #cal-ov table.pt td.done { background: #EAF1E4; color: #3E6A33; font-weight: 700; }
+  #cal-ov table.pt td.mid { background: #FFF4DC; color: #8A5A0B; font-weight: 700; }
+  #cal-ov table.pt td.plan { color: #8A8178; }
+  #cal-ov table.pt td.plan.next { color: #3B2F25; font-weight: 800; box-shadow: inset 0 0 0 2px #C98A1E; background: #FFFDF6; }
+
+  #cal-ov table.pt td.miss { color: #B3372B; font-size: 12px; background: #FDF1EF; }
 </style>
 </head>
 <body>
@@ -7195,14 +7224,14 @@ function __boot() {
   var C = window.__COURSES || {};
   var SHORT = { hyunsayun: '현윤', tongsa1: '통사1', tongsa: '통사2', yunsa: '윤사', yunmun: '윤문' };
   var COL = { hyunsayun: ['#5B7896', '#B0643B', '#5E7F4E', '#82609A'], tongsa: ['#3F7F7F'], tongsa1: ['#6F7D62'], yunsa: ['#A04A5A'], yunmun: ['#9A6F42'] };
-  var DEFAULT_TT = { updated: 1793300000000, off: [], manual: [], versions: [{ name: '2026 2학기', from: '2026-08-17', to: '2027-02-28',
-    scope: { hyunsayun: ['1', '2', '3', '4', '6', '7', '9', '83', '10', '11', '12', '13', '14', '15', '16'], tongsa: ['7', '8', '9', '10', '11', '12', '21', '22', '23', '24', '25', '26', '27'] },
-    taught: { hyunsayun: ['63', '64', '65', '66', '67', '68', '69', '70', '71', '72', '73', '74'] },
+  var DEFAULT_TT = { updated: 1793310000000, off: [], manual: [], versions: [{ name: '2026 2학기', from: '2026-08-17', to: '2027-02-28',
+    scope: { hyunsayun: ['1', '2', '3', '4', '6', '7', '9', '83', '10', '11', '12', '13', '14', '15', '16'], tongsa: ['21', '22', '23', '24', '25', '26', '27'] },
+    taught: { hyunsayun: ['63', '64', '65', '66', '67', '68', '69', '70', '71', '72', '73', '74'], tongsa: ['7', '8', '9', '10', '11', '12'] },
     periods: ['08:40-09:30', '09:40-10:30', '10:40-11:30', '11:40-12:30', '13:40-14:30', '14:40-15:30', '15:40-16:30'],
     slots: { '1-1': '통사2 1-6', '1-2': 'B 현윤 2-7', '1-5': '자율진로', '1-7': '윤사 3-8', '2-1': 'C1 현윤 2-6', '2-2': '윤사 3-8', '2-3': 'B 현윤 2-7', '2-7': 'A 현윤 2-9',
       '3-1': '통사2 1-1', '3-2': 'C2 현윤 2-7', '3-4': '통사2 1-3', '3-5': '통사2 1-2', '3-6': '동아리', '3-7': '동아리', '4-3': '윤사 3-8', '4-5': '통사2 1-7', '4-6': 'C1 현윤 2-6',
       '5-2': 'C2 현윤 2-7', '5-3': '통사2 1-5', '5-5': 'A 현윤 2-9', '5-7': '통사2 1-4' } }] };
-  var S = null, DATA = {}, ov = null, month = null, filt = '', loaded = false;
+  var S = null, DATA = {}, ov = null, month = null, filt = '', loaded = false, view = 'table';
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var dstr = function (d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); };
   function gh() { try { return JSON.parse(localStorage.getItem('gh-publish') || 'null'); } catch (e) { return null; } }
@@ -7229,11 +7258,12 @@ function __boot() {
     }, 1500);
   }
   // --- 과목별 진도·목차 읽기 ---
-  function bookInfo(root) {
-    var order = [], no = {}, title = {}, grp = {};
+  function bookInfo(root, doc) {
+    var order = [], no = {}, title = {}, grp = {}; doc = doc || document;
     root.querySelectorAll('li.les button[data-lesson]').forEach(function (b, i) {
       var l = b.dataset.lesson; order.push(l); var ln = b.querySelector('.ln'); no[l] = ln ? parseInt(ln.textContent, 10) || (i + 1) : i + 1;
       var c = b.cloneNode(true); c.querySelectorAll('.ln, .prog-chips, .scope-tag').forEach(function (x) { x.remove(); }); title[l] = c.textContent.trim();
+      if (!title[l] || title[l] === '수업') { var h1 = doc.querySelector('section.stage[data-l="' + l + '"] header.lesson h1'); if (h1) title[l] = h1.textContent.trim(); }
       var ol = b.closest('ol'), ch = ol && ol.previousElementSibling, dt = b.closest('details'), sm = dt && dt.querySelector('summary');
       grp[l] = { unit: sm ? sm.textContent.trim() : '', ch: ch && ch.classList.contains('ch') ? ch.textContent.trim() : '' };
     });
@@ -7243,14 +7273,14 @@ function __boot() {
     var d = new DOMParser().parseFromString(html, 'text/html'), pr = { classes: [], done: {}, at: {}, log: [] };
     var pj = d.getElementById('course-progress'); if (pj) { try { pr = Object.assign(pr, JSON.parse(pj.textContent || '{}')); } catch (e) {} }
     var bk = d.getElementById('course-book'), info = { order: [], no: {}, title: {}, grp: {} };
-    if (bk) { var tmp = document.createElement('div'); tmp.innerHTML = bk.innerHTML; info = bookInfo(tmp); }
+    if (bk) { var tmp = document.createElement('div'); tmp.innerHTML = bk.innerHTML; info = bookInfo(tmp, d); }
     DATA[id] = Object.assign({ prog: pr }, info);
   }
   function loadAll() {
     var ids = Object.keys(C);
     return Promise.all(ids.map(function (id) {
       if (id === window.__course && window.__getProgress) {
-        DATA[id] = Object.assign({ prog: window.__getProgress() }, bookInfo(document.getElementById('book'))); return null;
+        DATA[id] = Object.assign({ prog: window.__getProgress() }, bookInfo(document.getElementById('book'), document)); return null;
       }
       return fetch(C[id].file + '?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) { if (t) parseCourse(id, t); }).catch(function () {});
     }));
@@ -7291,8 +7321,9 @@ function __boot() {
     (S.manual || []).forEach(function (x) { out.push(Object.assign({ man: 1 }, x)); });
     return out;
   }
+  var predAt = {};
   function predict(fromDs, days, logs) {
-    var st = {}, pred = {};
+    var st = {}, pred = {}; predAt = {};
     Object.keys(DATA).forEach(function (id) {
       var D = DATA[id], so = scopedOrder(id); D.so = so; classesOf(id).forEach(function (c) {
         var lt = latestOf(D, c), at = (D.prog.at || {})[c], ltI = lt ? D.order.indexOf(String(lt)) : -1;
@@ -7306,7 +7337,7 @@ function __boot() {
       slotsOn(ds).forEach(function (sl) {
         var key = sl.course + '|' + sl.cls, D = DATA[sl.course]; if (!D || st[key] == null) return;
         if (logs.some(function (x) { return x.d === ds && x.course === sl.course && x.c === sl.cls; })) return;
-        if (st[key] < D.so.length) (pred[ds] = pred[ds] || {})[sl.p] = D.so[st[key]];
+        if (st[key] < D.so.length) { (pred[ds] = pred[ds] || {})[sl.p] = D.so[st[key]]; var pk = sl.course + '|' + sl.cls + '|' + D.so[st[key]]; if (!predAt[pk]) predAt[pk] = ds; }
         st[key]++;
       });
       d.setDate(d.getDate() + 1);
@@ -7329,7 +7360,7 @@ function __boot() {
         }).join('');
         var slots = off ? '<span class="cal-off">🚫 수업 없음</span>' : slotsOn(ds).filter(function (sl) { return sl.course && sl.cls && pass(sl.course, sl.cls) && !dl.some(function (x) { return x.course === sl.course && x.c === sl.cls; }); }).map(function (sl) {
           var pl = pred[ds] && pred[ds][sl.p], D = DATA[sl.course] || { no: {} };
-          return '<span class="cal-slot" style="--cc:' + colOf(sl.course, sl.cls) + '"' + (pl ? ' data-course="' + sl.course + '" data-go="' + pl + '" data-p="0"' : '') + '>' + sl.p + '교시 <b>' + esc(clsLabel(sl.course, sl.cls)) + '</b>' + (pl ? ' → ' + (D.no[pl] || pl) + '차시' : '') + '</span>';
+          return '<span class="cal-slot" style="--cc:' + colOf(sl.course, sl.cls) + '"' + (pl ? ' data-course="' + sl.course + '" data-go="' + pl + '" data-p="0"' : '') + '><i class="pn">' + sl.p + '</i><b>' + esc(clsLabel(sl.course, sl.cls)) + '</b>' + (pl ? '<span class="lsn">' + (D.no[pl] || pl) + '차시</span>' : '') + '</span>';
         }).join('');
         cells += '<div class="cal-d' + (inM ? '' : ' out') + (k >= 5 ? ' we' : '') + (ds === today ? ' today' : '') + (off ? ' off' : '') + '" data-day="' + ds + '"><span class="cal-n">' + d.getDate() + '</span>' + items + slots + '</div>';
         d.setDate(d.getDate() + 1);
@@ -7346,10 +7377,43 @@ function __boot() {
         return '<span class="cal-now" style="--cc:' + colOf(id, c) + '"><b>' + esc(clsLabel(id, c)) + '</b> ' + txt + '</span>';
       }).join('');
     }).join('');
-    ov.querySelector('.cal-box').innerHTML = '<div class="cal-h"><button type="button" data-cal="prev">◀</button><b>' + y + '년 ' + (m + 1) + '월</b><button type="button" data-cal="next">▶</button><button type="button" data-cal="today">오늘</button><span class="cal-f">' + chips + '</span>' +
-      '<span class="cal-title">모든 과목 수업 진도표 · 반은 시간표에서 정해져요</span><button type="button" data-cal="tt">🗓 시간표</button><button type="button" data-cal="close">✕</button></div>' +
-      '<div class="cal-nowrow">지금 진도 ' + now + '</div><div class="cal-wk"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div><div class="cal-grid">' + cells + '</div>' +
-      '<p class="cal-tip">수업 화면에서 진도 체크·📍를 누르면 그날로 자동 기록돼요. 점선 칸은 시간표로 예상한 다음 차시예요. 날짜 빈 곳을 누르면 직접 넣거나 "수업 없음"으로 표시할 수 있어요. <span class="cal-note"></span></p>';
+    var tabs = '<span class="cal-view"><button type="button" data-view="table"' + (view === 'table' ? ' class="on"' : '') + '>📋 차시별 표</button><button type="button" data-view="month"' + (view === 'month' ? ' class="on"' : '') + '>📅 달력</button></span>';
+    var nav = view === 'month' ? '<button type="button" data-cal="prev">◀</button><b>' + y + '년 ' + (m + 1) + '월</b><button type="button" data-cal="next">▶</button><button type="button" data-cal="today">오늘</button>' : '';
+    ov.querySelector('.cal-box').innerHTML = '<div class="cal-h">' + tabs + nav + '<span class="cal-f">' + chips + '</span>' +
+      '<span class="cal-title">반은 시간표 기준</span><button type="button" data-cal="tt">🗓 시간표</button><button type="button" data-cal="close">✕</button></div>' +
+      '<div class="cal-nowrow">지금 진도 ' + now + '</div>' + (view === 'table' ? renderTable() + '<p class="cal-tip" style="display:none">' : '<div class="cal-wk"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div><div class="cal-grid">' + cells + '</div>' +
+      '<p class="cal-tip">') + '수업 화면에서 진도 체크·📍를 누르면 그날로 자동 기록돼요. 점선 칸은 시간표로 예상한 다음 차시예요. 날짜 빈 곳을 누르면 직접 넣거나 "수업 없음"으로 표시할 수 있어요. <span class="cal-note"></span></p>';
+  }
+  var WD = ['일', '월', '화', '수', '목', '금', '토'];
+  function md(ds) { var d = new Date(ds + 'T00:00:00'); return (d.getMonth() + 1) + '/' + d.getDate() + '(' + WD[d.getDay()] + ')'; }
+  function renderTable() {
+    var logs = allLogs(), today = dstr(new Date()); predict(today, 200, logs);
+    var v = verFor(today) || S.versions[S.versions.length - 1];
+    var secs = Object.keys(DATA).filter(function (id) { return classesOf(id).length && (!filt || filt === id); }).map(function (id) {
+      var D = DATA[id], cls = classesOf(id), sc = scopeFor(id), tg = (v && v.taught && v.taught[id]) || [];
+      var rows = D.order.filter(function (l) { return !sc || sc.indexOf(l) > -1 || tg.indexOf(l) > -1; });
+      var lastGrp = null, nextOf = {};
+      cls.forEach(function (c) { var best = null; Object.keys(predAt).forEach(function (k) { var q = k.split('|'); if (q[0] === id && q[1] === c && (!best || predAt[k] < best.d)) best = { d: predAt[k], l: q[2] }; }); nextOf[c] = best; });
+      var body = rows.map(function (l) {
+        var g = D.grp[l] || {}, head = '';
+        if (g.unit !== lastGrp) { lastGrp = g.unit; head = '<tr class="pt-unit"><th colspan="' + (cls.length + 1) + '">' + esc(g.unit || '') + '</th></tr>'; }
+        var taughtRow = tg.indexOf(l) > -1;
+        return head + '<tr' + (taughtRow ? ' class="pt-taught"' : '') + '><th class="pt-l" data-course="' + id + '" data-go="' + l + '" data-p="0"><b>' + D.no[l] + '</b> ' + esc((D.title[l] || '').slice(0, 26)) + '</th>' + cls.map(function (c) {
+          var done = (D.prog.done[l] || []).indexOf(c) > -1, lg = logs.filter(function (x) { return x.course === id && x.c === c && String(x.l) === String(l); }).sort(function (a, b) { return a.d < b.d ? -1 : 1; });
+          var dl = lg.filter(function (x) { return x.k === 'done'; }).pop(), ml = lg.filter(function (x) { return x.k === 'mid'; });
+          var at = (D.prog.at || {})[c], pd = predAt[id + '|' + c + '|' + l];
+          var cell, cls2 = '';
+          if (done || dl) { cell = '✓ ' + (dl ? md(dl.d) : ''); cls2 = 'done'; }
+          else if (at && String(at.l) === String(l)) { cell = '◐ ' + (ml.length ? md(ml[ml.length - 1].d) : '') + ' ' + esc(at.label || '') + '까지'; cls2 = 'mid'; }
+          else if (taughtRow) { cell = '✓'; cls2 = 'done'; }
+          else if (pd) { cell = md(pd); cls2 = 'plan' + (nextOf[c] && nextOf[c].l === l ? ' next' : ''); }
+          else { var lt0 = latestOf(D, c); if (lt0 && D.order.indexOf(l) < D.order.indexOf(String(lt0))) { cell = '체크 안 됨'; cls2 = 'miss'; } else cell = ''; }
+          return '<td class="' + cls2 + '">' + cell + '</td>';
+        }).join('') + '</tr>';
+      }).join('');
+      return '<section class="pt-sec"><h3 style="--cc:' + colOf(id, cls[0]) + '">' + esc(C[id].title) + '</h3><div class="pt-wrap"><table class="pt"><thead><tr><th>차시</th>' + cls.map(function (c) { return '<th style="--cc:' + colOf(id, c) + '">' + esc(/^[0-9]+$/.test(c) ? c + '반' : c) + '</th>'; }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div></section>';
+    }).join('');
+    return secs + '<p class="cal-tip">✓ 날짜 = 끝낸 날 · ◐ = 중간에 멈춤 · 흐린 날짜 = 시간표로 예상한 날 · <b>굵은 테두리</b> = 다음 수업. 차시 이름을 누르면 그 차시로 가요.</p>';
   }
   function goTo(id, l, p) { if (id === window.__course && window.__open) { ov.hidden = true; window.__open(+l, +p || 0); } else location.href = '?s=' + id + '#L' + l + '-' + (p || 0); }
   function verCourses(v) { var set = {}; Object.keys(v.slots || {}).forEach(function (k) { var s = parseSlot(v.slots[k]); if (s && s.course) set[s.course] = 1; }); return set; }
@@ -7419,11 +7483,12 @@ function __boot() {
     if (ov.querySelector('.tt-grid')) return;
     var b = e.target.closest('[data-cal]');
     if (b) { var a = b.dataset.cal; if (a === 'close') { ov.hidden = true; return; } if (a === 'tt') { ttEditor(); return; } if (a === 'today') { var n = new Date(); month = new Date(n.getFullYear(), n.getMonth(), 1); } else month = new Date(month.getFullYear(), month.getMonth() + (a === 'next' ? 1 : -1), 1); render(); return; }
+    var vw = e.target.closest('[data-view]'); if (vw) { view = vw.dataset.view; render(); return; }
     var f = e.target.closest('[data-f]'); if (f) { filt = f.dataset.f; render(); return; }
     var del = e.target.closest('[data-del]'); if (del) { e.stopPropagation(); var q = del.dataset.del.split('|'); S.manual = S.manual.filter(function (x) { return !(x.d === q[0] && x.course === q[1] && x.c === q[2] && String(x.l) === q[3] && x.k === q[4]); }); saveSched('지웠어요'); render(); return; }
     var it = e.target.closest('[data-go]'); if (it && it.dataset.course) { goTo(it.dataset.course, it.dataset.go, it.dataset.p); return; }
     if (e.target.closest('.cal-add')) return;
-    var day = e.target.closest('.cal-d'); if (!day) return;
+    var day = e.target.closest('.cal-d'); if (!day || view !== 'month') return;
     var old = ov.querySelector('.cal-add'); if (old) old.remove();
     var ids = Object.keys(DATA).filter(function (id) { return classesOf(id).length; });
     var fm = document.createElement('div'); fm.className = 'cal-add';
