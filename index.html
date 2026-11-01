@@ -2085,6 +2085,19 @@
   #cal-ov table.pt td.plan.next { color: #3B2F25; font-weight: 800; box-shadow: inset 0 0 0 2px #C98A1E; background: #FFFDF6; }
 
   #cal-ov table.pt td.miss { color: #B3372B; font-size: 12px; background: #FDF1EF; }
+
+  #cal-ov table.pt td.pt-c { cursor: pointer; }
+  #cal-ov table.pt td.pt-c:hover { outline: 2px solid #4E5C42; outline-offset: -2px; }
+  #cal-ov table.pt td.pt-c:not(.done):not(.mid):hover::after { content: ' ✓'; color: #4E5C42; font-weight: 800; }
+
+  /* 학습지에 그림·사진·투표·동영상도 */
+  #ws-root img, #ws-root figure img { max-width: 100%; max-height: 62mm; height: auto; display: block; margin: 1mm auto; }
+  #ws-root figure { margin: 1mm 0 !important; float: none !important; width: auto !important; }
+  #ws-root figure figcaption { font-size: 8.5pt; text-align: center; color: #555; }
+  #ws-root svg { max-width: 100%; height: auto; }
+  #ws-root .ws-vote { list-style: none; margin: 1mm 0 !important; padding: 0 !important; }
+  #ws-root .ws-vote li { margin: .6mm 0; }
+  #ws-root .ws-video { font-size: 9pt; color: #444; }
 </style>
 </head>
 <body>
@@ -4857,12 +4870,22 @@ function __boot() {
     // ===== 수업 진도표 (캘린더) =====
     if (!PROG.log) PROG.log = [];
     function todayStr(d) { d = d || new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
-    function calLog(kind, cls, l, on, p, label) {
-      var t = todayStr();
+    function calLog(kind, cls, l, on, p, label, ds) {
+      var t = ds || todayStr();
       PROG.log = PROG.log.filter(function (x) { return !(x.d === t && x.c === cls && String(x.l) === String(l) && x.k === kind); });
       if (on) PROG.log.push({ d: t, c: cls, l: String(l), k: kind, p: p == null ? null : p, lab: label || '' });
     }
     window.__calLog = calLog;
+    // 진도표에서 바로 체크: 끝냄 켜기/끄기 (ds 없으면 날짜 기록 없이)
+    window.__progToggle = function (l, c, on, ds) {
+      l = String(l); var arr = PROG.done[l] || [], i = arr.indexOf(c);
+      if (on && i < 0) { arr.push(c); if (PROG.at[c] && String(PROG.at[c].l) === l) delete PROG.at[c]; }
+      if (!on && i > -1) arr.splice(i, 1);
+      if (arr.length) PROG.done[l] = arr; else delete PROG.done[l];
+      if (on && ds) calLog('done', c, l, true, null, '', ds);
+      if (!on) PROG.log = PROG.log.filter(function (x) { return !(x.c === c && String(x.l) === l && x.k === 'done'); });
+      progSave();
+    };
     // 반 목록은 시간표에서 자동으로: 시간표에 있는 반만 진도 체크·📍·진도표에 나와요 (기록은 그대로 보관)
     window.__progSetClasses = function (arr) { if (!arr || !arr.length || JSON.stringify(arr) === JSON.stringify(PROG.classes)) return; PROG.classes = arr.slice(); progSave(); };
     var CAL_COL = ['#5B7896', '#B0643B', '#5E7F4E', '#82609A', '#9A6F42', '#3F7F7F', '#A04A5A', '#6F7D62'];
@@ -6392,11 +6415,13 @@ function __boot() {
   }
   function wsClean(el) {
     el.querySelectorAll('.fn-anchor').forEach(function (a) { while (a.firstChild) a.parentNode.insertBefore(a.firstChild, a); a.remove(); });
-    el.querySelectorAll('.video-wrap').forEach(function (x) { x.remove(); });
-    el.querySelectorAll('.vote, .vt-tools').forEach(function (x) { x.remove(); });
+    el.querySelectorAll('.video-wrap').forEach(function (x) { var f = x.querySelector('iframe'), t = (x.querySelector('.video-title, figcaption') || {}).textContent || '', u = f ? (f.getAttribute('src') || '').replace(/^.*embed\/([^?]+).*$/, 'youtu.be/$1') : ''; var p = document.createElement('p'); p.className = 'ws-video'; p.textContent = '▶ 동영상' + (t ? ': ' + t.trim() : '') + (u ? ' (' + u + ')' : ''); x.replaceWith(p); });
+    el.querySelectorAll('.vt-tools').forEach(function (x) { x.remove(); });
+    el.querySelectorAll('.vote').forEach(function (v) { var u = document.createElement('ul'); u.className = 'ws-vote'; v.querySelectorAll('.vrow').forEach(function (r) { var cs = r.querySelectorAll('.vc'); var li = document.createElement('li'); li.textContent = '□ ' + (cs[0] ? cs[0].textContent.trim() : '') + '   vs   □ ' + (cs[1] ? cs[1].textContent.trim() : ''); u.appendChild(li); }); v.replaceWith(u); });
     el.querySelectorAll('.mindmap[data-toc]').forEach(function (m) { m.remove(); });
     el.querySelectorAll('.mindmap').forEach(function (m) { var d = document.createElement('div'); d.innerHTML = window.__mm ? window.__mm.toText(m) : ''; m.replaceWith(d.firstChild || document.createTextNode('')); });
-    el.querySelectorAll('.kind, .tag, .prog-panel, .rv-open, .rv-close, .m-clear, .v-clear, .wd-undo, .fn-mark, .fn-note, figure, svg, img, .m-dot, .v-tok, .v-drop, .v-stage, .lab').forEach(function (x) { x.remove(); });
+    el.querySelectorAll('.kind, .tag, .prog-panel, .rv-open, .rv-close, .m-clear, .v-clear, .wd-undo, .fn-mark, .fn-note, .m-dot, .v-tok, .v-drop, .v-stage, .lab, .photo-tools, .pp-tools, .mm-bar, figure.photo.empty, .block-tools, .col-grip, .table-bar, .rv-hide, .pin-chip, button').forEach(function (x) { x.remove(); });
+    el.querySelectorAll('.match svg, .venn svg, .mm-svg').forEach(function (x) { x.remove(); });
     el.querySelectorAll('[contenteditable]').forEach(function (x) { x.removeAttribute('contenteditable'); });
     el.querySelectorAll('span[style], font[color]').forEach(function (x) { var c = (x.style && x.style.color) || x.getAttribute('color') || ''; if (c && !/^(rgb\(0, 0, 0\)|#000|#000000|black|inherit)$/i.test(c.trim())) x.classList.add('ws-colored'); });
     el.querySelectorAll('td[style], th[style]').forEach(function (x) { var ta = x.style.textAlign; if (ta === 'center' || ta === 'right') x.classList.add('ws-al-' + ta); });
@@ -6455,7 +6480,7 @@ function __boot() {
     var parts = [], keys = {}, alts = {};
     secs.forEach(function (s) {
       var lab = s.dataset.label || '';
-      if (/표지|성취기준|예고/.test(lab)) return;
+      if (/^표지/.test(lab) || s.querySelector('header.lesson')) return;
       s.querySelectorAll('.block').forEach(function (blk0, bi) {
         if (blk0.hasAttribute('data-ws-skip')) return;
         var wsAlt = ((s.dataset.label || ('p' + s.dataset.p)) + ':' + bi).replace(/"/g, ''), wsKey = (blk0.dataset.bid || wsAlt).replace(/"/g, '');
@@ -6553,11 +6578,7 @@ function __boot() {
       function () { root.classList.add('ws-c95'); },
       function () { root.classList.add('ws-c-tighter'); }
     ] : [
-      function () { root.classList.add('ws-tight'); },
-      function () { root.querySelectorAll('.ws-link').forEach(function (x) { x.remove(); }); },
-      function () { root.querySelectorAll('.ws-news .ws-hl + p').forEach(function (x) { x.remove(); }); },
-      function () { root.querySelectorAll('.ws-summary').forEach(function (bx) { var ps = bx.querySelectorAll('p'); if (ps.length > 1) { var pq = ps[0], ln = pq.nextElementSibling; if (ln && ln.classList.contains('ws-line')) ln.remove(); pq.remove(); } }); },
-      function () { root.querySelectorAll('.ws-news').forEach(function (x) { x.remove(); }); }
+      function () { root.classList.add('ws-tight'); }
     ];
     var trimmed = 0;
     for (var i = 0; i < steps.length && over(); i++) { steps[i](); trimmed++; }
@@ -7408,12 +7429,12 @@ function __boot() {
           else if (taughtRow) { cell = '✓'; cls2 = 'done'; }
           else if (pd) { cell = md(pd); cls2 = 'plan' + (nextOf[c] && nextOf[c].l === l ? ' next' : ''); }
           else { var lt0 = latestOf(D, c); if (lt0 && D.order.indexOf(l) < D.order.indexOf(String(lt0))) { cell = '체크 안 됨'; cls2 = 'miss'; } else cell = ''; }
-          return '<td class="' + cls2 + '">' + cell + '</td>';
+          return '<td class="' + cls2 + ' pt-c" data-ck="' + esc(id + '|' + c + '|' + l) + '" title="누르면 끝냄 체크 · 다시 누르면 해제">' + cell + '</td>';
         }).join('') + '</tr>';
       }).join('');
       return '<section class="pt-sec"><h3 style="--cc:' + colOf(id, cls[0]) + '">' + esc(C[id].title) + '</h3><div class="pt-wrap"><table class="pt"><thead><tr><th>차시</th>' + cls.map(function (c) { return '<th style="--cc:' + colOf(id, c) + '">' + esc(/^[0-9]+$/.test(c) ? c + '반' : c) + '</th>'; }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div></section>';
     }).join('');
-    return secs + '<p class="cal-tip">✓ 날짜 = 끝낸 날 · ◐ = 중간에 멈춤 · 흐린 날짜 = 시간표로 예상한 날 · <b>굵은 테두리</b> = 다음 수업. 차시 이름을 누르면 그 차시로 가요.</p>';
+    return secs + '<p class="cal-tip"><b>칸을 누르면 바로 체크</b>(오늘 날짜로 기록), 다시 누르면 해제. "체크 안 됨" 칸은 날짜 없이 체크돼요. ✓ 날짜 = 끝낸 날 · ◐ = 중간에 멈춤 · 흐린 날짜 = 예상한 날 · 굵은 테두리 = 다음 수업. 차시 이름을 누르면 그 차시로 가요. <span class="cal-note"></span></p>';
   }
   function goTo(id, l, p) { if (id === window.__course && window.__open) { ov.hidden = true; window.__open(+l, +p || 0); } else location.href = '?s=' + id + '#L' + l + '-' + (p || 0); }
   function verCourses(v) { var set = {}; Object.keys(v.slots || {}).forEach(function (k) { var s = parseSlot(v.slots[k]); if (s && s.course) set[s.course] = 1; }); return set; }
@@ -7484,6 +7505,22 @@ function __boot() {
     var b = e.target.closest('[data-cal]');
     if (b) { var a = b.dataset.cal; if (a === 'close') { ov.hidden = true; return; } if (a === 'tt') { ttEditor(); return; } if (a === 'today') { var n = new Date(); month = new Date(n.getFullYear(), n.getMonth(), 1); } else month = new Date(month.getFullYear(), month.getMonth() + (a === 'next' ? 1 : -1), 1); render(); return; }
     var vw = e.target.closest('[data-view]'); if (vw) { view = vw.dataset.view; render(); return; }
+    var ck = e.target.closest('td[data-ck]');
+    if (ck) {
+      var q = ck.dataset.ck.split('|'), id = q[0], c = q[1], l = q[2], D = DATA[id];
+      var on = !(ck.classList.contains('done') || ck.classList.contains('mid'));
+      if (!on && ck.classList.contains('mid')) on = true;
+      var ds = on && !ck.classList.contains('miss') ? dstr(new Date()) : null;
+      if (id === window.__course && window.__progToggle) window.__progToggle(l, c, on, ds);
+      else {
+        var arr = D.prog.done[l] || [], i = arr.indexOf(c); if (on && i < 0) arr.push(c); if (!on && i > -1) arr.splice(i, 1); D.prog.done[l] = arr;
+        if (on && D.prog.at && D.prog.at[c] && String(D.prog.at[c].l) === l) delete D.prog.at[c];
+        D.prog.log = (D.prog.log || []).filter(function (x) { return !(x.c === c && String(x.l) === l && x.k === 'done'); }); if (on && ds) D.prog.log.push({ d: ds, c: c, l: l, k: 'done', p: null, lab: '' });
+        S.pend = S.pend || {}; (S.pend[id] = S.pend[id] || []).push({ l: l, c: c, on: on, d: ds });
+        saveSched(C[id].title + ' 진도를 바꿨어요 (그 과목을 열면 진도 기록에 합쳐져요)');
+      }
+      render(); return;
+    }
     var f = e.target.closest('[data-f]'); if (f) { filt = f.dataset.f; render(); return; }
     var del = e.target.closest('[data-del]'); if (del) { e.stopPropagation(); var q = del.dataset.del.split('|'); S.manual = S.manual.filter(function (x) { return !(x.d === q[0] && x.course === q[1] && x.c === q[2] && String(x.l) === q[3] && x.k === q[4]); }); saveSched('지웠어요'); render(); return; }
     var it = e.target.closest('[data-go]'); if (it && it.dataset.course) { goTo(it.dataset.course, it.dataset.go, it.dataset.p); return; }
@@ -7510,10 +7547,15 @@ function __boot() {
       saveSched('기록을 넣었어요'); render();
     });
   }
+  function applyPending() {
+    if (!S || !S.pend || !window.__course || !window.__progToggle) return; var list = S.pend[window.__course]; if (!list || !list.length) return;
+    list.forEach(function (x) { window.__progToggle(x.l, x.c, x.on, x.d); });
+    delete S.pend[window.__course]; saveSched('다른 화면에서 바꾼 진도를 합쳤어요');
+  }
   function syncClasses() { if (!window.__course || !window.__progSetClasses || !S) return; var t = ttClasses(window.__course); if (t.length) window.__progSetClasses(t); }
   // 과목 화면을 열면 시간표의 반 목록으로 맞추기
   if (window.__course || /[?&]s=/.test(location.search)) {
-    loadSched().then(function () { var n = 0, iv = setInterval(function () { if (window.__progSetClasses || ++n > 60) { clearInterval(iv); syncClasses(); } }, 500); });
+    loadSched().then(function () { var n = 0, iv = setInterval(function () { if (window.__progSetClasses || ++n > 60) { clearInterval(iv); syncClasses(); applyPending(); } }, 500); });
   }
   window.__openAllCal = function () {
     if (!ov) { ov = document.createElement('div'); ov.id = 'cal-ov'; ov.innerHTML = '<div class="cal-box"><p style="padding:30px">모든 과목 진도를 불러오는 중…</p></div>'; document.body.appendChild(ov); ov.addEventListener('click', onClick); }
