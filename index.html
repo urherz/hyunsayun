@@ -2098,6 +2098,17 @@
   #ws-root .ws-vote { list-style: none; margin: 1mm 0 !important; padding: 0 !important; }
   #ws-root .ws-vote li { margin: .6mm 0; }
   #ws-root .ws-video { font-size: 9pt; color: #444; }
+
+  /* 교사용 메모: 수정 모드에서 블록 오른쪽 여백에 붙임쪽지처럼 */
+  body.editing .slide .block > details.teacher-only { position: absolute; left: calc(100% + 14px); top: 0; width: 210px; margin: 0 !important; z-index: 6; background: #FFF6C9; border: 1.5px solid #E2C766; border-radius: 6px; box-shadow: 2px 3px 8px rgba(0,0,0,.12); font-size: 18px; line-height: 1.45; padding: 0 !important; }
+  body.editing .slide .block > details.teacher-only > summary { font-size: 15px; font-weight: 800; color: #8A6A0B; padding: 5px 10px; list-style: none; cursor: default; border: 0 !important; background: transparent !important; }
+  body.editing .slide .block > details.teacher-only > summary::-webkit-details-marker { display: none; }
+  body.editing .slide .block > details.teacher-only > summary::after { content: '' !important; }
+  body.editing .slide .block > details.teacher-only > .rv-body { position: static !important; display: block !important; box-shadow: none !important; border: 0 !important; background: transparent !important; padding: 0 10px 6px !important; margin: 0 !important; width: auto !important; max-width: none !important; }
+  body.editing .slide .block > details.teacher-only > .rv-body p { margin: 0 0 .3em; }
+  body.editing .slide .block > details.teacher-only .rv-close, body.editing .slide .block > details.teacher-only .rv-open { display: none !important; }
+  body.editing .slide .block > details.teacher-only > .rv-hide { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 4px 8px 6px; border-top: 1px dashed #E2C766; font-size: 12px; }
+  body.editing .slide .block > details.teacher-only > .rv-hide .rv-del { margin-left: 0; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -5286,7 +5297,14 @@ function __boot() {
     function makeTeacherMemo() {
       var d = document.createElement('details'); d.className = 'reveal teacher-only'; d.dataset.hide = '1'; d.open = true;
       d.innerHTML = '<summary>교사용 메모</summary><div class="rv-body"><p>메모를 적어 주세요.</p></div>';
-      placeTable(d); revealTools(true);
+      // 커서가 다른 접힌 칸(정리 보기 등) 안에 있어도 그 안에 들어가지 않고 블록 바로 아래에 넣기
+      var a = insertAnchor();
+      if (!a || !a.isConnected || !a.closest || !a.closest('section.stage.active')) { var blks = pages[P] ? pages[P].querySelectorAll('.block') : []; var blk0 = blks[blks.length - 1]; if (!blk0) { state.textContent = '메모를 넣을 블록이 없어요'; return; } a = blk0.lastElementChild; }
+      while (a && a.parentNode && !(a.parentNode.classList && (a.parentNode.classList.contains('block') || a.parentNode.classList.contains('pane')))) a = a.parentNode;
+      if (a.classList && a.classList.contains('block-tools')) a.parentNode.insertBefore(d, a);
+      else { var nx = a.nextSibling; while (nx && nx.nodeType === 1 && (nx.classList.contains('rv-hide') || nx.classList.contains('rv-open'))) nx = nx.nextSibling; a.parentNode.insertBefore(d, nx); }
+      var sec = d.closest('section.stage'); storeLesson(+sec.dataset.l); if (window.__autofit) window.__autofit();
+      revealTools(true); placeMemos();
       var p = d.querySelector('.rv-body p'); if (p) { var r = document.createRange(); r.selectNodeContents(p); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
       state.textContent = '교사용 메모를 넣었어요. 수정 모드에서만 보이고 수업 화면에선 숨겨져요';
     }
@@ -5331,13 +5349,22 @@ function __boot() {
       }
       storeLesson(+sec.dataset.l); if (window.__autofitForce) window.__autofitForce();
     });
+    function placeMemos() {
+      document.querySelectorAll('section.stage .block').forEach(function (b) {
+        var y = 0; b.querySelectorAll(':scope > details.teacher-only').forEach(function (d) { d.open = true; d.style.top = y + 'px'; y += d.offsetHeight + 12; });
+      });
+    }
+    window.__placeMemos = placeMemos;
+    document.getElementById('slide').addEventListener('input', function (e) { if (e.target.closest && e.target.closest('details.teacher-only') || (window.getSelection().anchorNode && (window.getSelection().anchorNode.parentNode || {}).closest && window.getSelection().anchorNode.parentNode.closest('details.teacher-only'))) setTimeout(placeMemos, 30); });
+    document.addEventListener('click', function (e) { if (editing && e.target.closest && e.target.closest('#pagenav')) setTimeout(placeMemos, 120); });
     function revealTools(on) {
       document.querySelectorAll('.rv-hide').forEach(function (x) { x.remove(); });
-      if (!on) return;
+      if (!on) { document.querySelectorAll('details.teacher-only').forEach(function (d) { d.style.top = ''; }); return; }
+      setTimeout(placeMemos, 50);
       document.querySelectorAll('section.stage details.reveal').forEach(function (d) {
         var lb = document.createElement('label'); lb.className = 'rv-hide'; lb.setAttribute('contenteditable', 'false');
         lb.innerHTML = '<input type="checkbox"' + (d.classList.contains('teacher-only') ? ' checked' : '') + '> 수업 화면에서 숨기기 (교사용)<button type="button" class="rv-del" title="이 접힌 칸(' + ((d.querySelector('summary') || {}).textContent || '').trim() + ')을 통째로 지워요">✕ 이 칸 지우기</button>';
-        d.parentNode.insertBefore(lb, d.nextSibling);
+        if (d.classList.contains('teacher-only') && d.parentNode.classList && d.parentNode.classList.contains('block')) d.appendChild(lb); else d.parentNode.insertBefore(lb, d.nextSibling);
         lb.querySelector('.rv-del').addEventListener('click', function (e) {
           e.preventDefault(); e.stopPropagation();
           if (!confirmTwice(e.target, '한 번 더 누르면 지워요')) return;
