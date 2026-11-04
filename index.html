@@ -2109,6 +2109,10 @@
   body.editing .slide .block > details.teacher-only .rv-close, body.editing .slide .block > details.teacher-only .rv-open { display: none !important; }
   body.editing .slide .block > details.teacher-only > .rv-hide { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 4px 8px 6px; border-top: 1px dashed #E2C766; font-size: 12px; }
   body.editing .slide .block > details.teacher-only > .rv-hide .rv-del { margin-left: 0; font-size: 12px; }
+
+  #ws-root .ws-tmemo { margin: 1.5mm 0 0; padding: 1.2mm 2mm; border: 1px dashed #C9A227; background: #FFF9DB; font-size: 9pt; line-height: 1.4; }
+  #ws-root .ws-tmemo b { display: block; font-size: 8.5pt; color: #8A6A0B; margin-bottom: .5mm; }
+  #ws-root .ws-tmemo p { margin: 0 !important; }
 </style>
 </head>
 <body>
@@ -6541,9 +6545,11 @@ function __boot() {
       s.querySelectorAll('.block').forEach(function (blk0, bi) {
         if (blk0.hasAttribute('data-ws-skip')) return;
         var wsAlt = ((s.dataset.label || ('p' + s.dataset.p)) + ':' + bi).replace(/"/g, ''), wsKey = (blk0.dataset.bid || wsAlt).replace(/"/g, '');
-        var blk = wsClean(blk0.cloneNode(true)), cls = blk0.className;
+        var cl0 = blk0.cloneNode(true), memos = [];
+        cl0.querySelectorAll('details.teacher-only, details[data-hide="1"]').forEach(function (d) { var bd = d.querySelector('.rv-body') || d; var c2 = bd.cloneNode(true); c2.querySelectorAll('summary, .rv-hide, .rv-close, .rv-open').forEach(function (x) { x.remove(); }); var t = c2.innerHTML.trim(); if (c2.textContent.trim()) memos.push(t); d.remove(); });
+        var blk = wsClean(cl0), cls = blk0.className;
         var html = '';
-        if (/b-link/.test(cls)) { html = ''; }
+        if (/b-link/.test(cls)) { wsBlankify(blk, withAns); var lk = blk.querySelector('.next-q') || blk; html = lk.textContent.trim() ? '<div class="ws-box ws-link"><h2>연계</h2><p>' + lk.innerHTML + '</p></div>' : ''; }
         else if (/b-news/.test(cls)) {
           wsBlankify(blk, withAns);
           var hl = blk.querySelector('.headline'), ft = blk.querySelector('.fact'), sides = blk.querySelectorAll('.side');
@@ -6590,6 +6596,7 @@ function __boot() {
           var stm = blk.querySelector('.stem'); if (stm) stm.insertAdjacentHTML('beforeend', ' <span class="ws-pick ws-only-stu">( <span class="ws-pl"></span> )</span>');
           html = '<div class="ws-box ws-exam"><h2>기출</h2>' + blk.innerHTML + ans2 + '</div>';
         }
+        if (html && memos.length) { var mh = '<div class="ws-tmemo ws-only-ans"><b>📝 교사용 메모</b>' + memos.map(function (m) { return '<div>' + m + '</div>'; }).join('') + '</div>'; if (html.indexOf('[[CONCEPT]]') === 0) html += mh; else { var li0 = html.lastIndexOf('</div>'); html = li0 > -1 ? html.slice(0, li0) + mh + html.slice(li0) : html + mh; } }
         if (html && html.indexOf('[[CONCEPT]]') === 0) { keys[parts.length] = wsKey; alts[parts.length] = wsAlt; }
         else if (html) html = html.replace('<div class="ws-box', '<div data-src="' + wsKey + '" data-alt="' + wsAlt + '" class="ws-box');
         parts.push(html);
