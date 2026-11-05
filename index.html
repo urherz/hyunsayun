@@ -2113,6 +2113,18 @@
   #ws-root .ws-tmemo { margin: 1.5mm 0 0; padding: 1.2mm 2mm; border: 1px dashed #C9A227; background: #FFF9DB; font-size: 9pt; line-height: 1.4; }
   #ws-root .ws-tmemo b { display: block; font-size: 8.5pt; color: #8A6A0B; margin-bottom: .5mm; }
   #ws-root .ws-tmemo p { margin: 0 !important; }
+
+  .match .m-x { display: none; }
+  body.editing .slide .match li { position: relative; }
+  body.editing .slide .match .m-x { display: inline-flex; align-items: center; justify-content: center; position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; font-size: 13px; border-radius: 50%; background: #FFF; color: #B3372B; border: 1.5px solid #E2B4AE; cursor: pointer; opacity: 0; z-index: 3; }
+  body.editing .slide .match li:hover .m-x { opacity: 1; }
+
+  /* 선을 누르면 그 선만 지우기 */
+  .match svg.m-lines line.m-hit { stroke: transparent; stroke-width: 22; pointer-events: stroke; cursor: pointer; }
+  .match svg.m-lines line.m-hit:hover { stroke: rgba(179,55,43,.18); }
+  /* 터치 화면에서도 보이도록 항목 지우기 ✕는 수정 모드에서 늘 흐리게 보이기 */
+  body.editing .slide .match .m-x { opacity: .45; }
+  body.editing .slide .match .m-x:hover { opacity: 1; }
 </style>
 </head>
 <body>
@@ -3264,7 +3276,7 @@ function __boot() {
       var c = s.cloneNode(true);
       c.classList.remove('active', 'scrolly', 'measuring'); c.style.fontSize = ''; if (!c.getAttribute('style')) c.removeAttribute('style');
       c.querySelectorAll('.block, header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .bogi-picked, .vt-tools, .sp-tools, .rv-hide, .pin-chip, .m-ratio').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .bogi-picked, .vt-tools, .sp-tools, .rv-hide, .pin-chip, .m-ratio, .m-x').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -3770,7 +3782,7 @@ function __boot() {
       c.querySelectorAll('section.stage').forEach(function (s) { s.classList.remove('active'); s.style.fontSize = ''; if (!s.getAttribute('style')) s.removeAttribute('style'); });
       c.querySelectorAll('section.stage .block, section.stage header.lesson').forEach(function (e) { e.style.fontSize = ''; if (!e.getAttribute('style')) e.removeAttribute('style'); });
       c.querySelectorAll('.current').forEach(function (e) { e.classList.remove('current'); e.removeAttribute('aria-current'); });
-      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .vt-tools, .sp-tools, .rv-hide, .pin-chip, .m-ratio, input[type=file]').forEach(function (e) { e.remove(); });
+      c.querySelectorAll('.photo-tools, .block-tools, .col-grip, .table-bar, .fn-tools, .fn-thread, .fn-resize, .photo-win, .rv-close, .rv-open, .prog-panel, .video-tools, .pp-tools, .cc-tools, .vt-tools, .sp-tools, .rv-hide, .pin-chip, .m-ratio, .m-x, input[type=file]').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.fn-note.fn-copy, .match > svg.m-lines').forEach(function (e) { e.remove(); });
       c.querySelectorAll('.match').forEach(function (e) { e.removeAttribute('data-lines'); });
       c.querySelectorAll('.venn').forEach(function (e) { e.removeAttribute('data-pos'); var d = e.querySelector('.v-drop'); if (d) d.innerHTML = ''; });
@@ -4625,8 +4637,11 @@ function __boot() {
       state.textContent = '보통 목록으로 되돌렸어요';
     }
     function widgetTools(on) {
-      document.querySelectorAll('.wd-undo, .m-ratio').forEach(function (x) { x.remove(); });
+      document.querySelectorAll('.wd-undo, .m-ratio, .m-x').forEach(function (x) { x.remove(); });
       if (!on) return;
+      document.querySelectorAll('section.stage .match .m-left > li, section.stage .match .m-right > li').forEach(function (li) {
+        var x = document.createElement('span'); x.className = 'm-x'; x.setAttribute('contenteditable', 'false'); x.title = '이 항목 지우기'; x.textContent = '✕'; li.appendChild(x);
+      });
       document.querySelectorAll('section.stage .match').forEach(function (wd) {
         var g = document.createElement('span'); g.className = 'm-ratio'; g.setAttribute('contenteditable', 'false');
         g.innerHTML = '<button type="button" data-mr="-">◀ 왼쪽 좁게</button><button type="button" data-mr="0">기본</button><button type="button" data-mr="+">왼쪽 넓게 ▶</button>';
@@ -4637,6 +4652,30 @@ function __boot() {
         b.textContent = (wd.classList.contains('venn') ? '벤다이어그램' : '선 잇기') + ' 해제 → 보통 목록'; wd.appendChild(b);
       });
     }
+    // 선 잇기 항목 지우기 (이어진 선도 함께 정리)
+    function mRemoveItem(li) {
+      var m = li.closest('.match'), left = !!li.closest('.m-left'), list = [].slice.call(li.parentNode.children), idx = list.indexOf(li);
+      if (list.length <= 1) { state.textContent = '항목이 하나뿐이라 지울 수 없어요'; return; }
+      var o = {}; try { o = JSON.parse(m.getAttribute('data-lines') || '{}'); } catch (er) {}
+      var n = {};
+      Object.keys(o).forEach(function (k) { var i = +k, js = (window.__mArr || function (v) { return [].concat(v); })(o[k]);
+        if (left) { if (i === idx) return; n[i > idx ? i - 1 : i] = js; }
+        else { var nj = js.filter(function (j) { return j !== idx; }).map(function (j) { return j > idx ? j - 1 : j; }); if (nj.length) n[i] = nj; } });
+      m.setAttribute('data-lines', JSON.stringify(n)); li.remove();
+      if (window.__match) window.__match.drawAll();
+      storeLesson(+m.closest('section.stage').dataset.l); state.textContent = '항목을 지웠어요 (Ctrl+Z로 되돌리기)';
+    }
+    document.getElementById('slide').addEventListener('click', function (e) {
+      var mx = e.target.closest && e.target.closest('.match .m-x'); if (!mx || !editing) return;
+      e.preventDefault(); e.stopPropagation(); mRemoveItem(mx.closest('li'));
+    }, true);
+    document.getElementById('slide').addEventListener('keydown', function (e) {
+      if (!editing || (e.key !== 'Backspace' && e.key !== 'Delete')) return;
+      var s = window.getSelection(), n = s.anchorNode; n = n && (n.nodeType === 3 ? n.parentNode : n);
+      var li = n && n.closest && n.closest('.match .m-left > li, .match .m-right > li'); if (!li) return;
+      var c = li.cloneNode(true); c.querySelectorAll('.m-dot, .m-x').forEach(function (x) { x.remove(); });
+      if (!c.textContent.replace(/\u00a0/g, '').trim()) { e.preventDefault(); mRemoveItem(li); }
+    }, true);
     document.getElementById('slide').addEventListener('click', function (e) {
       var mr = e.target.closest('.m-ratio button'); if (!mr || !editing) return;
       e.preventDefault(); e.stopPropagation();
@@ -6313,6 +6352,8 @@ function __boot() {
   function mScale() { return typeof slideScale === 'function' ? slideScale() : 1; }
   function mLines(m) { try { return JSON.parse(m.getAttribute('data-lines') || '{}'); } catch (e) { return {}; } }
   function mSave(m, o) { m.setAttribute('data-lines', JSON.stringify(o)); }
+  function mArr(v) { return Array.isArray(v) ? v : (v == null ? [] : [v]); }
+  window.__mArr = mArr;
   function mNormalize(m) {
     m.querySelectorAll('.m-left > li').forEach(function (li) {
       var ds = li.querySelectorAll('.m-dot'); for (var i = 1; i < ds.length; i++) ds[i].remove();
@@ -6332,13 +6373,16 @@ function __boot() {
     var s = mScale(), box = m.getBoundingClientRect(); if (!box.width) return;
     svg.setAttribute('width', box.width / s); svg.setAttribute('height', box.height / s);
     var L = m.querySelectorAll('.m-left > li'), R = m.querySelectorAll('.m-right > li'), o = mLines(m), out = '';
-    L.forEach(function (li, i) { li.querySelector('.m-dot') && li.querySelector('.m-dot').classList.toggle('on', o[i] !== undefined); });
+    L.forEach(function (li, i) { li.querySelector('.m-dot') && li.querySelector('.m-dot').classList.toggle('on', mArr(o[i]).length > 0); });
     R.forEach(function (li) { var d = li.querySelector('.m-dot'); if (d) d.classList.remove('on'); });
     Object.keys(o).forEach(function (i) {
-      var a = L[+i], b = R[o[i]]; if (!a || !b) return;
-      var p = mCenter(a.querySelector('.m-dot'), box, s), q = mCenter(b.querySelector('.m-dot'), box, s);
-      b.querySelector('.m-dot').classList.add('on');
-      out += '<line x1="' + p[0] + '" y1="' + p[1] + '" x2="' + q[0] + '" y2="' + q[1] + '" stroke="' + M_COLORS[+i % M_COLORS.length] + '" />';
+      mArr(o[i]).forEach(function (j) {
+        var a = L[+i], b = R[j]; if (!a || !b) return;
+        var p = mCenter(a.querySelector('.m-dot'), box, s), q = mCenter(b.querySelector('.m-dot'), box, s);
+        b.querySelector('.m-dot').classList.add('on');
+        out += '<line x1="' + p[0] + '" y1="' + p[1] + '" x2="' + q[0] + '" y2="' + q[1] + '" stroke="' + M_COLORS[+i % M_COLORS.length] + '" />' +
+          '<line class="m-hit" data-i="' + i + '" data-j="' + j + '" x1="' + p[0] + '" y1="' + p[1] + '" x2="' + q[0] + '" y2="' + q[1] + '"><title>누르면 이 선만 지워져요</title></line>';
+      });
     });
     if (temp) out += '<line class="m-temp" x1="' + temp[0] + '" y1="' + temp[1] + '" x2="' + temp[2] + '" y2="' + temp[3] + '" />';
     svg.innerHTML = out;
@@ -6356,7 +6400,8 @@ function __boot() {
     if (sl) { sl.addEventListener('input', fix); sl.addEventListener('keyup', fix); sl.addEventListener('focusout', fix); }
   })();
   var mArmed = null;
-  function mConnect(m, leftIdx, rightIdx) { var o = mLines(m); o[leftIdx] = rightIdx; mSave(m, o); mDraw(m); }
+  // 한 문항에 여러 선 가능: 같은 짝을 다시 이으면 그 선만 지움
+  function mConnect(m, leftIdx, rightIdx) { var o = mLines(m), a = mArr(o[leftIdx]).slice(), k = a.indexOf(rightIdx); if (k > -1) a.splice(k, 1); else a.push(rightIdx); if (a.length) o[leftIdx] = a; else delete o[leftIdx]; mSave(m, o); mDraw(m); }
   function mSide(dot) { return dot.closest('.m-left') ? 'L' : 'R'; }
   function mIndex(dot) { var li = dot.closest('li'); return [].indexOf.call(li.parentNode.children, li); }
   document.getElementById('slide').addEventListener('pointerdown', function (e) {
@@ -6385,11 +6430,17 @@ function __boot() {
         var l2 = mSide(dot) === 'L' ? mIndex(dot) : mIndex(mArmed), r2 = mSide(dot) === 'L' ? mIndex(mArmed) : mIndex(dot);
         mArmed.classList.remove('armed'); mArmed = null; mConnect(m, l2, r2); return;
       }
-      if (mSide(dot) === 'L' && dot.classList.contains('on') && !mArmed) { var o = mLines(m); delete o[mIndex(dot)]; mSave(m, o); mDraw(m); return; }
       m.querySelectorAll('.m-dot.armed').forEach(function (x) { x.classList.remove('armed'); });
       mArmed = dot; dot.classList.add('armed');
     }
     document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up);
+  }, true);
+  document.getElementById('slide').addEventListener('click', function (e) {
+    var hl = e.target.closest && e.target.closest('.match line.m-hit'); if (!hl) return;
+    e.preventDefault(); e.stopPropagation();
+    var m = hl.closest('.match'), o = mLines(m), i = hl.getAttribute('data-i'), j = +hl.getAttribute('data-j'), a = mArr(o[i]).filter(function (x) { return x !== j; });
+    if (a.length) o[i] = a; else delete o[i]; mSave(m, o); mDraw(m);
+    if (document.body.classList.contains('editing') && window.__saveLesson) window.__saveLesson(+m.closest('section.stage').dataset.l);
   }, true);
   document.getElementById('slide').addEventListener('click', function (e) {
     var c = e.target.closest('.m-clear'); if (!c) return;
@@ -6902,15 +6953,43 @@ function __boot() {
           var top = s.getBoundingClientRect().top - root.getBoundingClientRect().top, nxt = Math.ceil((top - 1) / pagePx) * pagePx;
           if (nxt - top > 1) s.style.marginTop = (nxt - top) + 'px';
         });
-        root.classList.add('wse-measure'); var mh = root.offsetHeight; root.classList.remove('wse-measure');
-        var n = Math.max(1, Math.ceil((mh + 4) / pagePx));
+        // 실제 인쇄처럼 쪽을 나누기: 숨긴 복사본을 'A4 한 쪽 크기 칸'으로 흘려 보내 브라우저가 직접 쪽을 나누게 함
+        var unitsSel = '.ws-box, .ws-sub, .ws-box li, .ws-box p, .ws-box table, .ws-box h3, .ws-box .ws-line, .ws-box .bogi, .ws-box .ws-match, .ws-box figure';
+        var units = [].slice.call(root.querySelectorAll(unitsSel)); units.forEach(function (u, i) { u.setAttribute('data-pi', i); });
+        var wMM = land ? 283 : 196, rl = document.createElement('div'); rl.style.cssText = 'position:absolute;visibility:hidden;width:' + wMM + 'mm;height:1px;'; document.body.appendChild(rl); var pageW = rl.getBoundingClientRect().width; rl.remove();
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'position:absolute;left:-200000px;top:0;visibility:hidden;width:' + pageW + 'px;height:' + pagePx + 'px;column-width:' + pageW + 'px;column-gap:0;column-fill:auto;';
+        var cp = root.cloneNode(true); cp.removeAttribute('contenteditable');
+        cp.querySelectorAll('.wse-sctl, .wse-ctl, .wse-split, .wse-tctl, .wse-pb').forEach(function (x) { x.remove(); });
+        root.id = 'ws-root-ed'; cp.id = 'ws-root'; cp.style.cssText = 'display:block;width:100%;margin:0;padding:0;';
+        wrap.appendChild(cp); document.body.appendChild(wrap);
+        // 인쇄용 규칙(@media print)을 잠깐 화면에도 적용해 인쇄와 같은 글자 크기·간격으로 재기
+        if (!window.__wsPrintCss) { var acc = []; [].forEach.call(document.styleSheets, function (sh) { var rs; try { rs = sh.cssRules; } catch (er) { return; } [].forEach.call(rs || [], function (r) { if (r.media && /print/.test(r.media.mediaText) && !/screen/.test(r.media.mediaText)) [].forEach.call(r.cssRules, function (x) { var st = x.selectorText || ''; if (!st || /body\s*>|:not\(#ws-root|@page|^html|^body\s*\{|^body$/.test(st) || !/#ws-root/.test(st)) return; acc.push(x.cssText.replace(/body\.ws-print\s+/g, '').replace(/html\.ws-[a-z]+\s+/g, '')); }); }); }); window.__wsPrintCss = acc.join('\n'); }
+        var pst = document.createElement('style'); pst.textContent = window.__wsPrintCss; document.head.appendChild(pst);
+
+        var wl = wrap.getBoundingClientRect().left, pageOf = {}, maxPg = 0;
+        cp.querySelectorAll('[data-pi]').forEach(function (u) { var r = u.getBoundingClientRect(); if (!r.width && !r.height) return; var pg = Math.max(0, Math.floor((r.left - wl + 2) / pageW)); pageOf[u.getAttribute('data-pi')] = pg; if (pg > maxPg) maxPg = pg; });
+        var lastAll = cp.lastElementChild ? cp.getBoundingClientRect() : null;
+        wrap.remove(); root.id = 'ws-root'; pst.remove();
+        var breaks = [], seenPg = {};
+        units.forEach(function (u, i) {
+          var pg = pageOf[i]; if (pg == null || pg === 0) return;
+          var par = u.parentNode && u.parentNode.closest('[data-pi]'), ppg = par ? pageOf[par.getAttribute('data-pi')] : null;
+          if (ppg === pg) return;
+          var prev = null; for (var j = i - 1; j >= 0; j--) { if (pageOf[j] != null && units[j].parentNode === u.parentNode) { prev = j; break; } }
+          if (prev != null && pageOf[prev] === pg) return;
+          breaks.push({ el: u, k: pg });
+        });
+        units.forEach(function (u) { u.removeAttribute('data-pi'); });
+        var n = maxPg + 1;
         paper.style.minHeight = 'calc(' + n + ' * ' + contentMM + 'mm + 14mm)';
-        for (var k = 1; k <= n; k++) {
-          var d = document.createElement('div'); d.className = 'wse-pb' + (k === n ? ' last' : '');
-          d.style.top = 'calc(7mm + ' + k + ' * ' + contentMM + 'mm)';
-          d.innerHTML = '<span>' + k + '쪽 끝' + (k === n && n > 1 ? '' : '') + '</span>';
+        var pr = paper.getBoundingClientRect(), labeled = {};
+        breaks.forEach(function (x) {
+          var r = x.el.getBoundingClientRect(), d = document.createElement('div'); d.className = 'wse-pb';
+          d.style.top = (r.top - pr.top - 6) + 'px'; d.style.left = (r.left - pr.left - 4) + 'px'; d.style.width = (r.width + 8) + 'px'; d.style.right = 'auto';
+          d.innerHTML = labeled[x.k] ? '' : '<span>' + x.k + '쪽 끝 · 여기부터 ' + (x.k + 1) + '쪽</span>'; labeled[x.k] = 1;
           paper.appendChild(d);
-        }
+        });
         var note = ov.querySelector('.wse-pages'); if (note) note.textContent = '현재 약 ' + n + '쪽';
       };
       draw();
