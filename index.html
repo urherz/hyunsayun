@@ -2125,6 +2125,8 @@
   /* 터치 화면에서도 보이도록 항목 지우기 ✕는 수정 모드에서 늘 흐리게 보이기 */
   body.editing .slide .match .m-x { opacity: .45; }
   body.editing .slide .match .m-x:hover { opacity: 1; }
+
+  .match .m-dot { position: relative; z-index: 3; }
 </style>
 </head>
 <body>
@@ -6381,7 +6383,7 @@ function __boot() {
         var p = mCenter(a.querySelector('.m-dot'), box, s), q = mCenter(b.querySelector('.m-dot'), box, s);
         b.querySelector('.m-dot').classList.add('on');
         out += '<line x1="' + p[0] + '" y1="' + p[1] + '" x2="' + q[0] + '" y2="' + q[1] + '" stroke="' + M_COLORS[+i % M_COLORS.length] + '" />' +
-          '<line class="m-hit" data-i="' + i + '" data-j="' + j + '" x1="' + p[0] + '" y1="' + p[1] + '" x2="' + q[0] + '" y2="' + q[1] + '"><title>누르면 이 선만 지워져요</title></line>';
+          (function () { var dx = q[0] - p[0], dy = q[1] - p[1], ln = Math.sqrt(dx * dx + dy * dy) || 1, cut = Math.min(34, ln * 0.3), ux = dx / ln, uy = dy / ln; return '<line class="m-hit" data-i="' + i + '" data-j="' + j + '" x1="' + (p[0] + ux * cut) + '" y1="' + (p[1] + uy * cut) + '" x2="' + (q[0] - ux * cut) + '" y2="' + (q[1] - uy * cut) + '"><title>누르면 이 선만 지워져요</title></line>'; })();
       });
     });
     if (temp) out += '<line class="m-temp" x1="' + temp[0] + '" y1="' + temp[1] + '" x2="' + temp[2] + '" y2="' + temp[3] + '" />';
