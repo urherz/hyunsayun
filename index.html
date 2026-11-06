@@ -2127,6 +2127,17 @@
   body.editing .slide .match .m-x:hover { opacity: 1; }
 
   .match .m-dot { position: relative; z-index: 3; }
+
+  /* 학습지: 페이지(소제목) 사이를 위아래 같은 여백으로 띄워 구분 */
+  #ws-root .ws-sub + .ws-sub { margin-top: 4mm !important; padding-top: 0 !important; border-top: 0 !important; }
+  #ws-root .ws-subt { margin: 0 0 2mm !important; }
+  #ws-root.ws-compact .ws-sub + .ws-sub, #ws-root.ws-tight .ws-sub + .ws-sub { margin-top: 2.6mm !important; }
+  #ws-root.ws-compact .ws-subt { margin-bottom: 1.3mm !important; }
+
+  #cal-btn { white-space: nowrap; }
+  @media (max-width: 760px) { #cal-btn .cb-t { display: none; } #cal-btn { padding-left: 8px; padding-right: 8px; } }
+
+  @media (max-width: 760px) { #ppt-btn { display: none !important; } }
 </style>
 </head>
 <body>
@@ -2842,6 +2853,9 @@ function __boot() {
     var wsb = document.getElementById('ws-btn'); if (!wsb) return;
     var btn = document.createElement('button'); btn.type = 'button'; btn.id = 'check-btn'; btn.className = wsb.className; btn.textContent = '점검'; btn.title = '이 차시에 놓친 문제가 없는지 점검';
     var wwrap = wsb.closest('.ws-wrap') || wsb; wwrap.parentNode.insertBefore(btn, wwrap);
+    var cb = document.createElement('button'); cb.type = 'button'; cb.id = 'cal-btn'; cb.className = wsb.className; cb.innerHTML = '📅<span class="cb-t"> 진도표</span>'; cb.title = '모든 과목 수업 진도표';
+    cb.addEventListener('click', function () { if (window.__openAllCal) window.__openAllCal(); });
+    btn.parentNode.insertBefore(cb, btn);
     var panel = document.createElement('div'); panel.id = 'lesson-check'; panel.hidden = true; document.body.appendChild(panel);
     var gridN = function (t) {
       var occ = [], n = 0, short = false, widths = [];
@@ -7069,7 +7083,16 @@ function __boot() {
           tb.classList.add(after ? 'wse-drop-after' : 'wse-drop-before'); mark = { el: tb, after: after };
         } else {
           var col = e.target.closest && e.target.closest('.ws-colL, .ws-colM, .ws-colR, .ws-acts, .ws-band');
-          if (col && !(tb && tb === dragBox)) { col.classList.add('wse-drop-in'); mark = { col: col }; }
+          // 구역 막대(단 나누기) 위에 놓으면 그 아래 구역의 맨 위로
+          var bar = !col && e.target.closest && e.target.closest('.wse-sctl');
+          if (bar) { var g = bar.nextElementSibling; while (g && !g.classList.contains('ws-cols2') && !g.classList.contains('ws-box')) g = g.nextElementSibling; if (g) col = g.classList.contains('ws-cols2') ? g.querySelector('.ws-colL, .ws-colM, .ws-colR') : null; if (g && !col) { g.classList.add('wse-drop-before'); mark = { el: g, after: false }; return; } }
+          if (col && !(tb && tb === dragBox)) {
+            // 단 안의 빈 곳: 마우스 높이에 맞춰 그 자리(맨 위 포함)에 넣기
+            var kids = [].filter.call(col.children, function (x) { return x.classList.contains('ws-box') && x !== dragBox; }), before = null;
+            for (var q = 0; q < kids.length; q++) { var rr = kids[q].getBoundingClientRect(); if (e.clientY < rr.top + rr.height / 2) { before = kids[q]; break; } }
+            if (before) { before.classList.add('wse-drop-before'); mark = { el: before, after: false }; }
+            else { col.classList.add('wse-drop-in'); mark = { col: col }; }
+          }
         }
       });
       root.addEventListener('drop', function (e) {
