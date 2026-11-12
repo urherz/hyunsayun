@@ -3527,8 +3527,8 @@ function __boot() {
         s.querySelectorAll('.tag, .lab, .badge, .kind').forEach(function (t) { if (on) t.setAttribute('contenteditable', 'false'); else t.removeAttribute('contenteditable'); });
         if (on && window.__fixVersus) window.__fixVersus(s);
         s.querySelectorAll('.news-v .versus').forEach(function (v) {
-          if (on) { v.setAttribute('contenteditable', 'false'); v.querySelectorAll(':scope > .side > p').forEach(function (p) { p.setAttribute('contenteditable', 'true'); }); }
-          else { v.removeAttribute('contenteditable'); v.querySelectorAll('[contenteditable]').forEach(function (p) { p.removeAttribute('contenteditable'); }); }
+          if (on) { v.setAttribute('contenteditable', 'false'); v.querySelectorAll(':scope > .side > p, :scope > .side > div').forEach(function (p) { p.setAttribute('contenteditable', 'true'); }); }
+          else { v.querySelectorAll(':scope > .side > div').forEach(function (d) { if (!(d.textContent || '').replace(/\u00a0/g, '').trim()) d.remove(); }); v.removeAttribute('contenteditable'); v.querySelectorAll('[contenteditable]').forEach(function (p) { p.removeAttribute('contenteditable'); }); }
         });
         s.querySelectorAll('details.reveal').forEach(function (d) {
           d.open = true; if (!on) d.classList.add('concealed');
@@ -4274,8 +4274,8 @@ function __boot() {
       var t = b.dataset.t; if (t !== 'rowdel' && t !== 'coldel' && t !== 'tdel') return;
       var cell = cellRange(); if (!cell) return;
       var table = cell.closest('table'), col = [].indexOf.call(cell.parentNode.cells, cell);
-      if (t === 'rowdel') [].forEach.call(cell.parentNode.cells, function (x) { x.classList.add('del-prev'); });
-      else if (t === 'coldel') [].forEach.call(table.rows, function (r) { if (r.cells[col]) r.cells[col].classList.add('del-prev'); });
+      if (t === 'rowdel') { var gmR = gridMap(table), gr = gmR.info.get(cell).r; (gmR.occ[gr] || []).forEach(function (x) { if (x && (x.rowSpan || 1) === 1) x.classList.add('del-prev'); }); }
+      else if (t === 'coldel') { var gmP = gridMap(table), gc = gmP.info.get(cell).c; gmP.occ.forEach(function (row) { var x = row[gc]; if (x && (x.colSpan || 1) === 1) x.classList.add('del-prev'); }); }
       else table.querySelectorAll('th, td').forEach(function (x) { x.classList.add('del-prev'); });
     });
     document.addEventListener('mouseout', function (e) { if (e.target.closest('.table-bar button')) clearPrev(); });
@@ -6226,6 +6226,7 @@ function __boot() {
         else { p.appendChild(document.createTextNode((p.textContent.trim() ? ' ' : '') + txt)); }
         n.remove();
       });
+      sides.forEach(function (s) { s.querySelectorAll(':scope > div').forEach(function (d) { if (!(d.textContent || '').replace(/\u00a0/g, '').trim()) d.remove(); }); });
       sides.forEach(function (s) { var ps = s.querySelectorAll(':scope > p'); for (var i = 1; i < ps.length; i++) { ps[0].innerHTML += '<br>' + ps[i].innerHTML; ps[i].remove(); } if (!ps.length) { var np = document.createElement('p'); np.innerHTML = '&nbsp;'; s.appendChild(np); } });
       var vs = v.querySelector(':scope > .vs'), a = v.querySelector(':scope > .side-a'), bb = v.querySelector(':scope > .side-b');
       if (a && vs && bb) { v.appendChild(a); v.appendChild(vs); v.appendChild(bb); }
