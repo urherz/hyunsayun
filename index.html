@@ -4249,7 +4249,7 @@ function __boot() {
         '<div class="tp-g"><span class="tb-l">칸 합치기</span><button type="button" data-t="merge" title="드래그로 선택한 칸들을 하나로 합쳐요">선택 칸 합치기</button><button type="button" data-t="split" title="합쳐진 칸을 다시 나눠요">합친 칸 나누기</button></div>' +
         '<div class="tp-g"><span class="tb-l">너비</span><button type="button" data-t="eqall">모두 같게</button><button type="button" data-t="eqothers">이 칸 빼고 같게</button></div>' +
         '<div class="tp-g"><span class="tb-l">이 칸 머리색</span><div class="tp-sw">' + TB_COLORS.map(function (c) { return c[0] === 'default' ? '<button type="button" class="sw sw-x" data-t="color:default" title="원래대로"></button>' : '<button type="button" class="sw" data-t="color:' + c[0] + '" title="' + c[2] + '" style="background:' + c[1] + '"></button>'; }).join('') + '</div><button type="button" data-t="colorall">모든 칸에 적용</button></div>' +
-        '<div class="tp-g"><button type="button" data-t="undo" class="tb-undo">↶ 되돌리기</button><button type="button" data-t="tdel" class="tb-danger">표 삭제</button></div></div>';
+        '<div class="tp-g"><button type="button" data-t="undo" class="tb-undo">↶ 되돌리기</button><button type="button" data-t="tcopy" title="이 표를 바로 아래에 하나 더 만들어요">표 복사</button><button type="button" data-t="tdel" class="tb-danger">표 삭제</button></div></div>';
     }
     function clearTableBar() {
       var p = document.getElementById('table-panel'); if (p) p.hidden = true;
@@ -4508,6 +4508,12 @@ function __boot() {
         else { [].forEach.call(tb.rows, function (r) { [].forEach.call(r.cells, function (x) { if (x.tagName === cell.tagName) { x.style.background = cell.style.background; x.style.borderColor = cell.style.borderColor; x.style.color = cell.style.color; } }); }); }
       } else if (c === 'tdel') {
         (table.closest('.tablewrap') || table).remove();
+      } else if (c === 'tcopy') {
+        var src = table.closest('.tablewrap') || table, cp = src.cloneNode(true);
+        cp.querySelectorAll('.sel, .cur, .del-prev, .tb-sel, [data-sel]').forEach(function (x) { x.classList.remove('sel', 'cur', 'del-prev', 'tb-sel'); x.removeAttribute('data-sel'); });
+        cp.querySelectorAll('.col-grip, .table-bar, .row-grip').forEach(function (x) { x.remove(); });
+        src.parentNode.insertBefore(cp, src.nextSibling);
+        state.textContent = '표를 바로 아래에 복사했어요';
       }
       storeLesson(+sec.dataset.l); window.__autofit(); gripTools(true);
     }
