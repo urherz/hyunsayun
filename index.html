@@ -6859,7 +6859,7 @@ function __boot() {
         out += '<div class="ws-box ws-concept"><h2>핵심 개념</h2>' + grp.join('') + '</div>';
       } else { out += parts[i]; i++; }
     }
-    return wsGroupSummary(wsMergeTables(out));
+    return wsMergeTables(out); // 수업 순서대로: 같은 종류끼리 모으지 않음
   }
   function fitOnePage(root, pages) {
     var head = root.querySelector('.ws-head'), body = document.createElement('div'); body.className = 'ws-cols';
@@ -6868,11 +6868,9 @@ function __boot() {
     var newsTop = body.querySelector('.ws-news-top'); if (newsTop) root.insertBefore(newsTop, body);
     var colL = document.createElement('div'), colR = document.createElement('div'); colL.className = 'ws-colL'; colR.className = 'ws-colR';
     var kids = [].slice.call(body.children);
-    kids.forEach(function (k) { if (k.classList.contains('ws-concept') || k.classList.contains('ws-link')) colL.appendChild(k); });
-    kids.forEach(function (k) { if (k.classList.contains('ws-summary')) colR.appendChild(k); });
+    // 수업 순서 그대로: 왼쪽 단 위→아래, 이어서 오른쪽 단 위→아래
+    kids.forEach(function (k) { colL.appendChild(k); });
     var acts = document.createElement('div'); acts.className = 'ws-acts';
-    kids.forEach(function (k) { if (k.classList.contains('ws-activity')) acts.appendChild(k); });
-    kids.forEach(function (k) { if (k.parentNode === body) colR.appendChild(k); });
     var grid = document.createElement('div'); grid.className = 'ws-cols2'; grid.appendChild(colL); grid.appendChild(colR);
     body.className = 'ws-body'; body.appendChild(grid); if (acts.children.length) body.appendChild(acts);
     root.style.zoom = ''; root.style.width = ''; root.dataset.zoom = 1;
@@ -6880,6 +6878,28 @@ function __boot() {
     var land = root.classList.contains('ws-land'); var pg = document.createElement('div'); pg.style.cssText = 'position:absolute;height:' + (land ? 192 : 279) + 'mm;width:1px;left:-10000px;top:0;'; document.body.appendChild(pg);
     var limit = pg.getBoundingClientRect().height * (pages > 1 ? pages * 0.96 : 1); pg.remove();
     root.style.cssText = 'display:block !important;position:absolute;left:-10000px;top:0;width:' + (land ? 283 : 196) + 'mm;';
+    // 수업 순서대로 채우기: 1쪽 왼쪽 단 → 1쪽 오른쪽 단 → 2쪽 왼쪽 단 …
+    (function () {
+      var flat = [];
+      [].slice.call(colL.children).forEach(function (b) {
+        flat.push(b);
+        if (b.classList.contains('ws-concept')) { [].slice.call(b.querySelectorAll(':scope > .ws-sub')).slice(1).forEach(function (sb) { var nb = document.createElement('div'); nb.className = 'ws-box ws-concept ws-cont'; nb.appendChild(sb); flat.push(nb); }); }
+      });
+      var pgH = limit / (pages > 1 ? pages * 0.96 : 1);
+      var h0 = root.querySelector('.ws-head'), n0 = root.querySelector('.ws-news-top');
+      var cap = (pgH - (h0 ? h0.getBoundingClientRect().height + 8 : 0) - (n0 ? n0.getBoundingClientRect().height + 8 : 0)) * 0.97;
+      flat.forEach(function (x) { if (x.parentNode) x.parentNode.removeChild(x); });
+      var cols = [colL, colR], ci = 0;
+      flat.forEach(function (x) {
+        var col = cols[ci]; col.appendChild(x);
+        if (col.children.length < 2 || col.getBoundingClientRect().height <= cap) return;
+        if (ci === 0) { ci = 1; cols[1].appendChild(x); if (cols[1].getBoundingClientRect().height <= cap || cols[1].children.length < 2) return; }
+        if (pages < 2) return;
+        var g = document.createElement('div'); g.className = 'ws-cols2 ws-newpage';
+        var L2 = document.createElement('div'), R2 = document.createElement('div'); L2.className = 'ws-colL'; R2.className = 'ws-colR'; g.appendChild(L2); g.appendChild(R2); body.appendChild(g);
+        cols = [L2, R2]; ci = 0; cap = pgH * 0.97; L2.appendChild(x);
+      });
+    })();
     var hd = root.querySelector('.ws-head'), nt = root.querySelector('.ws-news-top'), colsH = limit - (hd ? hd.getBoundingClientRect().height + 8 : 0) - (nt ? nt.getBoundingClientRect().height + 8 : 0);
     wseActsToGrid(root);
     var over = function () { return body.getBoundingClientRect().height > colsH * (land ? 0.98 : 0.9); };
@@ -7100,7 +7120,8 @@ function __boot() {
     root.classList.remove('wse-measure');
     return add;
   }
-  function wseHtml(root) { var c = root.cloneNode(true); c.querySelectorAll('.wse-on').forEach(function (x) { x.classList.remove('wse-on'); }); c.querySelectorAll('.wse-sctl').forEach(function (x) { x.remove(); }); c.querySelectorAll('.ws-newpage').forEach(function (x) { x.style.removeProperty('margin-top'); }); c.querySelectorAll('.wse-split, .wse-bandctl').forEach(function (x) { x.remove(); }); c.querySelectorAll('.wse-dragging, .wse-drop-before, .wse-drop-after, .wse-drop-in').forEach(function (x) { x.classList.remove('wse-dragging', 'wse-drop-before', 'wse-drop-after', 'wse-drop-in'); }); c.querySelectorAll('.wse-bsel').forEach(function (x) { x.classList.remove('wse-bsel'); }); c.querySelectorAll('.wse-colhot').forEach(function (x) { x.classList.remove('wse-colhot'); }); c.querySelectorAll('.ws-blank, .ws-pl, .ws-inline-line').forEach(function (x) { x.removeAttribute('contenteditable'); }); c.querySelectorAll('.wse-ctl, .wse-tctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
+  function wsFixLabels(r) { if (!r) return; r.querySelectorAll('.ws-box').forEach(function (b) { var h = b.querySelector(':scope > h2'); if (!h) return; var subs = b.querySelectorAll(':scope > .ws-sub'); var own = subs.length && [].every.call(subs, function (x) { return x.querySelector(':scope > h2'); }); h.style.display = own ? 'none' : ''; }); }
+  function wseHtml(root) { wsFixLabels(root); var c = root.cloneNode(true); c.querySelectorAll('.wse-on').forEach(function (x) { x.classList.remove('wse-on'); }); c.querySelectorAll('.wse-sctl').forEach(function (x) { x.remove(); }); c.querySelectorAll('.ws-newpage').forEach(function (x) { x.style.removeProperty('margin-top'); }); c.querySelectorAll('.wse-split, .wse-bandctl').forEach(function (x) { x.remove(); }); c.querySelectorAll('.wse-dragging, .wse-drop-before, .wse-drop-after, .wse-drop-in').forEach(function (x) { x.classList.remove('wse-dragging', 'wse-drop-before', 'wse-drop-after', 'wse-drop-in'); }); c.querySelectorAll('.wse-bsel').forEach(function (x) { x.classList.remove('wse-bsel'); }); c.querySelectorAll('.wse-colhot').forEach(function (x) { x.classList.remove('wse-colhot'); }); c.querySelectorAll('.ws-blank, .ws-pl, .ws-inline-line').forEach(function (x) { x.removeAttribute('contenteditable'); }); c.querySelectorAll('.wse-ctl, .wse-tctl').forEach(function (x) { x.remove(); }); c.removeAttribute('contenteditable'); return c.innerHTML; }
   function openWsEditor(withAns, land, compact) {
     closeWsEditor();
     var key = wseKey(withAns, land, compact), stored = window.__wsGet ? window.__wsGet(key) : null;
@@ -7127,7 +7148,7 @@ function __boot() {
     document.body.appendChild(ov); document.body.classList.add('ws-editing');
     var root = document.createElement('div'); root.id = 'ws-root'; if (land) root.className = 'ws-land'; if (compact) root.classList.add('ws-compact'); if (withAns) root.classList.add('ws-mode-ans');
     ov.querySelector('.wse-paper').appendChild(root);
-    if (stored) { root.innerHTML = stored; ov.querySelector('.wse-note').textContent = root.querySelector('.ws-cols2') ? '저장된 수정본' : '예전 배치로 저장된 수정본 · 새 배치로 바꾸려면 원래대로'; }
+    if (stored) { root.innerHTML = stored; wsFixLabels(root); ov.querySelector('.wse-note').textContent = root.querySelector('.ws-cols2') ? '저장된 수정본' : '예전 배치로 저장된 수정본 · 새 배치로 바꾸려면 원래대로'; }
     else { var fh = buildWorksheet(withAns); root.innerHTML = fh; fitOnePage(root, compact ? 1 : 2); root.dataset.fresh = '1'; var hd1 = root.querySelector('.ws-head'); if (hd1) { hd1.dataset.sig = wsHash(fh); var tmpF = document.createElement('div'); tmpF.innerHTML = fh; var miss = [].map.call(tmpF.querySelectorAll('[data-src]'), function (x) { return x.dataset.src; }).filter(function (k) { return !root.querySelector('[data-src="' + (window.CSS && CSS.escape ? CSS.escape(k) : k) + '"]'); }); if (miss.length) hd1.dataset.removed = miss.join('|'); } }
     var siteChanged = false;
     if (stored && root.querySelector('[data-src]')) { var hd2 = root.querySelector('.ws-head'); try { siteChanged = !hd2 || hd2.dataset.sig !== wsHash(buildWorksheet(withAns)); } catch (er) {} }
@@ -7457,7 +7478,7 @@ function __boot() {
       if (a === 'redo') { goHist(1); return; }
       if (a === 'reset') { if (window.__wsSave) { window.__wsSave(key, null); window.__wsSave(wseOldKey(true, land, compact), null); window.__wsSave(wseOldKey(false, land, compact), null); } openWsEditor(withAns, land, compact); return; }
       if (a === 'print') {
-        document.body.appendChild(root); root.removeAttribute('contenteditable'); document.body.classList.add('ws-print');
+        document.body.appendChild(root); root.removeAttribute('contenteditable'); wsFixLabels(root); document.body.classList.add('ws-print');
         var back = function () { document.body.classList.remove('ws-print'); var pp = document.querySelector('#ws-editor .wse-paper'); if (pp) { pp.appendChild(root); root.setAttribute('contenteditable', 'true'); } window.removeEventListener('afterprint', back); };
         window.addEventListener('afterprint', back);
         setTimeout(function () { window.print(); }, 60);
@@ -7529,7 +7550,7 @@ function __boot() {
   function wsCode(withAns, land, compact) { return (withAns ? 'ans' : 'blank') + '-' + (land ? 'l' : 'p') + (compact ? 'c' : ''); }
   function openWsCode(code) { openWsEditor(code.indexOf('ans') === 0, /-l/.test(code), /c$/.test(code)); }
   window.__openWsEditor = openWsEditor;
-  window.__printWorksheet = printWorksheet; window.__buildWorksheet = buildWorksheet;
+  window.__printWorksheet = printWorksheet; window.__buildWorksheet = buildWorksheet; window.__wsFixLabels = wsFixLabels;
   (function () {
     var wb = document.getElementById('ws-btn'), wm = document.getElementById('ws-menu');
     if (!wb) return;
@@ -8062,6 +8083,463 @@ function __boot() {
   // 첫 화면(과목 고르기)에 카드 추가
   var addCard = function () { var cards = document.querySelector('.landing .ld-cards'); if (!cards || cards.querySelector('.ld-cal')) return; var a = document.createElement('button'); a.type = 'button'; a.className = 'ld-card ld-cal'; a.innerHTML = '<span class="ld-t">📅 수업 진도표</span><span class="ld-go">모든 과목 한눈에 →</span>'; a.addEventListener('click', window.__openAllCal); cards.appendChild(a); };
   addCard(); new MutationObserver(addCard).observe(document.body, { childList: true });
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+
+  var W = 1120, H = 630, SEG_COUNT = 35;
+
+  var CSS = '\
+.dbm-wrap{position:relative;width:100%;overflow:hidden;border-radius:0}\
+.dbm,.dbm *{box-sizing:border-box}\
+.dbm{position:absolute;left:0;top:0;width:1120px;height:630px;transform-origin:0 0;padding:36px 40px;display:flex;flex-direction:column;gap:20px;background:#F6EFE3;color:#2B2118;font-family:"Noto Sans KR",system-ui,sans-serif}\
+.dbm button{font-family:inherit;cursor:pointer}\
+.dbm-head{display:flex;align-items:center;justify-content:space-between;height:56px}\
+.dbm-head-l{display:flex;flex-direction:column;gap:2px}\
+.dbm-sub{font-size:15px;font-weight:500;color:#6B5A48}\
+.dbm-title{margin:0;font-size:32px;font-weight:900;letter-spacing:-.5px}\
+.dbm-head-r{display:flex;align-items:center;gap:12px}\
+.dbm-chip{display:flex;align-items:center;gap:10px;padding:10px 18px;border-radius:999px;background:#FFFAF1;border:2px solid #D9C9AE}\
+.dbm-chip span:first-child{font-size:15px;font-weight:500;color:#6B5A48}\
+.dbm-chip span:last-child{font-size:22px;font-weight:900}\
+.dbm-gear{height:48px;padding:0 20px;border-radius:999px;border:2px solid #D9C9AE;background:transparent;color:#2B2118;font-size:16px;font-weight:700}\
+.dbm-row{display:flex;gap:20px;height:212px}\
+.dbm-main{flex:1;min-width:0;display:flex;align-items:center;gap:28px;padding:0 36px;border-radius:24px;background:#FFFAF1;border:2px solid #D9C9AE}\
+.dbm-numbox{display:flex;align-items:baseline;gap:10px}\
+.dbm-num{font-size:164px;line-height:1;font-weight:900;letter-spacing:-6px;font-variant-numeric:tabular-nums;min-width:3ch;text-align:right}\
+.dbm-unit{font-size:40px;font-weight:700;color:#6B5A48}\
+.dbm-status{flex:1;min-width:0;align-self:stretch;margin:28px 0;padding:0 22px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:20px;font-size:32px;line-height:1.3;font-weight:900;word-break:keep-all}\
+.dbm-score{position:relative;width:300px;padding:22px 26px;display:flex;flex-direction:column;justify-content:space-between;border-radius:24px;background:#2B2118;color:#F6EFE3}\
+.dbm-score-top{display:flex;align-items:baseline;justify-content:space-between;height:30px}\
+.dbm-score-top span:first-child{font-size:16px;font-weight:500;color:#D9C9AE}\
+.dbm-plus{padding:4px 14px;border-radius:999px;background:#7BC47F;color:#2B2118;font-size:18px;font-weight:900}\
+.dbm-score-n{display:flex;align-items:baseline;gap:6px}\
+.dbm-score-n b{font-size:72px;line-height:1;font-weight:900;font-variant-numeric:tabular-nums}\
+.dbm-score-n span{font-size:28px;font-weight:700}\
+.dbm-hold-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}\
+.dbm-hold-top span:first-child{font-size:16px;font-weight:500;color:#D9C9AE}\
+.dbm-hold-top span:last-child{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}\
+.dbm-track{height:24px;border-radius:999px;background:#F6EFE3;padding:3px}\
+.dbm-fill{height:18px;border-radius:999px;background:#2E9E5E;width:0}\
+.dbm-meter{flex:1;min-height:0;display:flex;align-items:center;gap:24px;padding:0 36px;border-radius:24px;background:#FFFAF1;border:2px solid #D9C9AE}\
+.dbm-bars{flex:1;min-width:0;display:flex;align-items:flex-end;gap:5px;height:176px;padding-bottom:26px}\
+.dbm-col{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;height:150px}\
+.dbm-bar{border-radius:4px;background:#E4D7C2}\
+.dbm-bar.is-mark{outline:2px solid #2B2118;outline-offset:2px}\
+.dbm-flag{position:absolute;left:50%;top:-34px;transform:translateX(-50%);white-space:nowrap;padding:3px 10px;border-radius:8px;background:#2B2118;color:#F6EFE3;font-size:13px;font-weight:700}\
+.dbm-flag.is-max{background:#B3261E;color:#FFFAF1}\
+.dbm-tick{position:absolute;left:50%;bottom:-26px;transform:translateX(-50%);font-size:13px;font-weight:500;color:#6B5A48;font-variant-numeric:tabular-nums}\
+.dbm-btns{display:flex;flex-direction:column;gap:12px;width:190px}\
+.dbm-btn{height:56px;border-radius:16px;font-size:20px;font-weight:700}\
+.dbm-btn-main{border:0;background:#2B2118;color:#F6EFE3}\
+.dbm-btn-sub{border:2px solid #2B2118;background:transparent;color:#2B2118;font-size:18px}\
+.dbm-panel{position:absolute;top:100px;right:40px;z-index:5;width:400px;padding:20px;border-radius:20px;background:#FFFAF1;border:2px solid #D9C9AE;box-shadow:0 10px 30px rgba(43,33,24,.18)}\
+.dbm-panel[hidden]{display:none}\
+.dbm-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}\
+.dbm-grid label{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:500;color:#6B5A48}\
+.dbm-grid input{height:46px;width:100%;padding:0 12px;border-radius:12px;border:2px solid #D9C9AE;background:#fff;color:#2B2118;font-family:inherit;font-size:20px;font-weight:700}\
+.dbm-cal{margin-top:14px;width:100%;height:48px;border-radius:12px;border:2px solid #2B2118;background:transparent;color:#2B2118;font-size:16px;font-weight:700}\
+.dbm-hint{margin:14px 0 0;font-size:13px;line-height:1.5;color:#6B5A48;word-break:keep-all}\
+';
+
+  var TEMPLATE = '\
+<div class="dbm">\
+ <div class="dbm-head">\
+  <div class="dbm-head-l"><span class="dbm-sub">목소리 크기 측정</span><h1 class="dbm-title">발표 데시벨 측정기</h1></div>\
+  <div class="dbm-head-r">\
+   <div class="dbm-chip"><span>기준</span><span class="dbm-range"></span></div>\
+   <button type="button" class="dbm-gear">설정</button>\
+  </div>\
+ </div>\
+ <div class="dbm-row">\
+  <div class="dbm-main">\
+   <div class="dbm-numbox"><span class="dbm-num">--</span><span class="dbm-unit">dB</span></div>\
+   <div class="dbm-status" role="status"></div>\
+  </div>\
+  <div class="dbm-score">\
+   <div class="dbm-score-top"><span>획득 점수</span><span class="dbm-plus" hidden>+1점!</span></div>\
+   <div class="dbm-score-n"><b>0</b><span>점</span></div>\
+   <div>\
+    <div class="dbm-hold-top"><span>기준 이상 유지</span><span class="dbm-hold-text"></span></div>\
+    <div class="dbm-track"><div class="dbm-fill"></div></div>\
+   </div>\
+  </div>\
+ </div>\
+ <div class="dbm-meter">\
+  <div class="dbm-bars"></div>\
+  <div class="dbm-btns">\
+   <button type="button" class="dbm-btn dbm-btn-main"></button>\
+   <button type="button" class="dbm-btn dbm-btn-sub">처음으로</button>\
+  </div>\
+ </div>\
+ <div class="dbm-panel" hidden>\
+  <div class="dbm-grid">\
+   <label>기준 (dB 이상)<input type="number" class="dbm-in-th" min="30" max="110" step="1"></label>\
+   <label>너무 큼 (dB 이상)<input type="number" class="dbm-in-max" min="31" max="120" step="1"></label>\
+   <label>유지 시간 (초)<input type="number" class="dbm-in-hold" min="1" max="30" step="1"></label>\
+   <label>보정 (전체 높낮이)<input type="number" class="dbm-in-off" min="40" max="160" step="1"></label>\
+   <label>폭 (차이 키우기)<input type="number" class="dbm-in-spread" min="0.5" max="3" step="0.1"></label>\
+  </div>\
+  <button type="button" class="dbm-cal">자동 맞추기 (조용히 3초 → 말하기 3초)</button>\
+  <p class="dbm-hint">버튼을 누르고 먼저 3초 동안 조용히 있다가, 이어서 3초 동안 평소 크기로 말해 주세요. 조용할 때는 35dB, 평소 목소리는 65dB쯤으로 보이게 보정과 폭을 알아서 맞춰요. 직접 바꾸려면 보정은 숫자 전체의 높낮이, 폭은 조용할 때와 큰 소리의 숫자 차이예요.</p>\
+ </div>\
+</div>';
+
+  function injectCss() {
+    if (document.getElementById('dbm-css')) return;
+    var st = document.createElement('style');
+    st.id = 'dbm-css';
+    st.textContent = CSS;
+    document.head.appendChild(st);
+  }
+
+  function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+
+  function mount(host, opts) {
+    injectCss();
+    var ds = host.dataset || {};
+    var cfg = {
+      threshold: +ds.threshold || 70,
+      maxDb: +ds.max || 90,
+      holdSec: +ds.hold || 3,
+      offset: +ds.offset || 100,
+      spread: +ds.spread || 1.4,
+      onScore: null
+    };
+    Object.keys(opts || {}).forEach(function (k) { cfg[k] = opts[k]; });
+    try {
+      var saved = JSON.parse(localStorage.getItem('dbmeter-settings') || '{}');
+      ['threshold', 'maxDb', 'holdSec', 'offset', 'spread'].forEach(function (k) {
+        if (typeof saved[k] === 'number') cfg[k] = saved[k];
+      });
+    } catch (e) {}
+
+    host.classList.add('dbm-wrap');
+    host.innerHTML = TEMPLATE;
+    var root = host.querySelector('.dbm');
+    var $ = function (s) { return host.querySelector(s); };
+    var elNum = $('.dbm-num'), elStatus = $('.dbm-status'), elScore = $('.dbm-score-n b');
+    var elPlus = $('.dbm-plus'), elHoldText = $('.dbm-hold-text'), elFill = $('.dbm-fill');
+    var elBars = $('.dbm-bars'), elRange = $('.dbm-range');
+    var btnMain = $('.dbm-btn-main'), btnReset = $('.dbm-btn-sub'), btnGear = $('.dbm-gear');
+    var panel = $('.dbm-panel');
+    var inTh = $('.dbm-in-th'), inMax = $('.dbm-in-max'), inHold = $('.dbm-in-hold'), inOff = $('.dbm-in-off'), inSpread = $('.dbm-in-spread');
+
+    var st = { running: false, db: 0, hold: 0, score: 0, flash: false, err: '', cal: null, msg: '' };
+    var stream = null, ctx = null, analyser = null, buf = null, raf = 0, last = 0, flashTimer = 0;
+    var segs = [];
+    var numAt = 0;
+
+    /* ---------- 화면 크기에 맞춰 줄이기 ---------- */
+    function fit() {
+      var w = host.clientWidth;
+      if (!w) return;
+      var s = w / W;
+      root.style.transform = 'scale(' + s + ')';
+      host.style.height = (H * s) + 'px';
+    }
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(host);
+    window.addEventListener('resize', fit);
+
+    /* ---------- 막대 ---------- */
+    function buildSegs() {
+      elBars.innerHTML = '';
+      segs = [];
+      for (var i = 0; i < SEG_COUNT; i++) {
+        var v = 30 + (i + 1) * 2;
+        var col = document.createElement('div');
+        col.className = 'dbm-col';
+        var isTh = v >= cfg.threshold && v - 2 < cfg.threshold;
+        var isMax = v >= cfg.maxDb && v - 2 < cfg.maxDb;
+        if (isTh) col.insertAdjacentHTML('beforeend', '<div class="dbm-flag">기준 ' + cfg.threshold + '</div>');
+        if (isMax) col.insertAdjacentHTML('beforeend', '<div class="dbm-flag is-max">너무 큼 ' + cfg.maxDb + '</div>');
+        var bar = document.createElement('div');
+        bar.className = 'dbm-bar' + (isTh || isMax ? ' is-mark' : '');
+        bar.style.height = (28 + i * 3.4) + 'px';
+        col.appendChild(bar);
+        if (v % 10 === 0) col.insertAdjacentHTML('beforeend', '<div class="dbm-tick">' + v + '</div>');
+        elBars.appendChild(col);
+        var color = v >= cfg.maxDb ? '#B3261E' : (v >= cfg.threshold ? '#7BC47F' : '#4A78A8');
+        segs.push({ v: v, bar: bar, color: color, lit: null });
+      }
+      elRange.textContent = cfg.threshold + '~' + cfg.maxDb + ' dB';
+    }
+
+    /* ---------- 그리기 ---------- */
+    function render() {
+      var run = st.running;
+      var tooLoud = run && st.db >= cfg.maxDb;
+      var over = run && st.db >= cfg.threshold && !tooLoud;
+      var low = run && !over && !tooLoud;
+
+      var t = performance.now();
+      if (!run || t - numAt > 250) {
+        elNum.textContent = run ? String(Math.round(st.db)) : '--';
+        numAt = t;
+      }
+      elNum.style.color = tooLoud ? '#B3261E' : (over ? '#1F7A44' : '#2B2118');
+
+      var text = '시작 버튼을 눌러 주세요', bg = '#EFE5D2', fg = '#2B2118';
+      if (st.err) { text = st.err; bg = '#F7DAD6'; fg = '#8E1B14'; }
+      else if (st.cal) { text = st.cal.phase === 'quiet' ? '3초간 조용히 해 주세요' : '평소 목소리로 3초간 말해 주세요'; bg = '#FFF1CC'; fg = '#5C4400'; }
+      else if (st.msg) { text = st.msg; bg = '#DDF1DD'; fg = '#1F5C34'; }
+      else if (low) { text = '조금 더 크게 말해 보세요'; bg = '#DCE7F2'; fg = '#1F3F63'; }
+      else if (over) { text = '좋아요! 이 크기를 유지해 주세요'; bg = '#DDF1DD'; fg = '#1F5C34'; }
+      else if (tooLoud) { text = '너무 커요! 조금만 낮춰 주세요'; bg = '#F7DAD6'; fg = '#8E1B14'; }
+      elStatus.textContent = text;
+      elStatus.style.background = bg;
+      elStatus.style.color = fg;
+
+      elScore.textContent = st.score;
+      elPlus.hidden = !st.flash;
+      elHoldText.textContent = st.hold.toFixed(1) + ' / ' + cfg.holdSec + '초';
+      elFill.style.width = clamp(st.hold / cfg.holdSec * 100, 0, 100) + '%';
+      btnMain.textContent = run ? '멈추기' : '시작하기';
+
+      for (var i = 0; i < segs.length; i++) {
+        var sg = segs[i];
+        var lit = run && st.db >= sg.v;
+        if (sg.lit !== lit) {
+          sg.lit = lit;
+          sg.bar.style.background = lit ? sg.color : '#E4D7C2';
+        }
+      }
+    }
+
+    /* ---------- 마이크 ---------- */
+    function loop(now) {
+      if (!st.running) return;
+      analyser.getFloatTimeDomainData(buf);
+      var sum = 0;
+      for (var i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+      var rms = Math.sqrt(sum / buf.length);
+      /* raw = 마이크 신호 + 보정값. 65dB를 기준으로 차이를 spread배 벌려서, 작게/크게 말할 때 숫자가 더 분명하게 달라져요 */
+      var raw = 20 * Math.log10(Math.max(rms, 1e-8)) + cfg.offset;
+      var target = clamp(65 + (raw - 65) * cfg.spread, 0, 120);
+      if (st.cal) {
+        st.cal.samples.push(20 * Math.log10(Math.max(rms, 1e-8)));
+        if (now - st.cal.t0 >= 3000) nextCal(now);
+      }
+      var dt = clamp((now - last) / 1000, 0, 0.1);
+      last = now;
+      /* 부드럽게: 커질 때 약 0.35초, 작아질 때 약 0.9초에 걸쳐 따라가요 (숫자를 더 천천히 바꾸려면 두 값을 키우세요) */
+      var tau = target > st.db ? 0.35 : 0.9;
+      st.db += (target - st.db) * (1 - Math.exp(-dt / tau));
+      if (st.db >= cfg.threshold && st.db < cfg.maxDb) st.hold += dt;
+      else st.hold = Math.max(0, st.hold - dt * 2);
+
+      if (st.hold >= cfg.holdSec) {
+        st.hold = 0;
+        st.score += 1;
+        st.flash = true;
+        clearTimeout(flashTimer);
+        flashTimer = setTimeout(function () { st.flash = false; render(); }, 1500);
+        if (typeof cfg.onScore === 'function') { try { cfg.onScore(st.score); } catch (e) {} }
+      }
+      render();
+      raf = requestAnimationFrame(loop);
+    }
+
+    function saveSettings() {
+      try {
+        localStorage.setItem('dbmeter-settings', JSON.stringify({
+          threshold: cfg.threshold, maxDb: cfg.maxDb, holdSec: cfg.holdSec, offset: cfg.offset, spread: cfg.spread
+        }));
+      } catch (e) {}
+    }
+
+    /* 자동 맞추기: 조용할 때 = CAL_QUIET dB, 평소 목소리 = CAL_VOICE dB 가 되도록 보정값과 폭을 계산해요 */
+    var CAL_QUIET = 35, CAL_VOICE = 65;
+
+    function beginCal() {
+      st.err = '';
+      st.msg = '';
+      st.cal = { phase: 'quiet', t0: performance.now(), samples: [], floor: 0 };
+      render();
+    }
+
+    function nextCal(now) {
+      if (st.cal.phase === 'quiet') {
+        var q = st.cal.samples.slice().sort(function (a, b) { return a - b; });
+        st.cal.floor = q[Math.floor(q.length / 2)];
+        st.cal.phase = 'voice';
+        st.cal.t0 = now;
+        st.cal.samples = [];
+        render();
+      } else {
+        finishCal();
+      }
+    }
+
+    function calFail(msg) {
+      st.err = msg;
+      setTimeout(function () { st.err = ''; render(); }, 4000);
+    }
+
+    function finishCal() {
+      var floor = st.cal.floor;
+      var s = st.cal.samples.filter(function (x) { return x > floor + 6; }).sort(function (a, b) { return a - b; });
+      st.cal = null;
+      if (s.length < 20) {
+        calFail('목소리가 너무 작아요. 다시 해 주세요');
+      } else {
+        var p = s[Math.floor(s.length * 0.7)];
+        var diff = p - floor;
+        if (diff < 8) {
+          calFail('조용할 때와 말할 때 차이가 작아요. 마이크에 가까이 해 주세요');
+        } else {
+          cfg.offset = Math.round(clamp(CAL_VOICE - p, 0, 200));
+          cfg.spread = Math.round(clamp((CAL_VOICE - CAL_QUIET) / diff, 0.5, 3) * 10) / 10;
+          saveSettings();
+          fillInputs();
+          st.msg = '맞췄어요! 조용하면 ' + CAL_QUIET + ', 평소 목소리는 ' + CAL_VOICE + 'dB쯤이에요';
+          setTimeout(function () { st.msg = ''; render(); }, 4000);
+        }
+      }
+      render();
+    }
+
+    function start(afterStart) {
+      st.err = '';
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        st.err = 'https 주소에서 열어 주세요 (마이크를 쓸 수 없어요)';
+        render();
+        return;
+      }
+      navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+      }).then(function (s) {
+        stream = s;
+        var AC = window.AudioContext || window.webkitAudioContext;
+        ctx = new AC();
+        if (ctx.resume) ctx.resume();
+        var src = ctx.createMediaStreamSource(stream);
+        analyser = ctx.createAnalyser();
+        analyser.fftSize = 2048;
+        src.connect(analyser);
+        buf = new Float32Array(analyser.fftSize);
+        st.running = true;
+        st.db = 0;
+        last = performance.now();
+        render();
+        raf = requestAnimationFrame(loop);
+        if (afterStart) afterStart();
+      }).catch(function (e) {
+        st.running = false;
+        st.err = (e && e.name === 'NotFoundError') ? '마이크를 찾을 수 없어요' : '마이크 사용을 허용해 주세요';
+        render();
+      });
+    }
+
+    function stop() {
+      st.running = false;
+      st.cal = null;
+      cancelAnimationFrame(raf);
+      if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+      if (ctx && ctx.close) ctx.close();
+      stream = null; ctx = null; analyser = null;
+      st.db = 0;
+      st.hold = 0;
+      render();
+    }
+
+    btnMain.addEventListener('click', function () { st.running ? stop() : start(); });
+    btnReset.addEventListener('click', function () {
+      if (st.running) stop();
+      st.score = 0; st.hold = 0; st.flash = false; st.err = '';
+      render();
+    });
+
+    /* ---------- 설정 ---------- */
+    function fillInputs() {
+      inTh.value = cfg.threshold; inMax.value = cfg.maxDb;
+      inHold.value = cfg.holdSec; inOff.value = cfg.offset; inSpread.value = cfg.spread;
+    }
+    function applyInputs() {
+      var th = +inTh.value, mx = +inMax.value, hs = +inHold.value, off = +inOff.value;
+      if (isFinite(th) && th >= 30) cfg.threshold = th;
+      if (isFinite(mx) && mx > cfg.threshold) cfg.maxDb = mx;
+      if (isFinite(hs) && hs >= 1) cfg.holdSec = hs;
+      if (isFinite(off) && off > 0) cfg.offset = off;
+      var sp = +inSpread.value;
+      if (isFinite(sp) && sp >= 0.5 && sp <= 3) cfg.spread = sp;
+      try {
+        localStorage.setItem('dbmeter-settings', JSON.stringify({
+          threshold: cfg.threshold, maxDb: cfg.maxDb, holdSec: cfg.holdSec, offset: cfg.offset, spread: cfg.spread
+        }));
+      } catch (e) {}
+      buildSegs();
+      render();
+    }
+    [inTh, inMax, inHold, inOff, inSpread].forEach(function (el) { el.addEventListener('change', function () { applyInputs(); fillInputs(); }); });
+    $('.dbm-cal').addEventListener('click', function () {
+      panel.hidden = true;
+      if (st.running) beginCal(); else start(beginCal);
+    });
+    btnGear.addEventListener('click', function () {
+      panel.hidden = !panel.hidden;
+      if (!panel.hidden) fillInputs();
+    });
+
+    buildSegs();
+    render();
+    fit();
+    return { stop: stop, config: cfg };
+  }
+
+  window.DbMeter = { mount: mount };
+
+  function auto() {
+    var list = document.querySelectorAll('[data-dbmeter]');
+    for (var i = 0; i < list.length; i++) mount(list[i]);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', auto);
+  else auto();
+})();
+
+// ===== 발표 데시벨 측정기: 타이머처럼 떠 있는 창 =====
+(function dbmInit(n) {
+  var cal = document.getElementById('cal-btn'); if (!cal) { if ((n || 0) < 100) setTimeout(function () { dbmInit((n || 0) + 1); }, 200); return; }
+  if (document.getElementById('dbm-btn')) return;
+  var b = document.createElement('button'); b.type = 'button'; b.id = 'dbm-btn'; b.className = cal.className; b.innerHTML = '🎤<span class="cb-t"> 목소리</span>'; b.title = '발표 데시벨 측정기';
+  cal.parentNode.insertBefore(b, cal.nextSibling);
+  var st = document.createElement('style');
+  st.textContent = '#dbm-float{position:fixed;left:18px;bottom:18px;z-index:310;width:min(560px,92vw);background:#FFFDF8;border:2px solid #4E5C42;border-radius:14px;box-shadow:0 10px 30px rgba(40,30,20,.25);padding:4px 6px 6px}' +
+    '#dbm-float[hidden]{display:none}' +
+    '#dbm-float .df-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 4px 6px;font-size:13px;color:#6B5A48;cursor:grab;touch-action:none;user-select:none}' +
+    '#dbm-float .df-bar b::before{content:"⠿ ";color:#B9AE9C}' +
+    '#dbm-float .df-bar button{font:inherit;font-weight:700;font-size:13px;padding:3px 9px;border:1.5px solid #D9C9AE;border-radius:7px;background:#fff;cursor:pointer;margin-left:4px}' +
+    '#dbm-float.big{left:50%!important;top:50%!important;bottom:auto!important;transform:translate(-50%,-50%);width:min(96vw,160vh);border-width:4px}' +
+    '#dbm-float.big .df-bar{cursor:default}' +
+    '#dbm-float .dbm-wrap{border-radius:10px}' +
+    '@media print{#dbm-float{display:none!important}}';
+  document.head.appendChild(st);
+  var w = null, meter = null;
+  function build() {
+    w = document.createElement('div'); w.id = 'dbm-float';
+    w.innerHTML = '<div class="df-bar"><b>발표 데시벨 측정기</b><span><button type="button" data-df="big">⤢ 크게</button><button type="button" data-df="close">✕ 닫기</button></span></div><div class="df-host"></div>';
+    document.body.appendChild(w);
+    meter = window.DbMeter.mount(w.querySelector('.df-host'));
+    w.querySelector('[data-df=big]').addEventListener('click', function () { var on = w.classList.toggle('big'); this.textContent = on ? '⤡ 작게' : '⤢ 크게'; });
+    w.querySelector('[data-df=close]').addEventListener('click', function () { if (meter) meter.stop(); w.hidden = true; });
+    var bar = w.querySelector('.df-bar'), drag = null;
+    bar.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('button') || w.classList.contains('big')) return;
+      var r = w.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top }; bar.setPointerCapture(e.pointerId);
+    });
+    bar.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var x = Math.max(0, Math.min(innerWidth - 60, e.clientX - drag.dx)), y = Math.max(0, Math.min(innerHeight - 40, e.clientY - drag.dy));
+      w.style.left = x + 'px'; w.style.top = y + 'px'; w.style.bottom = 'auto';
+    });
+    bar.addEventListener('pointerup', function () { drag = null; });
+  }
+  b.addEventListener('click', function () {
+    if (!w) { build(); return; }
+    if (w.hidden) { w.hidden = false; } else { if (meter) meter.stop(); w.hidden = true; }
+  });
 })();
 </script>
 </body>
