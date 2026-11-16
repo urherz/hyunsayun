@@ -8177,7 +8177,7 @@ function __boot() {
  <div class="dbm-panel" hidden>\
   <div class="dbm-grid">\
    <label>기준 (dB 이상)<input type="number" class="dbm-in-th" min="30" max="110" step="1"></label>\
-   <label>너무 큼 (dB 이상)<input type="number" class="dbm-in-max" min="31" max="120" step="1"></label>\
+   <label style="display:none">너무 큼 (dB 이상)<input type="number" class="dbm-in-max" min="31" max="120" step="1"></label>\
    <label>유지 시간 (초)<input type="number" class="dbm-in-hold" min="1" max="30" step="1"></label>\
    <label>보정 (전체 높낮이)<input type="number" class="dbm-in-off" min="40" max="160" step="1"></label>\
    <label>폭 (차이 키우기)<input type="number" class="dbm-in-spread" min="0.5" max="3" step="0.1"></label>\
@@ -8216,6 +8216,7 @@ function __boot() {
       });
     } catch (e) {}
 
+    cfg.maxDb = 999; // '너무 큼' 사용 안 함
     host.classList.add('dbm-wrap');
     host.innerHTML = TEMPLATE;
     var root = host.querySelector('.dbm');
@@ -8264,7 +8265,7 @@ function __boot() {
         var color = v >= cfg.maxDb ? '#B3261E' : (v >= cfg.threshold ? '#7BC47F' : '#4A78A8');
         segs.push({ v: v, bar: bar, color: color, lit: null });
       }
-      elRange.textContent = cfg.threshold + '~' + cfg.maxDb + ' dB';
+      elRange.textContent = cfg.threshold + ' dB 이상';
     }
 
     /* ---------- 그리기 ---------- */
@@ -8461,7 +8462,7 @@ function __boot() {
     function applyInputs() {
       var th = +inTh.value, mx = +inMax.value, hs = +inHold.value, off = +inOff.value;
       if (isFinite(th) && th >= 30) cfg.threshold = th;
-      if (isFinite(mx) && mx > cfg.threshold) cfg.maxDb = mx;
+
       if (isFinite(hs) && hs >= 1) cfg.holdSec = hs;
       if (isFinite(off) && off > 0) cfg.offset = off;
       var sp = +inSpread.value;
@@ -8554,19 +8555,17 @@ function __boot() {
       var th = cfg ? cfg.threshold : 70, mx = cfg ? cfg.maxDb : 90;
       g.clearRect(0, 0, W, H);
       g.fillStyle = '#E3ECF5'; g.fillRect(0, y(th), W, H - y(th));
-      g.fillStyle = '#E2F2E2'; g.fillRect(0, y(mx), W, y(th) - y(mx));
-      g.fillStyle = '#F8E1DE'; g.fillRect(0, 0, W, y(mx));
+      g.fillStyle = '#E2F2E2'; g.fillRect(0, 0, W, y(th));
       g.setLineDash([8, 6]); g.lineWidth = 2;
       g.strokeStyle = '#2B2118'; g.beginPath(); g.moveTo(0, y(th)); g.lineTo(W, y(th)); g.stroke();
-      g.strokeStyle = '#B3261E'; g.beginPath(); g.moveTo(0, y(mx)); g.lineTo(W, y(mx)); g.stroke();
       g.setLineDash([]);
-      g.font = 'bold 20px sans-serif'; g.fillStyle = '#2B2118'; g.fillText('기준 ' + th, 8, y(th) - 6); g.fillStyle = '#B3261E'; g.fillText('너무 큼 ' + mx, 8, y(mx) - 6);
+      g.font = 'bold 20px sans-serif'; g.fillStyle = '#2B2118'; g.fillText('기준 ' + th, 8, y(th) - 6);
       if (hist.length < 2) return;
       var tEnd = hist[hist.length - 1].t, x = function (t) { return W - (tEnd - t) / WIN * W; };
       g.lineWidth = 5; g.lineJoin = 'round'; g.lineCap = 'round';
       for (var i = 1; i < hist.length; i++) {
         var a = hist[i - 1], c = hist[i]; if (c.gap) continue;
-        g.strokeStyle = c.v >= mx ? '#B3261E' : (c.v >= th ? '#2E9E5E' : '#4A78A8');
+        g.strokeStyle = c.v >= th ? '#2E9E5E' : '#4A78A8';
         g.beginPath(); g.moveTo(x(a.t), y(a.v)); g.lineTo(x(c.t), y(c.v)); g.stroke();
       }
     }
