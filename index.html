@@ -8297,6 +8297,7 @@ function __boot() {
       elHoldText.textContent = st.hold.toFixed(1) + ' / ' + cfg.holdSec + '초';
       elFill.style.width = clamp(st.hold / cfg.holdSec * 100, 0, 100) + '%';
       btnMain.textContent = run ? '멈추기' : '시작하기';
+      if (typeof cfg.onTick === 'function') { try { cfg.onTick(st, cfg); } catch (e) {} }
 
       for (var i = 0; i < segs.length; i++) {
         var sg = segs[i];
@@ -8499,31 +8500,109 @@ function __boot() {
   else auto();
 })();
 
-// ===== 발표 데시벨 측정기: 타이머처럼 떠 있는 창 =====
+// ===== 발표 데시벨 측정기: 타이머처럼 떠 있는 창 (작게: 그래프 위주 / 크게: 전체 화면) =====
 (function dbmInit(n) {
   var cal = document.getElementById('cal-btn'); if (!cal) { if ((n || 0) < 100) setTimeout(function () { dbmInit((n || 0) + 1); }, 200); return; }
   if (document.getElementById('dbm-btn')) return;
   var b = document.createElement('button'); b.type = 'button'; b.id = 'dbm-btn'; b.className = cal.className; b.innerHTML = '🎤<span class="cb-t"> 목소리</span>'; b.title = '발표 데시벨 측정기';
   cal.parentNode.insertBefore(b, cal.nextSibling);
-  var st = document.createElement('style');
-  st.textContent = '#dbm-float{position:fixed;left:18px;bottom:18px;z-index:310;width:min(560px,92vw);background:#FFFDF8;border:2px solid #4E5C42;border-radius:14px;box-shadow:0 10px 30px rgba(40,30,20,.25);padding:4px 6px 6px}' +
+  var css = document.createElement('style');
+  css.textContent = '#dbm-float{position:fixed;left:18px;bottom:18px;z-index:310;width:min(400px,92vw);background:#FFFDF8;border:2px solid #4E5C42;border-radius:14px;box-shadow:0 10px 30px rgba(40,30,20,.25);padding:6px 10px 10px;font-family:"Noto Sans KR",system-ui,sans-serif;color:#2B2118}' +
     '#dbm-float[hidden]{display:none}' +
-    '#dbm-float .df-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 4px 6px;font-size:13px;color:#6B5A48;cursor:grab;touch-action:none;user-select:none}' +
+    '#dbm-float .df-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 0 6px;font-size:13px;color:#6B5A48;cursor:grab;touch-action:none;user-select:none}' +
     '#dbm-float .df-bar b::before{content:"⠿ ";color:#B9AE9C}' +
-    '#dbm-float .df-bar button{font:inherit;font-weight:700;font-size:13px;padding:3px 9px;border:1.5px solid #D9C9AE;border-radius:7px;background:#fff;cursor:pointer;margin-left:4px}' +
+    '#dbm-float button{font-family:inherit;cursor:pointer}' +
+    '#dbm-float .df-bar button{font-weight:700;font-size:13px;padding:3px 9px;border:1.5px solid #D9C9AE;border-radius:7px;background:#fff;margin-left:4px}' +
     '#dbm-float.big{left:50%!important;top:50%!important;bottom:auto!important;transform:translate(-50%,-50%);width:min(96vw,160vh);border-width:4px}' +
     '#dbm-float.big .df-bar{cursor:default}' +
-    '#dbm-float .dbm-wrap{border-radius:10px}' +
+    '#dbm-float:not(.big) .df-host{position:absolute;left:-10000px;width:560px;visibility:hidden}' +
+    '#dbm-float.big .df-mini{display:none}' +
+    '#dbm-float .df-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}' +
+    '#dbm-float .df-num{font-size:46px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;min-width:2.2ch;text-align:right;letter-spacing:-2px}' +
+    '#dbm-float .df-unit{font-size:15px;font-weight:700;color:#6B5A48;margin-left:-6px;align-self:flex-end;padding-bottom:4px}' +
+    '#dbm-float .df-st{flex:1;padding:8px 10px;border-radius:10px;font-weight:900;font-size:16px;text-align:center;word-break:keep-all}' +
+    '#dbm-float .df-sc{position:relative;padding:6px 12px;border-radius:10px;background:#2B2118;color:#F6EFE3;font-weight:900;font-size:20px;white-space:nowrap}' +
+    '#dbm-float .df-sc small{font-size:12px;font-weight:500;color:#D9C9AE;display:block;line-height:1.1}' +
+    '#dbm-float .df-plus{position:absolute;right:-6px;top:-12px;padding:1px 8px;border-radius:99px;background:#7BC47F;color:#2B2118;font-size:13px}' +
+    '#dbm-float .df-plus[hidden]{display:none}' +
+    '#dbm-float canvas{display:block;width:100%;height:120px;border-radius:10px;background:#FFFAF1;border:1.5px solid #D9C9AE}' +
+    '#dbm-float .df-hold{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:13px;font-weight:700;color:#6B5A48}' +
+    '#dbm-float .df-track{flex:1;height:14px;border-radius:99px;background:#EFE5D2;overflow:hidden}' +
+    '#dbm-float .df-fill{height:100%;width:0;background:#2E9E5E;border-radius:99px}' +
+    '#dbm-float .df-ht{font-variant-numeric:tabular-nums;min-width:70px;text-align:right}' +
+    '#dbm-float .df-btns{display:flex;gap:6px;margin-top:8px}' +
+    '#dbm-float .df-btns button{flex:1;height:36px;border-radius:9px;font-weight:700;font-size:14px;border:2px solid #2B2118;background:transparent;color:#2B2118}' +
+    '#dbm-float .df-btns .df-go{background:#2B2118;color:#F6EFE3}' +
     '@media print{#dbm-float{display:none!important}}';
-  document.head.appendChild(st);
-  var w = null, meter = null;
+  document.head.appendChild(css);
+  var w = null, host = null, hist = [], lastPush = 0, WIN = 20000, cur = null;
   function build() {
     w = document.createElement('div'); w.id = 'dbm-float';
-    w.innerHTML = '<div class="df-bar"><b>발표 데시벨 측정기</b><span><button type="button" data-df="big">⤢ 크게</button><button type="button" data-df="close">✕ 닫기</button></span></div><div class="df-host"></div>';
+    w.innerHTML = '<div class="df-bar"><b>목소리 크기</b><span><button type="button" data-df="big">⤢ 크게</button><button type="button" data-df="close">✕ 닫기</button></span></div>' +
+      '<div class="df-mini"><div class="df-top"><span class="df-num">--</span><span class="df-unit">dB</span><span class="df-st"></span><span class="df-sc"><small>점수</small><span class="df-scn">0</span>점<span class="df-plus" hidden>+1</span></span></div>' +
+      '<canvas width="760" height="240"></canvas>' +
+      '<div class="df-hold"><span>유지</span><div class="df-track"><div class="df-fill"></div></div><span class="df-ht">0.0 / 3초</span></div>' +
+      '<div class="df-btns"><button type="button" class="df-go" data-df="go">▶ 시작</button><button type="button" data-df="reset">↺ 처음으로</button></div></div>' +
+      '<div class="df-host"></div>';
     document.body.appendChild(w);
-    meter = window.DbMeter.mount(w.querySelector('.df-host'));
-    w.querySelector('[data-df=big]').addEventListener('click', function () { var on = w.classList.toggle('big'); this.textContent = on ? '⤡ 작게' : '⤢ 크게'; });
-    w.querySelector('[data-df=close]').addEventListener('click', function () { if (meter) meter.stop(); w.hidden = true; });
+    host = w.querySelector('.df-host');
+    var cv = w.querySelector('canvas'), g = cv.getContext('2d');
+    var elN = w.querySelector('.df-num'), elSt = w.querySelector('.df-st'), elSc = w.querySelector('.df-scn'), elPlus = w.querySelector('.df-plus'), elFill = w.querySelector('.df-fill'), elHt = w.querySelector('.df-ht'), elGo = w.querySelector('[data-df=go]');
+    var numAt = 0;
+    function draw(cfg) {
+      var W = cv.width, H = cv.height, lo = 30, hi = 110, y = function (v) { return H - (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * H; };
+      var th = cfg ? cfg.threshold : 70, mx = cfg ? cfg.maxDb : 90;
+      g.clearRect(0, 0, W, H);
+      g.fillStyle = '#E3ECF5'; g.fillRect(0, y(th), W, H - y(th));
+      g.fillStyle = '#E2F2E2'; g.fillRect(0, y(mx), W, y(th) - y(mx));
+      g.fillStyle = '#F8E1DE'; g.fillRect(0, 0, W, y(mx));
+      g.setLineDash([8, 6]); g.lineWidth = 2;
+      g.strokeStyle = '#2B2118'; g.beginPath(); g.moveTo(0, y(th)); g.lineTo(W, y(th)); g.stroke();
+      g.strokeStyle = '#B3261E'; g.beginPath(); g.moveTo(0, y(mx)); g.lineTo(W, y(mx)); g.stroke();
+      g.setLineDash([]);
+      g.font = 'bold 20px sans-serif'; g.fillStyle = '#2B2118'; g.fillText('기준 ' + th, 8, y(th) - 6); g.fillStyle = '#B3261E'; g.fillText('너무 큼 ' + mx, 8, y(mx) - 6);
+      if (hist.length < 2) return;
+      var tEnd = hist[hist.length - 1].t, x = function (t) { return W - (tEnd - t) / WIN * W; };
+      g.lineWidth = 5; g.lineJoin = 'round'; g.lineCap = 'round';
+      for (var i = 1; i < hist.length; i++) {
+        var a = hist[i - 1], c = hist[i]; if (c.gap) continue;
+        g.strokeStyle = c.v >= mx ? '#B3261E' : (c.v >= th ? '#2E9E5E' : '#4A78A8');
+        g.beginPath(); g.moveTo(x(a.t), y(a.v)); g.lineTo(x(c.t), y(c.v)); g.stroke();
+      }
+    }
+    var wasRun = false;
+    var onTick = function (st, cfg) {
+      cur = cfg;
+      var now = performance.now(), run = st.running;
+      if (run && !wasRun && hist.length) hist.push({ t: hist[hist.length - 1].t, v: st.db, gap: true });
+      wasRun = run;
+      if (run && now - lastPush > 80) {
+        var t = hist.length ? hist[hist.length - 1].t + Math.min(now - lastPush, 200) : 0;
+        lastPush = now; hist.push({ t: t, v: st.db });
+        while (hist.length && hist[hist.length - 1].t - hist[0].t > WIN + 1000) hist.shift();
+      }
+      var tooLoud = run && st.db >= cfg.maxDb, over = run && st.db >= cfg.threshold && !tooLoud;
+      if (!run || now - numAt > 250) { elN.textContent = run ? Math.round(st.db) : '--'; numAt = now; }
+      elN.style.color = tooLoud ? '#B3261E' : (over ? '#1F7A44' : (run ? '#4A78A8' : '#2B2118'));
+      var t2 = '시작을 눌러 주세요', bg = '#EFE5D2', fg = '#2B2118';
+      if (st.err) { t2 = st.err; bg = '#F7DAD6'; fg = '#8E1B14'; }
+      else if (st.cal) { t2 = st.cal.phase === 'quiet' ? '조용히 3초' : '평소 목소리로 3초'; bg = '#FFF1CC'; fg = '#5C4400'; }
+      else if (tooLoud) { t2 = '너무 커요'; bg = '#F7DAD6'; fg = '#8E1B14'; }
+      else if (over) { t2 = '좋아요!'; bg = '#DDF1DD'; fg = '#1F5C34'; }
+      else if (run) { t2 = '조금 더 크게'; bg = '#DCE7F2'; fg = '#1F3F63'; }
+      elSt.textContent = t2; elSt.style.background = bg; elSt.style.color = fg;
+      elSc.textContent = st.score; elPlus.hidden = !st.flash;
+      elFill.style.width = Math.max(0, Math.min(100, st.hold / cfg.holdSec * 100)) + '%';
+      elHt.textContent = st.hold.toFixed(1) + ' / ' + cfg.holdSec + '초';
+      elGo.textContent = run ? '⏸ 멈춤' : '▶ 시작';
+      if (!w.classList.contains('big')) draw(cfg);
+    };
+    window.DbMeter.mount(host, { onTick: onTick });
+    var inner = function (sel) { var e = host.querySelector(sel); if (e) e.click(); };
+    elGo.addEventListener('click', function () { inner('.dbm-btn-main'); });
+    w.querySelector('[data-df=reset]').addEventListener('click', function () { hist = []; inner('.dbm-btn-sub'); draw(cur); });
+    w.querySelector('[data-df=big]').addEventListener('click', function () { var on = w.classList.toggle('big'); this.textContent = on ? '⤡ 작게' : '⤢ 크게'; if (!on) draw(cur); });
+    w.querySelector('[data-df=close]').addEventListener('click', function () { stopMic(); w.hidden = true; });
     var bar = w.querySelector('.df-bar'), drag = null;
     bar.addEventListener('pointerdown', function (e) {
       if (e.target.closest('button') || w.classList.contains('big')) return;
@@ -8535,10 +8614,12 @@ function __boot() {
       w.style.left = x + 'px'; w.style.top = y + 'px'; w.style.bottom = 'auto';
     });
     bar.addEventListener('pointerup', function () { drag = null; });
+    draw(null);
   }
+  function stopMic() { var m = host && host.querySelector('.dbm-btn-main'); if (m && m.textContent === '멈추기') m.click(); }
   b.addEventListener('click', function () {
     if (!w) { build(); return; }
-    if (w.hidden) { w.hidden = false; } else { if (meter) meter.stop(); w.hidden = true; }
+    if (w.hidden) { w.hidden = false; } else { stopMic(); w.hidden = true; }
   });
 })();
 </script>
